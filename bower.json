@@ -1,0 +1,12 @@
+{
+  "name": "flybrix-common",
+  "description": "Common AngularJS services for Flybrix",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
