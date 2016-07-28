@@ -1,7 +1,7 @@
 (function() {
     'use strict';
 
-    angular.module('flybrixApp').factory('cobs', cobs);
+    angular.module('flybrixCommon').factory('cobs', cobs);
 
     function cobs() {
         return {
