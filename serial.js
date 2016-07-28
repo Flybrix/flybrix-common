@@ -7,27 +7,40 @@
 
     function serial($timeout, $q, cobs, commandLog, parser) {
         var acknowledges = [];
-        var address = '';
         var commandCallback = undefined;
-        var sender = function() {};
+        var backend = new SerialBackend();
         var onStateListener = function() {};
         var onCommandListener = function() {};
         var cobsReader = new cobs.Reader(2000);
         var dataHandler = undefined;
+
+        function SerialBackend() {
+        }
+
+        SerialBackend.prototype.busy = function() {
+            return false;
+        };
+
+        SerialBackend.prototype.send = function(data) {};
+
+        SerialBackend.prototype.onRead = function(data) {};
 
         return {
             busy: busy,
             field: parser.CommandFields,
             send: send,
             setCommandCallback: setCommandCallback,
-            setAddress: setAddress,
-            setSender: setSender,
-            reader: reader,
+            setBackend: setBackend,
             setStateCallback: setStateCallback,
             setCommandCallback: setCommandCallback,
             setDataHandler: setDataHandler,
-            getDataHandler: getDataHandler,
+            SerialBackend: SerialBackend,
         };
+
+        function setBackend(v) {
+            backend = v;
+            backend.onRead = read;
+        }
 
         function setSender(callback) {
             if (sender !== undefined) {
@@ -72,7 +85,7 @@
             });
 
             $timeout(function() {
-                sender(address, new Uint8Array(cobs.encode(bufView)));
+                backend.send(new Uint8Array(cobs.encode(bufView)));
             }, 0);
 
             if (log_send) {
@@ -84,30 +97,18 @@
         }
 
         function busy() {
-            return false;
+            return backend.busy();
         }
 
         function setCommandCallback(callback) {
             commandCallback = callback;
         }
 
-        function getAddress() {
-            return address
-        }
-
-        function setAddress(value) {
-            address = value;
-        }
-
         function setDataHandler(handler) {
             dataHandler = handler;
         }
 
-        function getDataHandler() {
-            return dataHandler;
-        }
-
-        function reader(data) {
+        function read(data) {
             if (dataHandler)
                 dataHandler(data, processData);
             else
