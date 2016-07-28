@@ -13,14 +13,19 @@
         service.log = log;
         service.clearSubscribers = clearSubscribers;
         service.onMessage = onMessage;
+        service.read = read;
 
         return service;
 
         function log(message) {
             if (message !== undefined) {
                 messages.push(message);
-                responder.notify(messages);
+                responder.notify(read());
             }
+        }
+
+        function read() {
+            return messages;
         }
 
         function clearSubscribers() {
