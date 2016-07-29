@@ -21,25 +21,25 @@
         this.buffer_length = 0;
     }
 
-    Reader.prototype.__cobsDecode = function() {
+    function cobsDecode(reader) {
         var src_ptr = 0;
         var dst_ptr = 0;
         var leftover_length = 0;
         var append_zero = false;
-        while (this.buffer[src_ptr]) {
+        while (reader.buffer[src_ptr]) {
             if (!leftover_length) {
                 if (append_zero)
-                    this.buffer[dst_ptr++] = 0;
-                leftover_length = this.buffer[src_ptr++] - 1;
+                    reader.buffer[dst_ptr++] = 0;
+                leftover_length = reader.buffer[src_ptr++] - 1;
                 append_zero = leftover_length < 0xFE;
             } else {
                 --leftover_length;
-                this.buffer[dst_ptr++] = this.buffer[src_ptr++];
+                reader.buffer[dst_ptr++] = reader.buffer[src_ptr++];
             }
         }
 
         return leftover_length ? 0 : dst_ptr;
-    };
+    }
 
     Reader.prototype.AppendToBuffer = function(data, callback, onError) {
         for (var i = 0; i < data.length; i++) {
@@ -60,7 +60,7 @@
             }
 
             if (!c) {
-                this.buffer_length = this.__cobsDecode();
+                this.buffer_length = cobsDecode(this);
                 var failed_decode = (this.buffer_length === 0);
                 if (failed_decode) {
                     this.buffer[0] = 1;
