@@ -22,6 +22,8 @@ module.exports = function(config) {
             './cobs.spec.js',
             './commandLog.js',
             './commandLog.spec.js',
+            './parser.js',
+            './parser.spec.js',
             './serializer.js',
             './serializer.spec.js',
         ],
@@ -37,6 +39,7 @@ module.exports = function(config) {
         preprocessors: {
             './cobs.js': ['coverage'],
             './commandLog.js': ['coverage'],
+            './parser.js': ['coverage'],
             './serializer.js': ['coverage'],
         },
 
