@@ -157,7 +157,6 @@
                     break;
                 case MessageType.DebugString:
                     var debug_string = arraybuffer2string(message_buffer);
-                    console.log('Debug message: ', debug_string);
                     commandLog('Received <span style="color: orange">' +
                                'DEBUG' +
                                '</span>: ' + debug_string);
@@ -192,13 +191,10 @@
 
         function callbackStateHelper(mask, message_buffer, cb_state) {
             var state = new State();
-            var state_data_mask = [];
+            var state_data_mask = [];  // TODO: get rid of this in general
             var data = new DataView(message_buffer, 0);
             var b = new serializer();
             var serial_update_rate_Hz = 0;
-
-            for (var i = 0; i < state_data_mask.length; i++)
-                state_data_mask.push(false);
 
             if (0 != (mask & StateFields.STATE_MICROS)) {
                 state_data_mask[0] = true;
