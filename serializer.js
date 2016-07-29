@@ -15,45 +15,18 @@
         this.index += increment;
     };
 
-    byteRef.prototype.parseFloat32Array = function(view, destination) {
-        parseWith(this, view, 'getFloat32', 4, destination);
-    };
+    [['Float32', 4], ['Int16', 2], ['Int8', 1], ['Uint8', 1], ['Uint16', 2]]
+        .forEach(function(v) {
+            byteRef.prototype['parse' + v[0] + 'Array'] = function(
+                view, destination) {
+                parseWith(this, view, 'get' + v[0], v[1], destination);
+            };
 
-    byteRef.prototype.parseInt16Array = function(view, destination) {
-        parseWith(this, view, 'getInt16', 2, destination);
-    };
-
-    byteRef.prototype.parseInt8Array = function(view, destination) {
-        parseWith(this, view, 'getInt8', 1, destination);
-    };
-
-    byteRef.prototype.parseUint8Array = function(view, destination) {
-        parseWith(this, view, 'getUint8', 1, destination);
-    };
-
-    byteRef.prototype.parseUint16Array = function(view, destination) {
-        parseWith(this, view, 'getUint16', 2, destination);
-    };
-
-    byteRef.prototype.setFloat32Array = function(view, destination) {
-        setWith(this, view, 'setFloat32', 4, destination);
-    };
-
-    byteRef.prototype.setInt8Array = function(view, destination) {
-        setWith(this, view, 'setInt8', 1, destination);
-    };
-
-    byteRef.prototype.setUint8Array = function(view, destination) {
-        setWith(this, view, 'setUint8', 1, destination);
-    };
-
-    byteRef.prototype.setUint16Array = function(view, destination) {
-        setWith(this, view, 'setUint16', 2, destination);
-    };
-
-    byteRef.prototype.setInt16Array = function(view, destination) {
-        setWith(this, view, 'setInt16', 2, destination);
-    };
+            byteRef.prototype['set' + v[0] + 'Array'] = function(view,
+                                                                 destination) {
+                setWith(this, view, 'set' + v[0], v[1], destination);
+            };
+        });
 
     function parseWith(parser, context, f, step, destination) {
         for (var i = 0; i < destination.length; i++) {
