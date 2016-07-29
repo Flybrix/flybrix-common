@@ -20,6 +20,8 @@ module.exports = function(config) {
             './module.js',
             './commandLog.js',
             './commandLog.spec.js',
+            './serializer.js',
+            './serializer.spec.js',
         ],
 
 
