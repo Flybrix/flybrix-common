@@ -47,6 +47,15 @@ describe('Command log service', function() {
             commandLog('E. C');
             expect(commandLog.read()).toEqual(['Entry A', 'Entry B', 'E. C']);
         });
+
+        it('ignores empty messages', function() {
+            commandLog('Entry A');
+            expect(commandLog.read()).toEqual(['Entry A']);
+            commandLog();
+            expect(commandLog.read()).toEqual(['Entry A']);
+            commandLog('Entry B');
+            expect(commandLog.read()).toEqual(['Entry A', 'Entry B']);
+        });
     });
 
     describe('.onMessage()', function() {
