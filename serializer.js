@@ -19,19 +19,21 @@
         .forEach(function(v) {
             var key = v[0];
             var step = v[1];
+            var getKey = 'get' + key;
+            var setKey = 'set' + key;
 
-            byteRef.prototype['parse' + v[0] + 'Array'] = function(
-                view, destination) {
+            byteRef.prototype['parse' + key + 'Array'] = function(view,
+                                                                  destination) {
                 for (var i = 0; i < destination.length; i++) {
-                    destination[i] = view['get' + key](this.index, 1);
+                    destination[i] = view[getKey](this.index, 1);
                     this.add(step);
                 }
             };
 
-            byteRef.prototype['set' + v[0] + 'Array'] = function(view,
-                                                                 destination) {
+            byteRef.prototype['set' + key + 'Array'] = function(view,
+                                                                destination) {
                 for (var i = 0; i < destination.length; i++) {
-                    view['set' + key](this.index, destination[i], 1);
+                    view[setKey](this.index, destination[i], 1);
                     this.add(step);
                 }
             };
