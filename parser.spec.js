@@ -20,6 +20,13 @@ describe('Parser service', function() {
         expect(parser.processBinaryDatastream).toBeDefined();
     });
 
+    it('ignores bad messages', function() {
+        expect(parser.MessageType.Response).toEqual(255);
+        commandLog.onMessage(cbFail);
+        parser.processBinaryDatastream(254, 0, new Uint8Array([]).buffer,
+                                       cbFail, cbFail, cbFail);
+    });
+
     it('parses ACK messages', function(done) {
         expect(parser.MessageType.Response).toEqual(255);
         commandLog.onMessage(cbFail);
