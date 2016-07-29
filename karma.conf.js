@@ -18,6 +18,8 @@ module.exports = function(config) {
             './bower_components/angular/angular.js',
             './node_modules/angular-mocks/angular-mocks.js',
             './module.js',
+            './cobs.js',
+            './cobs.spec.js',
             './commandLog.js',
             './commandLog.spec.js',
             './serializer.js',
