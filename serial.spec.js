@@ -431,7 +431,7 @@ describe('Serial service', function() {
             $rootScope.$digest();
         });
 
-        it('matches responses to fitting messsages', function(done) {
+        it('matches responses to fitting messages', function(done) {
             var leftover = 2;
             function onDone() {
                 if (!--leftover) {
