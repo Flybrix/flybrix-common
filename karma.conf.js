@@ -28,6 +28,8 @@ module.exports = function(config) {
             './serial.spec.js',
             './serializer.js',
             './serializer.spec.js',
+            './rcData.js',
+            './rcData.spec.js',
         ],
 
 
@@ -42,8 +44,9 @@ module.exports = function(config) {
             './cobs.js': ['coverage'],
             './commandLog.js': ['coverage'],
             './parser.js': ['coverage'],
-            './serializer.js': ['coverage'],
             './serial.js': ['coverage'],
+            './serializer.js': ['coverage'],
+            './rcData.js': ['coverage'],
         },
 
 
