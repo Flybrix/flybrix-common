@@ -58,10 +58,10 @@
             // invert pitch and roll
             var throttle_threshold =
                 -0.8;  // keep bottom 10% of throttle stick to mean 'off'
-            var command_throttle =
-                constrain((throttle - throttle_threshold) * 4095 /
-                              (1 - throttle_threshold),
-                          0, 4095);
+            var command_throttle = constrain(
+                (throttle - throttle_threshold) * 4095 /
+                    (1 - throttle_threshold),
+                0, 4095);
             var command_pitch =
                 constrain(-(applyDeadzone(pitch, 0.1)) * 4095 / 2, -2047, 2047);
             var command_roll =
@@ -79,8 +79,9 @@
             //  x, x} (LSB-->MSB)
             var auxcode = (1 << aux1) + (1 << (aux2 + 3));
             view.setUint8(b.index, auxcode);
-            serial.send(serial.field.COM_SET_SERIAL_RC,
-                        new Uint8Array(dataBytes), false);
+            return serial.send(
+                serial.field.COM_SET_SERIAL_RC, new Uint8Array(dataBytes),
+                false);
         }
 
         function setThrottle(v) {
