@@ -7,45 +7,45 @@
 
     function serial($timeout, $q, cobs, commandLog, parser) {
         var acknowledges = [];
-        var commandCallback = undefined;
-        var backend = new SerialBackend();
-        var onStateListener = function() {};
-        var onCommandListener = function() {};
+        var backend = new Backend();
+        var onStateListener = function() {
+            commandLog('No state listener defined for serial');
+        };
+        var onCommandListener = function() {
+            commandLog('No command listener defined for serial');
+        };
         var cobsReader = new cobs.Reader(2000);
         var dataHandler = undefined;
 
-        function SerialBackend() {
+        function Backend() {
         }
 
-        SerialBackend.prototype.busy = function() {
+        Backend.prototype.busy = function() {
             return false;
         };
 
-        SerialBackend.prototype.send = function(data) {};
+        Backend.prototype.send = function(data) {
+            commandLog('No "send" defined for serial backend');
+        };
 
-        SerialBackend.prototype.onRead = function(data) {};
+        Backend.prototype.onRead = function(data) {
+            commandLog('No "onRead" defined for serial backend');
+        };
 
         return {
             busy: busy,
             field: parser.CommandFields,
             send: send,
-            setCommandCallback: setCommandCallback,
             setBackend: setBackend,
             setStateCallback: setStateCallback,
             setCommandCallback: setCommandCallback,
             setDataHandler: setDataHandler,
-            SerialBackend: SerialBackend,
+            Backend: Backend,
         };
 
         function setBackend(v) {
             backend = v;
             backend.onRead = read;
-        }
-
-        function setSender(callback) {
-            if (sender !== undefined) {
-                sender = callback;
-            }
         }
 
         function send(mask, data, log_send) {
@@ -89,8 +89,9 @@
             }, 0);
 
             if (log_send) {
-                commandLog('Sending command <span style="color:blue">' +
-                           parser.MessageType.Command + '</blue>');
+                commandLog(
+                    'Sending command <span style="color:blue">' +
+                    parser.MessageType.Command + '</blue>');
             }
 
             return response.promise;
@@ -98,10 +99,6 @@
 
         function busy() {
             return backend.busy();
-        }
-
-        function setCommandCallback(callback) {
-            commandCallback = callback;
         }
 
         function setDataHandler(handler) {
@@ -112,7 +109,11 @@
             if (dataHandler)
                 dataHandler(data, processData);
             else
-                cobsReader.AppendToBuffer(data, processData);
+                cobsReader.AppendToBuffer(data, processData, reportIssues);
+        }
+
+        function reportIssues(issue, text) {
+            commandLog('COBS decoding failed (' + issue + '): ' + text);
         }
 
         function setStateCallback(callback) {
@@ -130,7 +131,8 @@
                     v.response.reject('Missing ACK');
                     continue;
                 }
-                var relaxedMask = mask & ~parser.CommandFields.COM_REQ_RESPONSE;
+                var relaxedMask = mask;
+                relaxedMask &= ~parser.CommandFields.COM_REQ_RESPONSE;
                 if (relaxedMask !== value) {
                     v.response.reject('Request was not fully processed');
                     break;
@@ -141,9 +143,9 @@
         }
 
         function processData(command, mask, message_buffer) {
-            parser.processBinaryDatastream(command, mask, message_buffer,
-                                           onStateListener, onCommandListener,
-                                           acknowledge);
+            parser.processBinaryDatastream(
+                command, mask, message_buffer, onStateListener,
+                onCommandListener, acknowledge);
         };
 
         function byteNinNum(data, n) {

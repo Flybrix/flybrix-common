@@ -169,7 +169,7 @@
                     break;
                 case MessageType.Response:
                     var data = new DataView(message_buffer, 0);
-                    cb_ack(mask, data.getUint32(0, 1));
+                    cb_ack(mask, data.getInt32(0, 1));
                     break;
                 default:
                     break;
