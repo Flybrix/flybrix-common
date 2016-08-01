@@ -445,8 +445,6 @@ describe('Serial service', function() {
             ]));
             $timeout.flush();
             $rootScope.$digest();
-            $timeout.flush();
-            $rootScope.$digest();
         });
     });
 
