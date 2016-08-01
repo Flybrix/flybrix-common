@@ -24,6 +24,8 @@ module.exports = function(config) {
             './commandLog.spec.js',
             './parser.js',
             './parser.spec.js',
+            './serial.js',
+            './serial.spec.js',
             './serializer.js',
             './serializer.spec.js',
         ],
@@ -41,6 +43,7 @@ module.exports = function(config) {
             './commandLog.js': ['coverage'],
             './parser.js': ['coverage'],
             './serializer.js': ['coverage'],
+            './serial.js': ['coverage'],
         },
 
 
