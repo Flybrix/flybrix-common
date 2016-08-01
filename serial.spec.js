@@ -366,8 +366,6 @@ describe('Serial service', function() {
             ]));
             $timeout.flush();
             $rootScope.$digest();
-            $timeout.flush();
-            $rootScope.$digest();
         });
 
         it('responds negatively on mask mismatch', function(done) {
@@ -380,8 +378,6 @@ describe('Serial service', function() {
             ]));
             $timeout.flush();
             $rootScope.$digest();
-            $timeout.flush();
-            $rootScope.$digest();
         });
 
         it('responds negatively on unprocessed commands', function(done) {
@@ -392,8 +388,6 @@ describe('Serial service', function() {
             backend.onRead(new Uint8Array([
                 11, 126, 255, 0x21, 0x43, 0x65, 0x87, 0x20, 0x43, 0x65, 0x07, 0
             ]));
-            $timeout.flush();
-            $rootScope.$digest();
             $timeout.flush();
             $rootScope.$digest();
         });
