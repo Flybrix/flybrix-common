@@ -421,8 +421,6 @@ describe('Serial service', function() {
             ]));
             $timeout.flush();
             $rootScope.$digest();
-            $timeout.flush();
-            $rootScope.$digest();
         });
 
         it('matches responses to fitting messages', function(done) {
