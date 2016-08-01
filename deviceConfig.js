@@ -11,7 +11,9 @@
 
         var desiredVersion = [1, 3, 0];  // checked at startup!
 
-        var configCallback = undefined;
+        var configCallback = function() {
+            commandLog('No callback defined for receiving configurations!');
+        };
 
         var configFields = {
             VERSION: 1 << 0,
@@ -61,8 +63,8 @@
                         request();
                     },
                     function(reason) {
-                        commandLog('Request for factory reset failed: ' +
-                                   reason);
+                        commandLog(
+                            'Request for factory reset failed: ' + reason);
                     });
         }
 
@@ -105,10 +107,9 @@
             this.pidBypass = 0;
             this.stateEstimationParameters = [0.0, 0.0];
             this.enableParameters = [0.0, 0.0];
-            this.ledStates = Array.apply(null, Array(272))
-                                 .map(function() {
-                                     return 0;
-                                 });
+            this.ledStates = Array.apply(null, Array(272)).map(function() {
+                return 0;
+            });
         }
 
         function parse(dataView, structure) {
@@ -170,25 +171,25 @@
                 b.parseUint16Array(dataView, structure.channelDeadzone);
             }
             if (mask & configFields.PID_PARAMETERS) {
-                b.parseFloat32Array(dataView,
-                                    structure.thrustMasterPIDParameters);
-                b.parseFloat32Array(dataView,
-                                    structure.pitchMasterPIDParameters);
-                b.parseFloat32Array(dataView,
-                                    structure.rollMasterPIDParameters);
+                b.parseFloat32Array(
+                    dataView, structure.thrustMasterPIDParameters);
+                b.parseFloat32Array(
+                    dataView, structure.pitchMasterPIDParameters);
+                b.parseFloat32Array(
+                    dataView, structure.rollMasterPIDParameters);
                 b.parseFloat32Array(dataView, structure.yawMasterPIDParameters);
-                b.parseFloat32Array(dataView,
-                                    structure.thrustSlavePIDParameters);
-                b.parseFloat32Array(dataView,
-                                    structure.pitchSlavePIDParameters);
+                b.parseFloat32Array(
+                    dataView, structure.thrustSlavePIDParameters);
+                b.parseFloat32Array(
+                    dataView, structure.pitchSlavePIDParameters);
                 b.parseFloat32Array(dataView, structure.rollSlavePIDParameters);
                 b.parseFloat32Array(dataView, structure.yawSlavePIDParameters);
                 structure.pidBypass = dataView.getUint8(b.index);
                 b.add(1);
             }
             if (mask & configFields.STATE_PARAMETERS) {
-                b.parseFloat32Array(dataView,
-                                    structure.stateEstimationParameters);
+                b.parseFloat32Array(
+                    dataView, structure.stateEstimationParameters);
                 b.parseFloat32Array(dataView, structure.enableParameters);
             }
             if (mask & configFields.LED_STATES) {
@@ -238,7 +239,7 @@
         }
 
         function comSetEepromData(message_buffer) {
-            console.log("Received config!");
+            commandLog('Received config!');
             var data = new DataView(message_buffer, 0);
             config = new Config();
             parse(data, config);
@@ -246,33 +247,30 @@
         }
 
         function comSetPartialEepromData(message_buffer) {
-            console.log("Received partial config!");
+            commandLog('Received partial config!');
             var data = new DataView(message_buffer, 0);
-            config = $.extend(true, {}, config);
+            config = angular.copy(config);
             parsePartial(data, config);
             respondToSetEeprom();
         }
 
         function respondToSetEeprom() {
-            if ((desiredVersion[0] != config.version[0]) ||
-                (desiredVersion[1] != config.version[1])) {
+            if ((desiredVersion[0] !== config.version[0]) ||
+                (desiredVersion[1] !== config.version[1])) {
                 commandLog(
                     '<span style="color: red">WARNING: Configuration MAJOR or MINOR version mismatch!</span>');
-                commandLog('eeprom version: <strong>' + config.version[0] +
-                           '.' + config.version[1] + '.' + config.version[2] +
-                           '</strong>' +
-                           ' - app expected version: <strong>' +
-                           desiredVersion.version[0] + '.' +
-                           desiredVersion.version[1] + '.' +
-                           desiredVersion.version[2] + '</strong>');
+                commandLog(
+                    'eeprom version: <strong>' + config.version[0] + '.' +
+                    config.version[1] + '.' + config.version[2] + '</strong>' +
+                    ' - app expected version: <strong>' + desiredVersion[0] +
+                    '.' + desiredVersion[1] + '.' + desiredVersion[2] +
+                    '</strong>');
             } else {
                 commandLog(
                     'Recieved configuration version: <span style="color: green">' +
                     config.version[0] + '.' + config.version[1] + '.' +
                     config.version[2] + '</span>');
-                if (configCallback !== undefined) {
-                    configCallback();
-                }
+                configCallback();
             }
         }
 
