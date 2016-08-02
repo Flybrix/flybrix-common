@@ -112,6 +112,15 @@
             });
         }
 
+        function parsePID(b, dataView, arr) {
+            arr[0] = dataView.getUint32(b.index, 1);
+            b.add(4);
+            for (var i = 1; i < 7; ++i) {
+                arr[i] = dataView.getFloat32(b.index, 1);
+                b.add(4);
+            }
+        }
+
         function parse(dataView, structure) {
             var b = new serializer();
             b.parseInt8Array(dataView, structure.version);
@@ -127,14 +136,14 @@
             b.add(1);
             b.parseUint16Array(dataView, structure.channelMidpoint);
             b.parseUint16Array(dataView, structure.channelDeadzone);
-            b.parseFloat32Array(dataView, structure.thrustMasterPIDParameters);
-            b.parseFloat32Array(dataView, structure.pitchMasterPIDParameters);
-            b.parseFloat32Array(dataView, structure.rollMasterPIDParameters);
-            b.parseFloat32Array(dataView, structure.yawMasterPIDParameters);
-            b.parseFloat32Array(dataView, structure.thrustSlavePIDParameters);
-            b.parseFloat32Array(dataView, structure.pitchSlavePIDParameters);
-            b.parseFloat32Array(dataView, structure.rollSlavePIDParameters);
-            b.parseFloat32Array(dataView, structure.yawSlavePIDParameters);
+            parsePID(b, dataView, structure.thrustMasterPIDParameters);
+            parsePID(b, dataView, structure.pitchMasterPIDParameters);
+            parsePID(b, dataView, structure.rollMasterPIDParameters);
+            parsePID(b, dataView, structure.yawMasterPIDParameters);
+            parsePID(b, dataView, structure.thrustSlavePIDParameters);
+            parsePID(b, dataView, structure.pitchSlavePIDParameters);
+            parsePID(b, dataView, structure.rollSlavePIDParameters);
+            parsePID(b, dataView, structure.yawSlavePIDParameters);
             structure.pidBypass = dataView.getUint8(b.index);
             b.add(1);
             b.parseFloat32Array(dataView, structure.stateEstimationParameters);
@@ -171,19 +180,14 @@
                 b.parseUint16Array(dataView, structure.channelDeadzone);
             }
             if (mask & configFields.PID_PARAMETERS) {
-                b.parseFloat32Array(
-                    dataView, structure.thrustMasterPIDParameters);
-                b.parseFloat32Array(
-                    dataView, structure.pitchMasterPIDParameters);
-                b.parseFloat32Array(
-                    dataView, structure.rollMasterPIDParameters);
-                b.parseFloat32Array(dataView, structure.yawMasterPIDParameters);
-                b.parseFloat32Array(
-                    dataView, structure.thrustSlavePIDParameters);
-                b.parseFloat32Array(
-                    dataView, structure.pitchSlavePIDParameters);
-                b.parseFloat32Array(dataView, structure.rollSlavePIDParameters);
-                b.parseFloat32Array(dataView, structure.yawSlavePIDParameters);
+                parsePID(b, dataView, structure.thrustMasterPIDParameters);
+                parsePID(b, dataView, structure.pitchMasterPIDParameters);
+                parsePID(b, dataView, structure.rollMasterPIDParameters);
+                parsePID(b, dataView, structure.yawMasterPIDParameters);
+                parsePID(b, dataView, structure.thrustSlavePIDParameters);
+                parsePID(b, dataView, structure.pitchSlavePIDParameters);
+                parsePID(b, dataView, structure.rollSlavePIDParameters);
+                parsePID(b, dataView, structure.yawSlavePIDParameters);
                 structure.pidBypass = dataView.getUint8(b.index);
                 b.add(1);
             }
