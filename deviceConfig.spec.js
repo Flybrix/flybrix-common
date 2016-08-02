@@ -903,6 +903,278 @@ describe('Device configuration service', function() {
                 recalcChecksum(full_config_data);
                 backend.onRead(new Uint8Array(cobs.encode(full_config_data)));
             });
+
+            describe('parsing partial LED states data', function() {
+
+
+                it('parses first half', function(done) {
+                    deviceConfig.setConfigCallback(function() {
+                        var config = deviceConfig.getConfig();
+                        expect(config.version)
+                            .toEqual(deviceConfig.getDesiredVersion());
+                        expect(config.pcbOrientation).toEqual([0.0, 0.0, 0.0]);
+                        expect(config.pcbTranslation).toEqual([0.0, 0.0, 0.0]);
+                        expect(config.mixTableFz).toEqual([
+                            0, 0, 0, 0, 0, 0, 0, 0
+                        ]);
+                        expect(config.mixTableTx).toEqual([
+                            0, 0, 0, 0, 0, 0, 0, 0
+                        ]);
+                        expect(config.mixTableTy).toEqual([
+                            0, 0, 0, 0, 0, 0, 0, 0
+                        ]);
+                        expect(config.mixTableTz).toEqual([
+                            0, 0, 0, 0, 0, 0, 0, 0
+                        ]);
+                        expect(config.magBias).toEqual([0.0, 0.0, 0.0]);
+                        expect(config.assignedChannel).toEqual([
+                            0, 0, 0, 0, 0, 0
+                        ]);
+                        expect(config.commandInversion).toEqual(0);
+                        expect(config.channelMidpoint).toEqual([
+                            0, 0, 0, 0, 0, 0
+                        ]);
+                        expect(config.channelDeadzone).toEqual([
+                            0, 0, 0, 0, 0, 0
+                        ]);
+                        expect(config.thrustMasterPIDParameters).toEqual([
+                            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                        ]);
+                        expect(config.pitchMasterPIDParameters).toEqual([
+                            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                        ]);
+                        expect(config.rollMasterPIDParameters).toEqual([
+                            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                        ]);
+                        expect(config.yawMasterPIDParameters).toEqual([
+                            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                        ]);
+                        expect(config.thrustSlavePIDParameters).toEqual([
+                            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                        ]);
+                        expect(config.pitchSlavePIDParameters).toEqual([
+                            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                        ]);
+                        expect(config.rollSlavePIDParameters).toEqual([
+                            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                        ]);
+                        expect(config.yawSlavePIDParameters).toEqual([
+                            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                        ]);
+                        expect(config.pidBypass).toEqual(0);
+                        expect(config.stateEstimationParameters).toEqual([
+                            0.0, 0.0
+                        ]);
+                        expect(config.enableParameters).toEqual([0.0, 0.0]);
+                        expect(config.ledStates)
+                            .toEqual(
+                                Array.apply(null, Array(272))
+                                    .map(function(val, idx) {
+                                        if (idx < 136) {
+                                            return 0;
+                                        }
+                                        idx -= 136;
+                                        return (idx % 200);
+                                    }));
+                        done();
+                    });
+                    var mask = deviceConfig.field.LED_STATES;
+                    full_config_data[6] = (mask & 0xFF);
+                    full_config_data[7] = ((mask >> 8) & 0xFF);
+                    full_config_data[8] = 0x00;
+                    full_config_data[9] = 0xFF;
+                    Array.apply(null, Array(136))
+                        .map(function(val, idx) {
+                            return (idx % 200);
+                        })
+                        .forEach(function(val, idx) {
+                            full_config_data[10 + idx] = val;
+                        });
+                    full_config_data = full_config_data.slice(0, 147);
+                    recalcChecksum(full_config_data);
+                    backend.onRead(
+                        new Uint8Array(cobs.encode(full_config_data)));
+                });
+
+                it('parses second half', function(done) {
+                    deviceConfig.setConfigCallback(function() {
+                        var config = deviceConfig.getConfig();
+                        expect(config.version)
+                            .toEqual(deviceConfig.getDesiredVersion());
+                        expect(config.pcbOrientation).toEqual([0.0, 0.0, 0.0]);
+                        expect(config.pcbTranslation).toEqual([0.0, 0.0, 0.0]);
+                        expect(config.mixTableFz).toEqual([
+                            0, 0, 0, 0, 0, 0, 0, 0
+                        ]);
+                        expect(config.mixTableTx).toEqual([
+                            0, 0, 0, 0, 0, 0, 0, 0
+                        ]);
+                        expect(config.mixTableTy).toEqual([
+                            0, 0, 0, 0, 0, 0, 0, 0
+                        ]);
+                        expect(config.mixTableTz).toEqual([
+                            0, 0, 0, 0, 0, 0, 0, 0
+                        ]);
+                        expect(config.magBias).toEqual([0.0, 0.0, 0.0]);
+                        expect(config.assignedChannel).toEqual([
+                            0, 0, 0, 0, 0, 0
+                        ]);
+                        expect(config.commandInversion).toEqual(0);
+                        expect(config.channelMidpoint).toEqual([
+                            0, 0, 0, 0, 0, 0
+                        ]);
+                        expect(config.channelDeadzone).toEqual([
+                            0, 0, 0, 0, 0, 0
+                        ]);
+                        expect(config.thrustMasterPIDParameters).toEqual([
+                            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                        ]);
+                        expect(config.pitchMasterPIDParameters).toEqual([
+                            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                        ]);
+                        expect(config.rollMasterPIDParameters).toEqual([
+                            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                        ]);
+                        expect(config.yawMasterPIDParameters).toEqual([
+                            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                        ]);
+                        expect(config.thrustSlavePIDParameters).toEqual([
+                            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                        ]);
+                        expect(config.pitchSlavePIDParameters).toEqual([
+                            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                        ]);
+                        expect(config.rollSlavePIDParameters).toEqual([
+                            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                        ]);
+                        expect(config.yawSlavePIDParameters).toEqual([
+                            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                        ]);
+                        expect(config.pidBypass).toEqual(0);
+                        expect(config.stateEstimationParameters).toEqual([
+                            0.0, 0.0
+                        ]);
+                        expect(config.enableParameters).toEqual([0.0, 0.0]);
+                        expect(config.ledStates)
+                            .toEqual(
+                                Array.apply(null, Array(272))
+                                    .map(function(val, idx) {
+                                        if (idx >= 136) {
+                                            return 0;
+                                        }
+                                        return (idx % 200);
+                                    }));
+                        done();
+                    });
+                    var mask = deviceConfig.field.LED_STATES;
+                    full_config_data[6] = (mask & 0xFF);
+                    full_config_data[7] = ((mask >> 8) & 0xFF);
+                    full_config_data[8] = 0xFF;
+                    full_config_data[9] = 0x00;
+                    Array.apply(null, Array(136))
+                        .map(function(val, idx) {
+                            return (idx % 200);
+                        })
+                        .forEach(function(val, idx) {
+                            full_config_data[10 + idx] = val;
+                        });
+                    full_config_data = full_config_data.slice(0, 147);
+                    recalcChecksum(full_config_data);
+                    backend.onRead(
+                        new Uint8Array(cobs.encode(full_config_data)));
+                });
+
+                it('parses arbitrary parts', function(done) {
+                    deviceConfig.setConfigCallback(function() {
+                        var config = deviceConfig.getConfig();
+                        expect(config.version)
+                            .toEqual(deviceConfig.getDesiredVersion());
+                        expect(config.pcbOrientation).toEqual([0.0, 0.0, 0.0]);
+                        expect(config.pcbTranslation).toEqual([0.0, 0.0, 0.0]);
+                        expect(config.mixTableFz).toEqual([
+                            0, 0, 0, 0, 0, 0, 0, 0
+                        ]);
+                        expect(config.mixTableTx).toEqual([
+                            0, 0, 0, 0, 0, 0, 0, 0
+                        ]);
+                        expect(config.mixTableTy).toEqual([
+                            0, 0, 0, 0, 0, 0, 0, 0
+                        ]);
+                        expect(config.mixTableTz).toEqual([
+                            0, 0, 0, 0, 0, 0, 0, 0
+                        ]);
+                        expect(config.magBias).toEqual([0.0, 0.0, 0.0]);
+                        expect(config.assignedChannel).toEqual([
+                            0, 0, 0, 0, 0, 0
+                        ]);
+                        expect(config.commandInversion).toEqual(0);
+                        expect(config.channelMidpoint).toEqual([
+                            0, 0, 0, 0, 0, 0
+                        ]);
+                        expect(config.channelDeadzone).toEqual([
+                            0, 0, 0, 0, 0, 0
+                        ]);
+                        expect(config.thrustMasterPIDParameters).toEqual([
+                            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                        ]);
+                        expect(config.pitchMasterPIDParameters).toEqual([
+                            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                        ]);
+                        expect(config.rollMasterPIDParameters).toEqual([
+                            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                        ]);
+                        expect(config.yawMasterPIDParameters).toEqual([
+                            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                        ]);
+                        expect(config.thrustSlavePIDParameters).toEqual([
+                            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                        ]);
+                        expect(config.pitchSlavePIDParameters).toEqual([
+                            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                        ]);
+                        expect(config.rollSlavePIDParameters).toEqual([
+                            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                        ]);
+                        expect(config.yawSlavePIDParameters).toEqual([
+                            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                        ]);
+                        expect(config.pidBypass).toEqual(0);
+                        expect(config.stateEstimationParameters).toEqual([
+                            0.0, 0.0
+                        ]);
+                        expect(config.enableParameters).toEqual([0.0, 0.0]);
+                        expect(config.ledStates)
+                            .toEqual(
+                                Array.apply(null, Array(272))
+                                    .map(function(val, idx) {
+                                        if (idx >= 68 && idx < 204) {
+                                            return 0;
+                                        }
+                                        if (idx >= 204) {
+                                            idx -= 136;
+                                        }
+                                        return (idx % 200);
+                                    }));
+                        done();
+                    });
+                    var mask = deviceConfig.field.LED_STATES;
+                    full_config_data[6] = (mask & 0xFF);
+                    full_config_data[7] = ((mask >> 8) & 0xFF);
+                    full_config_data[8] = 0x0F;
+                    full_config_data[9] = 0xF0;
+                    Array.apply(null, Array(136))
+                        .map(function(val, idx) {
+                            return (idx % 200);
+                        })
+                        .forEach(function(val, idx) {
+                            full_config_data[10 + idx] = val;
+                        });
+                    full_config_data = full_config_data.slice(0, 147);
+                    recalcChecksum(full_config_data);
+                    backend.onRead(
+                        new Uint8Array(cobs.encode(full_config_data)));
+                });
+            });
         });
     });
 });
