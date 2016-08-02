@@ -347,9 +347,8 @@ describe('Device configuration service', function() {
         });
 
         it('receives partial config', function(done) {
-            var leftover = 2;
+            var leftover = 3;
             deviceConfig.setConfigCallback(function() {
-                console.log("PING");
                 if (!--leftover) {
                     done();
                 }
