@@ -1,15 +1,18 @@
 {
-  "name": "flybrix-common",
-  "description": "Common AngularJS services for Flybrix",
-  "private": true,
-  "ignore": [
-    "**/.*",
-    "node_modules",
-    "bower_components",
-    "test",
-    "tests"
-  ],
-  "dependencies": {
-    "angular": "^1.5.8"
-  }
+    "name": "flybrix-common",
+    "description": "Common AngularJS services for Flybrix",
+    "private": true,
+    "ignore": [
+        "**/.*",
+        "node_modules",
+        "bower_components",
+        "*.spec.js",
+        "karma.conf.js",
+        "gulpfile.js",
+        "test",
+        "tests"
+    ],
+    "dependencies": {
+        "angular": "^1.5.8"
+    }
 }
