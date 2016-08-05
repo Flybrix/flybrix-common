@@ -65,9 +65,9 @@
             var command_pitch =
                 constrain(-(applyDeadzone(pitch, 0.1)) * 4095 / 2, -2047, 2047);
             var command_roll =
-                constrain(-(applyDeadzone(roll, 0.1)) * 4095 / 2, -2047, 2047);
+                constrain((applyDeadzone(roll, 0.1)) * 4095 / 2, -2047, 2047);
             var command_yaw =
-                constrain((applyDeadzone(yaw, 0.1)) * 4095 / 2, -2047, 2047);
+                constrain(-(applyDeadzone(yaw, 0.1)) * 4095 / 2, -2047, 2047);
 
             var command_vector =
                 [command_throttle, command_pitch, command_roll, command_yaw];
