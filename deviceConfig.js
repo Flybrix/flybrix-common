@@ -6,7 +6,7 @@
     deviceConfig.$inject = ['serial', 'commandLog', 'serializer'];
 
     function deviceConfig(serial, commandLog, serializer) {
-        var eepromConfigSize = 350 + 273;
+        var eepromConfigSize = 354 + 273;
         var config = new Config();
 
         var desiredVersion = [1, 3, 0];  // checked at startup!
@@ -17,13 +17,14 @@
 
         var configFields = {
             VERSION: 1 << 0,
-            PCB: 1 << 1,
-            MIX_TABLE: 1 << 2,
-            MAG_BIAS: 1 << 3,
-            CHANNEL: 1 << 4,
-            PID_PARAMETERS: 1 << 5,
-            STATE_PARAMETERS: 1 << 6,
-            LED_STATES: 1 << 7,
+            ID: 1 << 1,
+            PCB: 1 << 2,
+            MIX_TABLE: 1 << 3,
+            MAG_BIAS: 1 << 4,
+            CHANNEL: 1 << 5,
+            PID_PARAMETERS: 1 << 6,
+            STATE_PARAMETERS: 1 << 7,
+            LED_STATES: 1 << 8,
         };
 
         serial.setCommandCallback(function(mask, message_buffer) {
@@ -84,6 +85,7 @@
 
         function Config() {
             this.version = [0.0, 0.0, 0.0];
+            this.id = 0;
             this.pcbOrientation = [0.0, 0.0, 0.0];
             this.pcbTranslation = [0.0, 0.0, 0.0];
             this.mixTableFz = [0, 0, 0, 0, 0, 0, 0, 0];
@@ -124,6 +126,8 @@
         function parse(dataView, structure) {
             var b = new serializer();
             b.parseInt8Array(dataView, structure.version);
+            structure.id = dataView.getUint32(b.index, 1);
+            b.add(4);
             b.parseFloat32Array(dataView, structure.pcbOrientation);
             b.parseFloat32Array(dataView, structure.pcbTranslation);
             b.parseInt8Array(dataView, structure.mixTableFz);
@@ -158,6 +162,10 @@
 
             if (mask & configFields.VERSION) {
                 b.parseInt8Array(dataView, structure.version);
+            }
+            if (mask & configFields.ID) {
+                structure.id = dataView.getUint32(b.index, 1);
+                b.add(4);
             }
             if (mask & configFields.PCB) {
                 b.parseFloat32Array(dataView, structure.pcbOrientation);
@@ -215,6 +223,8 @@
         function setConfig(dataView, structure) {
             var b = new serializer();
             b.setInt8Array(dataView, structure.version);
+            dataView.setUint32(b.index, structure.id);
+            b.add(4);
             b.setFloat32Array(dataView, structure.pcbOrientation);
             b.setFloat32Array(dataView, structure.pcbTranslation);
             b.setInt8Array(dataView, structure.mixTableFz);

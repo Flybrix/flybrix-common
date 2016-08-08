@@ -51,6 +51,7 @@ describe('Device configuration service', function() {
         it('defaults to zeros', function() {
             var config = deviceConfig.getConfig();
             expect(config.version).toEqual([0.0, 0.0, 0.0]);
+            expect(config.id).toEqual(0);
             expect(config.pcbOrientation).toEqual([0.0, 0.0, 0.0]);
             expect(config.pcbTranslation).toEqual([0.0, 0.0, 0.0]);
             expect(config.mixTableFz).toEqual([0, 0, 0, 0, 0, 0, 0, 0]);
@@ -211,7 +212,7 @@ describe('Device configuration service', function() {
                     expect(new Uint8Array(data))
                         .toEqual(
                             new Uint8Array(
-                                Array.apply(null, Array(623)).map(function() {
+                                Array.apply(null, Array(627)).map(function() {
                                     return 0;
                                 })));
                     done();
@@ -230,7 +231,7 @@ describe('Device configuration service', function() {
                         parser.CommandFields.COM_SET_EEPROM_DATA |
                         parser.CommandFields.COM_REQ_RESPONSE);
                     var expected_data = new Uint8Array(
-                        Array.apply(null, Array(623)).map(function() {
+                        Array.apply(null, Array(627)).map(function() {
                             return 0;
                         }));
                     expected_data[0] = 1;
@@ -260,7 +261,7 @@ describe('Device configuration service', function() {
                         expect(new Uint8Array(data))
                             .toEqual(
                                 new Uint8Array(
-                                    Array.apply(null, Array(623))
+                                    Array.apply(null, Array(627))
                                         .map(function() {
                                             return 0;
                                         })));
@@ -417,11 +418,75 @@ describe('Device configuration service', function() {
                 }
             });
 
+            it('parses configuration ID data', function(done) {
+                deviceConfig.setConfigCallback(function() {
+                    var config = deviceConfig.getConfig();
+                    expect(config.version)
+                        .toEqual(deviceConfig.getDesiredVersion());
+                    expect(config.id).toEqual(0x12345678);
+                    expect(config.pcbOrientation).toEqual([0.0, 0.0, 0.0]);
+                    expect(config.pcbTranslation).toEqual([0.0, 0.0, 0.0]);
+                    expect(config.mixTableFz).toEqual([0, 0, 0, 0, 0, 0, 0, 0]);
+                    expect(config.mixTableTx).toEqual([0, 0, 0, 0, 0, 0, 0, 0]);
+                    expect(config.mixTableTy).toEqual([0, 0, 0, 0, 0, 0, 0, 0]);
+                    expect(config.mixTableTz).toEqual([0, 0, 0, 0, 0, 0, 0, 0]);
+                    expect(config.magBias).toEqual([0.0, 0.0, 0.0]);
+                    expect(config.assignedChannel).toEqual([0, 0, 0, 0, 0, 0]);
+                    expect(config.commandInversion).toEqual(0);
+                    expect(config.channelMidpoint).toEqual([0, 0, 0, 0, 0, 0]);
+                    expect(config.channelDeadzone).toEqual([0, 0, 0, 0, 0, 0]);
+                    expect(config.thrustMasterPIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.pitchMasterPIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.rollMasterPIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.yawMasterPIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.thrustSlavePIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.pitchSlavePIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.rollSlavePIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.yawSlavePIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.pidBypass).toEqual(0);
+                    expect(config.stateEstimationParameters).toEqual([
+                        0.0, 0.0
+                    ]);
+                    expect(config.enableParameters).toEqual([0.0, 0.0]);
+                    expect(config.ledStates)
+                        .toEqual(Array.apply(null, Array(272)).map(function() {
+                            return 0;
+                        }));
+                    done();
+                });
+                var mask = deviceConfig.field.ID;
+                full_config_data[6] = (mask & 0xFF);
+                full_config_data[7] = ((mask >> 8) & 0xFF);
+                [0x78, 0x56, 0x34, 0x12].forEach(function(val, idx) {
+                    full_config_data[8 + idx] = val;
+                });
+                full_config_data = full_config_data.slice(0, 13);
+                recalcChecksum(full_config_data);
+                backend.onRead(new Uint8Array(cobs.encode(full_config_data)));
+            });
+
             it('parses PCB data', function(done) {
                 deviceConfig.setConfigCallback(function() {
                     var config = deviceConfig.getConfig();
                     expect(config.version)
                         .toEqual(deviceConfig.getDesiredVersion());
+                    expect(config.id).toEqual(0);
                     expect(config.pcbOrientation).toEqual([
                         3.25, 1232.75, 7.125
                     ]);
@@ -490,6 +555,7 @@ describe('Device configuration service', function() {
                     var config = deviceConfig.getConfig();
                     expect(config.version)
                         .toEqual(deviceConfig.getDesiredVersion());
+                    expect(config.id).toEqual(0);
                     expect(config.pcbOrientation).toEqual([0.0, 0.0, 0.0]);
                     expect(config.pcbTranslation).toEqual([0.0, 0.0, 0.0]);
                     expect(config.mixTableFz).toEqual([0, 1, 2, 3, 4, 5, 6, 7]);
@@ -562,6 +628,7 @@ describe('Device configuration service', function() {
                     var config = deviceConfig.getConfig();
                     expect(config.version)
                         .toEqual(deviceConfig.getDesiredVersion());
+                    expect(config.id).toEqual(0);
                     expect(config.pcbOrientation).toEqual([0.0, 0.0, 0.0]);
                     expect(config.pcbTranslation).toEqual([0.0, 0.0, 0.0]);
                     expect(config.mixTableFz).toEqual([0, 0, 0, 0, 0, 0, 0, 0]);
@@ -625,6 +692,7 @@ describe('Device configuration service', function() {
                     var config = deviceConfig.getConfig();
                     expect(config.version)
                         .toEqual(deviceConfig.getDesiredVersion());
+                    expect(config.id).toEqual(0);
                     expect(config.pcbOrientation).toEqual([0.0, 0.0, 0.0]);
                     expect(config.pcbTranslation).toEqual([0.0, 0.0, 0.0]);
                     expect(config.mixTableFz).toEqual([0, 0, 0, 0, 0, 0, 0, 0]);
@@ -695,6 +763,7 @@ describe('Device configuration service', function() {
                     var config = deviceConfig.getConfig();
                     expect(config.version)
                         .toEqual(deviceConfig.getDesiredVersion());
+                    expect(config.id).toEqual(0);
                     expect(config.pcbOrientation).toEqual([0.0, 0.0, 0.0]);
                     expect(config.pcbTranslation).toEqual([0.0, 0.0, 0.0]);
                     expect(config.mixTableFz).toEqual([0, 0, 0, 0, 0, 0, 0, 0]);
@@ -775,6 +844,7 @@ describe('Device configuration service', function() {
                     var config = deviceConfig.getConfig();
                     expect(config.version)
                         .toEqual(deviceConfig.getDesiredVersion());
+                    expect(config.id).toEqual(0);
                     expect(config.pcbOrientation).toEqual([0.0, 0.0, 0.0]);
                     expect(config.pcbTranslation).toEqual([0.0, 0.0, 0.0]);
                     expect(config.mixTableFz).toEqual([0, 0, 0, 0, 0, 0, 0, 0]);
@@ -839,6 +909,7 @@ describe('Device configuration service', function() {
                     var config = deviceConfig.getConfig();
                     expect(config.version)
                         .toEqual(deviceConfig.getDesiredVersion());
+                    expect(config.id).toEqual(0);
                     expect(config.pcbOrientation).toEqual([0.0, 0.0, 0.0]);
                     expect(config.pcbTranslation).toEqual([0.0, 0.0, 0.0]);
                     expect(config.mixTableFz).toEqual([0, 0, 0, 0, 0, 0, 0, 0]);
@@ -912,6 +983,7 @@ describe('Device configuration service', function() {
                         var config = deviceConfig.getConfig();
                         expect(config.version)
                             .toEqual(deviceConfig.getDesiredVersion());
+                        expect(config.id).toEqual(0);
                         expect(config.pcbOrientation).toEqual([0.0, 0.0, 0.0]);
                         expect(config.pcbTranslation).toEqual([0.0, 0.0, 0.0]);
                         expect(config.mixTableFz).toEqual([
@@ -1001,6 +1073,7 @@ describe('Device configuration service', function() {
                         var config = deviceConfig.getConfig();
                         expect(config.version)
                             .toEqual(deviceConfig.getDesiredVersion());
+                        expect(config.id).toEqual(0);
                         expect(config.pcbOrientation).toEqual([0.0, 0.0, 0.0]);
                         expect(config.pcbTranslation).toEqual([0.0, 0.0, 0.0]);
                         expect(config.mixTableFz).toEqual([
@@ -1089,6 +1162,7 @@ describe('Device configuration service', function() {
                         var config = deviceConfig.getConfig();
                         expect(config.version)
                             .toEqual(deviceConfig.getDesiredVersion());
+                        expect(config.id).toEqual(0);
                         expect(config.pcbOrientation).toEqual([0.0, 0.0, 0.0]);
                         expect(config.pcbTranslation).toEqual([0.0, 0.0, 0.0]);
                         expect(config.mixTableFz).toEqual([
