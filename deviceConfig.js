@@ -223,7 +223,7 @@
         function setConfig(dataView, structure) {
             var b = new serializer();
             b.setInt8Array(dataView, structure.version);
-            dataView.setUint32(b.index, structure.id);
+            dataView.setUint32(b.index, structure.id, 1);
             b.add(4);
             b.setFloat32Array(dataView, structure.pcbOrientation);
             b.setFloat32Array(dataView, structure.pcbTranslation);
