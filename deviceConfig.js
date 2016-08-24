@@ -115,12 +115,7 @@
         }
 
         function parsePID(b, dataView, arr) {
-            arr[0] = dataView.getUint32(b.index, 1);
-            b.add(4);
-            for (var i = 1; i < 7; ++i) {
-                arr[i] = dataView.getFloat32(b.index, 1);
-                b.add(4);
-            }
+            b.parseFloat32Array(dataView, arr);
         }
 
         function parse(dataView, structure) {

@@ -776,29 +776,28 @@ describe('Device configuration service', function() {
                     expect(config.channelMidpoint).toEqual([0, 0, 0, 0, 0, 0]);
                     expect(config.channelDeadzone).toEqual([0, 0, 0, 0, 0, 0]);
                     expect(config.thrustMasterPIDParameters).toEqual([
-                        0x03020100, 0.125, 0.125, 0.125, 0.125, 0.125, 0.125
+                        0.125, 0.125, 0.125, 0.125, 0.125, 0.125, 0.125
                     ]);
                     expect(config.pitchMasterPIDParameters).toEqual([
-                        0x07060504, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5
+                        0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5
                     ]);
                     expect(config.rollMasterPIDParameters).toEqual([
-                        0x0b0a0908, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0
+                        2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0
                     ]);
                     expect(config.yawMasterPIDParameters).toEqual([
-                        0x0f0e0d0c, 8.0, 8.0, 8.0, 8.0, 8.0, 8.0
+                        8.0, 8.0, 8.0, 8.0, 8.0, 8.0, 8.0
                     ]);
                     expect(config.thrustSlavePIDParameters).toEqual([
-                        0x13121110, 32.0, 32.0, 32.0, 32.0, 32.0, 32.0
+                        32.0, 32.0, 32.0, 32.0, 32.0, 32.0, 32.0
                     ]);
                     expect(config.pitchSlavePIDParameters).toEqual([
-                        0x17161514, 128.0, 128.0, 128.0, 128.0, 128.0, 128.0
+                        128.0, 128.0, 128.0, 128.0, 128.0, 128.0, 128.0
                     ]);
                     expect(config.rollSlavePIDParameters).toEqual([
-                        0x1b1a1918, 512.0, 512.0, 512.0, 512.0, 512.0, 512.0
+                        512.0, 512.0, 512.0, 512.0, 512.0, 512.0, 512.0
                     ]);
                     expect(config.yawSlavePIDParameters).toEqual([
-                        0x1f1e1d1c, 2048.0, 2048.0, 2048.0, 2048.0, 2048.0,
-                        2048.0
+                        2048.0, 2048.0, 2048.0, 2048.0, 2048.0, 2048.0, 2048.0
                     ]);
                     expect(config.pidBypass).toEqual(4);
                     expect(config.stateEstimationParameters).toEqual([
@@ -819,10 +818,6 @@ describe('Device configuration service', function() {
                         if (idx === 8 * 7 * 4) {
                             // PID bypass flags
                             return 4;
-                        }
-                        if ((idx % 28) < 4) {
-                            // first item, type Uint32
-                            return Math.floor(idx / 28) * 4 + idx % 4;
                         }
                         // other items, type Float32
                         if (idx % 4 !== 3) {
