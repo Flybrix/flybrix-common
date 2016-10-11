@@ -1246,4 +1246,103 @@ describe('Device configuration service', function() {
             });
         });
     });
+
+    describe('.setLoggingCallback()', function() {
+        function recalcChecksum(v) {
+            v[0] = 0;
+            for (var i = 0; i < v.length; ++i) {
+                v[0] ^= v[i];
+            }
+        }
+        function generateDataFor(v) {
+            full_message_data =
+                new Uint8Array(Array.apply(null, Array(8)).map(function() {
+                    return 0;
+                }));
+            full_message_data[1] = parser.MessageType.Command;
+            var command = parser.CommandFields.COM_SET_CARD_RECORDING;
+            for (var i = 0; i < 4; ++i) {
+                full_message_data[i + 2] = ((command >> (i * 8)) & 0xFF);
+            }
+            full_message_data[6] = v;
+            recalcChecksum(full_message_data);
+            return full_message_data;
+        }
+
+        it('exists', function() {
+            expect(deviceConfig.setLoggingCallback).toBeDefined();
+        });
+
+        it('warns in the command log by default', function(done) {
+            commandLog.onMessage(function name(val) {
+                if (val.indexOf(
+                        'No callback defined for receiving logging state!' +
+                        ' Callback arguments: (isLogging, isLocked)') !== -1) {
+                    done();
+                }
+            });
+            backend.onRead(new Uint8Array(cobs.encode(generateDataFor(0))));
+            $rootScope.$digest();
+        });
+
+        it('responds to logging data', function(done) {
+            deviceConfig.setLoggingCallback(function() {
+                done();
+            });
+            backend.onRead(new Uint8Array(cobs.encode(generateDataFor(0))));
+            $rootScope.$digest();
+        });
+
+        it('properly decodes no logging with no lock', function(done) {
+            deviceConfig.setLoggingCallback(function(isLogging, isLocked) {
+                if (!isLogging && !isLocked) {
+                    done();
+                }
+            });
+            backend.onRead(new Uint8Array(cobs.encode(generateDataFor(0))));
+            $rootScope.$digest();
+        });
+
+        it('properly decodes logging with no lock', function(done) {
+            deviceConfig.setLoggingCallback(function(isLogging, isLocked) {
+                if (isLogging && !isLocked) {
+                    done();
+                }
+            });
+            backend.onRead(new Uint8Array(cobs.encode(generateDataFor(1))));
+            $rootScope.$digest();
+        });
+
+        it('properly decodes no logging with lock', function(done) {
+            deviceConfig.setLoggingCallback(function(isLogging, isLocked) {
+                if (!isLogging && isLocked) {
+                    done();
+                }
+            });
+            backend.onRead(new Uint8Array(cobs.encode(generateDataFor(2))));
+            $rootScope.$digest();
+        });
+
+        it('properly decodes logging with lock', function(done) {
+            deviceConfig.setLoggingCallback(function(isLogging, isLocked) {
+                if (isLogging && isLocked) {
+                    done();
+                }
+            });
+            backend.onRead(new Uint8Array(cobs.encode(generateDataFor(3))));
+            $rootScope.$digest();
+        });
+
+        it('rejects truncated data', function(done) {
+            commandLog.onMessage(function name(val) {
+                if (val.indexOf('Bad data given for logging info') !== -1) {
+                    done();
+                }
+            });
+            var data = generateDataFor(0);
+            data = data.slice(0, data.length - 1);
+            backend.onRead(new Uint8Array(cobs.encode(data)));
+            $rootScope.$digest();
+        });
+    });
 });

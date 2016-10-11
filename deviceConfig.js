@@ -15,6 +15,12 @@
             commandLog('No callback defined for receiving configurations!');
         };
 
+        var loggingCallback = function() {
+            commandLog(
+                'No callback defined for receiving logging state!' +
+                ' Callback arguments: (isLogging, isLocked)');
+        };
+
         var configFields = {
             VERSION: 1 << 0,
             ID: 1 << 1,
@@ -34,6 +40,15 @@
             if (mask & serial.field.COM_SET_PARTIAL_EEPROM_DATA) {
                 comSetPartialEepromData(message_buffer);
             }
+            if (mask & serial.field.COM_SET_CARD_RECORDING) {
+                var data = new Uint8Array(message_buffer);
+                if (data.length >= 1) {
+                    data = data[0];
+                    loggingCallback((data & 1) !== 0, (data & 2) !== 0);
+                } else {
+                    commandLog('Bad data given for logging info');
+                }
+            }
         });
 
         return {
@@ -42,6 +57,7 @@
             send: send,
             getConfig: getConfig,
             setConfigCallback: setConfigCallback,
+            setLoggingCallback: setLoggingCallback,
             getDesiredVersion: getDesiredVersion,
             field: configFields,
         };
@@ -285,6 +301,10 @@
 
         function setConfigCallback(callback) {
             configCallback = callback;
+        }
+
+        function setLoggingCallback(callback) {
+            loggingCallback = callback;
         }
 
         function getConfig() {
