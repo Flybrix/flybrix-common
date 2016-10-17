@@ -1254,9 +1254,9 @@ describe('Device configuration service', function() {
                 v[0] ^= v[i];
             }
         }
-        function generateDataFor(v) {
+        function generateDataFor(v, delay) {
             full_message_data =
-                new Uint8Array(Array.apply(null, Array(8)).map(function() {
+                new Uint8Array(Array.apply(null, Array(10)).map(function() {
                     return 0;
                 }));
             full_message_data[1] = parser.MessageType.Command;
@@ -1264,7 +1264,9 @@ describe('Device configuration service', function() {
             for (var i = 0; i < 4; ++i) {
                 full_message_data[i + 2] = ((command >> (i * 8)) & 0xFF);
             }
-            full_message_data[6] = v;
+            full_message_data[6] = delay & 0xFF;
+            full_message_data[7] = (delay >> 8) & 0xFF;
+            full_message_data[8] = v;
             recalcChecksum(full_message_data);
             return full_message_data;
         }
@@ -1277,7 +1279,8 @@ describe('Device configuration service', function() {
             commandLog.onMessage(function name(val) {
                 if (val.indexOf(
                         'No callback defined for receiving logging state!' +
-                        ' Callback arguments: (isLogging, isLocked)') !== -1) {
+                        ' Callback arguments: (isLogging, isLocked, delay)') !==
+                    -1) {
                     done();
                 }
             });
@@ -1330,6 +1333,18 @@ describe('Device configuration service', function() {
                 }
             });
             backend.onRead(new Uint8Array(cobs.encode(generateDataFor(3))));
+            $rootScope.$digest();
+        });
+
+        it('properly decodes delay', function(done) {
+            deviceConfig.setLoggingCallback(
+                function(isLogging, isLocked, delay) {
+                    if (delay === 738) {
+                        done();
+                    }
+                });
+            backend.onRead(
+                new Uint8Array(cobs.encode(generateDataFor(0, 738))));
             $rootScope.$digest();
         });
 

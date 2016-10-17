@@ -18,7 +18,7 @@
         var loggingCallback = function() {
             commandLog(
                 'No callback defined for receiving logging state!' +
-                ' Callback arguments: (isLogging, isLocked)');
+                ' Callback arguments: (isLogging, isLocked, delay)');
         };
 
         var configFields = {
@@ -40,11 +40,13 @@
             if (mask & serial.field.COM_SET_PARTIAL_EEPROM_DATA) {
                 comSetPartialEepromData(message_buffer);
             }
-            if (mask & serial.field.COM_SET_CARD_RECORDING) {
-                var data = new Uint8Array(message_buffer);
-                if (data.length >= 1) {
-                    data = data[0];
-                    loggingCallback((data & 1) !== 0, (data & 2) !== 0);
+            if (mask & (serial.field.COM_SET_CARD_RECORDING |
+                        serial.field.COM_SET_SD_CARD_DELAY)) {
+                var dataBuffer = new Uint8Array(message_buffer);
+                if (dataBuffer.length >= 3) {
+                    var delay = dataBuffer[0] | (dataBuffer[1] << 8);
+                    var data = dataBuffer[2];
+                    loggingCallback((data & 1) !== 0, (data & 2) !== 0, delay);
                 } else {
                     commandLog('Bad data given for logging info');
                 }
