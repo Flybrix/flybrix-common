@@ -41,7 +41,7 @@
                 comSetPartialEepromData(message_buffer);
             }
             if (mask & (serial.field.COM_SET_CARD_RECORDING |
-                        serial.field.COM_SET_SD_CARD_DELAY)) {
+                        serial.field.COM_SET_SD_WRITE_DELAY)) {
                 var dataBuffer = new Uint8Array(message_buffer);
                 if (dataBuffer.length >= 3) {
                     var delay = dataBuffer[0] | (dataBuffer[1] << 8);

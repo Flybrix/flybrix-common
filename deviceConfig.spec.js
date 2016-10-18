@@ -1260,7 +1260,8 @@ describe('Device configuration service', function() {
                     return 0;
                 }));
             full_message_data[1] = parser.MessageType.Command;
-            var command = parser.CommandFields.COM_SET_CARD_RECORDING;
+            var command = parser.CommandFields.COM_SET_CARD_RECORDING |
+                parser.CommandFields.COM_SET_SD_WRITE_DELAY;
             for (var i = 0; i < 4; ++i) {
                 full_message_data[i + 2] = ((command >> (i * 8)) & 0xFF);
             }

@@ -29,12 +29,11 @@
             COM_MOTOR_OVERRIDE_SPEED_6: 1 << 11,
             COM_MOTOR_OVERRIDE_SPEED_7: 1 << 12,
             COM_MOTOR_OVERRIDE_SPEED_ALL: (1 << 5) | (1 << 6) | (1 << 7) |
-                                              (1 << 8) | (1 << 9) | (1 << 10) |
-                                              (1 << 11) | (1 << 12),
+                (1 << 8) | (1 << 9) | (1 << 10) | (1 << 11) | (1 << 12),
             COM_SET_COMMAND_OVERRIDE: 1 << 13,
             COM_SET_STATE_MASK: 1 << 14,
             COM_SET_STATE_DELAY: 1 << 15,
-            COM_REQ_HISTORY: 1 << 16,
+            COM_SET_SD_WRITE_DELAY: 1 << 16,
             COM_SET_LED: 1 << 17,
             COM_SET_SERIAL_RC: 1 << 18,
             COM_SET_CARD_RECORDING: 1 << 19,
@@ -140,15 +139,15 @@
             this.loopCount = 0;
         }
 
-        function processBinaryDatastream(command, mask, message_buffer,
-                                         cb_state, cb_command, cb_ack) {
+        function processBinaryDatastream(
+            command, mask, message_buffer, cb_state, cb_command, cb_ack) {
             dispatch(command, mask, message_buffer, function() {
                 callbackStateHelper(mask, message_buffer, cb_state)
             }, cb_command, cb_ack);
         }
 
-        function dispatch(command, mask, message_buffer, cb_state, cb_command,
-                          cb_ack) {
+        function dispatch(
+            command, mask, message_buffer, cb_state, cb_command, cb_ack) {
             switch (command) {
                 case MessageType.State:
                     cb_state(mask, message_buffer);
@@ -158,15 +157,17 @@
                     break;
                 case MessageType.DebugString:
                     var debug_string = arraybuffer2string(message_buffer);
-                    commandLog('Received <span style="color: orange">' +
-                               'DEBUG' +
-                               '</span>: ' + debug_string);
+                    commandLog(
+                        'Received <span style="color: orange">' +
+                        'DEBUG' +
+                        '</span>: ' + debug_string);
                     break;
                 case MessageType.HistoryData:
                     var debug_string = arraybuffer2string(message_buffer);
-                    commandLog('Received <span style="color: orange">' +
-                               'HISTORY DATA' +
-                               '</span>');
+                    commandLog(
+                        'Received <span style="color: orange">' +
+                        'HISTORY DATA' +
+                        '</span>');
                     break;
                 case MessageType.Response:
                     var data = new DataView(message_buffer, 0);
