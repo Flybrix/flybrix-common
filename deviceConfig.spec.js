@@ -208,7 +208,7 @@ describe('Device configuration service', function() {
                         parser.CommandFields.COM_REQ_RESPONSE);
                     expect(new Uint8Array(data))
                         .toEqual(new Uint8Array(
-                            Array.apply(null, Array(647)).map(function() {
+                            Array.apply(null, Array(636)).map(function() {
                                 return 0;
                             })));
                     done();
@@ -227,7 +227,7 @@ describe('Device configuration service', function() {
                         parser.CommandFields.COM_SET_EEPROM_DATA |
                         parser.CommandFields.COM_REQ_RESPONSE);
                     var expected_data = new Uint8Array(
-                        Array.apply(null, Array(647)).map(function() {
+                        Array.apply(null, Array(636)).map(function() {
                             return 0;
                         }));
                     expected_data[0] = 1;
@@ -256,7 +256,7 @@ describe('Device configuration service', function() {
                             parser.CommandFields.COM_REQ_RESPONSE);
                         expect(new Uint8Array(data))
                             .toEqual(new Uint8Array(
-                                Array.apply(null, Array(647)).map(function() {
+                                Array.apply(null, Array(636)).map(function() {
                                     return 0;
                                 })));
                         backend.onRead(new Uint8Array(
@@ -1026,11 +1026,11 @@ describe('Device configuration service', function() {
                 var mask = deviceConfig.field.DEVICE_NAME;
                 full_config_data[6] = (mask & 0xFF);
                 full_config_data[7] = ((mask >> 8) & 0xFF);
-                [65, 98, 99, 68, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+                [65, 98, 99, 68, 0, 0, 0, 0, 0]
                     .forEach(function(val, idx) {
                         full_config_data[8 + idx] = val;
                     });
-                full_config_data = full_config_data.slice(0, 41);
+                full_config_data = full_config_data.slice(0, 30);
                 recalcChecksum(full_config_data);
                 backend.onRead(new Uint8Array(cobs.encode(full_config_data)));
             });
