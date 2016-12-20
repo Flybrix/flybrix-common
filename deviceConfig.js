@@ -6,7 +6,7 @@
     deviceConfig.$inject = ['serial', 'commandLog', 'serializer'];
 
     function deviceConfig(serial, commandLog, serializer) {
-        var eepromConfigSize = 354 + 273;
+        var eepromConfigSize = 363 + 273;
         var config = new Config();
 
         var desiredVersion = [1, 3, 0];  // checked at startup!
@@ -31,6 +31,7 @@
             PID_PARAMETERS: 1 << 6,
             STATE_PARAMETERS: 1 << 7,
             LED_STATES: 1 << 8,
+            DEVICE_NAME: 1 << 9,
         };
 
         serial.setCommandCallback(function(mask, message_buffer) {
@@ -130,6 +131,7 @@
             this.ledStates = Array.apply(null, Array(272)).map(function() {
                 return 0;
             });
+            this.name = '';
         }
 
         function parsePID(b, dataView, arr) {
@@ -166,6 +168,9 @@
             b.parseFloat32Array(dataView, structure.stateEstimationParameters);
             b.parseFloat32Array(dataView, structure.enableParameters);
             b.parseUint8Array(dataView, structure.ledStates);
+            var stringData = new Uint8Array(9);
+            b.parseUint8Array(dataView, stringData);
+            structure.name = asciiDecode(stringData);
         }
 
         function parsePartial(dataView, structure) {
@@ -231,6 +236,11 @@
                     }
                 }
             }
+            if (mask & configFields.DEVICE_NAME) {
+                var stringData = new Uint8Array(9);
+                b.parseUint8Array(dataView, stringData);
+                structure.name = asciiDecode(stringData);
+            }
         }
 
         function setConfig(dataView, structure) {
@@ -263,6 +273,7 @@
             b.setFloat32Array(dataView, structure.stateEstimationParameters);
             b.setFloat32Array(dataView, structure.enableParameters);
             b.setUint8Array(dataView, structure.ledStates);
+            b.setUint8Array(dataView, asciiEncode(structure.name, 9));
         }
 
         function comSetEepromData(message_buffer) {
@@ -311,6 +322,26 @@
 
         function getConfig() {
             return config;
+        }
+
+        function asciiEncode(name, length) {
+            var response = new Uint8Array(length);
+            name.split('').forEach(function(c, idx) {
+                response[idx] = c.charCodeAt(0);
+            });
+            response[length-1] = 0;
+            return response;
+        }
+
+        function asciiDecode(name) {
+            var response = '';
+            for (var i = 0; i < name.length && i < 8; ++i) {
+                if (name[i] === 0) {
+                    return response;
+                }
+                response += String.fromCharCode(name[i]);
+            }
+            return response;
         }
     }
 }());
