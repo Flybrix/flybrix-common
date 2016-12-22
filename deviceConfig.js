@@ -9,7 +9,7 @@
         var eepromConfigSize = 363 + 273;
         var config = new Config();
 
-        var desiredVersion = [1, 3, 0];  // checked at startup!
+        var desiredVersion = [1, 4, 0];  // checked at startup!
 
         var configCallback = function() {
             commandLog('No callback defined for receiving configurations!');
