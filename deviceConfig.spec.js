@@ -10,19 +10,17 @@ describe('Device configuration service', function() {
 
     beforeEach(angular.mock.module('flybrixCommon'));
 
-    beforeEach(
-        inject(
-            function(
-                _deviceConfig_, _serial_, _parser_, _cobs_, _commandLog_,
-                _$timeout_, _$rootScope_) {
-                deviceConfig = _deviceConfig_;
-                serial = _serial_;
-                parser = _parser_;
-                cobs = _cobs_;
-                commandLog = _commandLog_;
-                $timeout = _$timeout_;
-                $rootScope = _$rootScope_;
-            }));
+    beforeEach(inject(function(
+        _deviceConfig_, _serial_, _parser_, _cobs_, _commandLog_, _$timeout_,
+        _$rootScope_) {
+        deviceConfig = _deviceConfig_;
+        serial = _serial_;
+        parser = _parser_;
+        cobs = _cobs_;
+        commandLog = _commandLog_;
+        $timeout = _$timeout_;
+        $rootScope = _$rootScope_;
+    }));
 
     beforeEach(function() {
         backend = new serial.Backend();
@@ -94,6 +92,7 @@ describe('Device configuration service', function() {
                 .toEqual(Array.apply(null, Array(272)).map(function() {
                     return 0;
                 }));
+            expect(config.name).toEqual('');
         });
     });
 
@@ -157,9 +156,8 @@ describe('Device configuration service', function() {
                     expect(new Uint8Array(data)).toEqual(new Uint8Array([]));
                     ++call_case;
                     if (call_case === 1) {
-                        backend.onRead(
-                            new Uint8Array(
-                                [4, 254, 255, 5, 1, 1, 2, 4, 1, 1, 1, 0]));
+                        backend.onRead(new Uint8Array(
+                            [4, 254, 255, 5, 1, 1, 2, 4, 1, 1, 1, 0]));
                     } else if (call_case === 2) {
                         done();
                     }
@@ -186,9 +184,8 @@ describe('Device configuration service', function() {
                                 'Request was not fully processed');
                         done();
                     });
-                    backend.onRead(
-                        new Uint8Array(
-                            [4, 255, 255, 5, 1, 1, 2, 5, 1, 1, 1, 0]));
+                    backend.onRead(new Uint8Array(
+                        [4, 255, 255, 5, 1, 1, 2, 5, 1, 1, 1, 0]));
                 });
             };
             deviceConfig.reinit();
@@ -210,11 +207,10 @@ describe('Device configuration service', function() {
                         parser.CommandFields.COM_SET_EEPROM_DATA |
                         parser.CommandFields.COM_REQ_RESPONSE);
                     expect(new Uint8Array(data))
-                        .toEqual(
-                            new Uint8Array(
-                                Array.apply(null, Array(627)).map(function() {
-                                    return 0;
-                                })));
+                        .toEqual(new Uint8Array(
+                            Array.apply(null, Array(636)).map(function() {
+                                return 0;
+                            })));
                     done();
                 });
             };
@@ -231,7 +227,7 @@ describe('Device configuration service', function() {
                         parser.CommandFields.COM_SET_EEPROM_DATA |
                         parser.CommandFields.COM_REQ_RESPONSE);
                     var expected_data = new Uint8Array(
-                        Array.apply(null, Array(627)).map(function() {
+                        Array.apply(null, Array(636)).map(function() {
                             return 0;
                         }));
                     expected_data[0] = 1;
@@ -259,15 +255,12 @@ describe('Device configuration service', function() {
                             parser.CommandFields.COM_SET_EEPROM_DATA |
                             parser.CommandFields.COM_REQ_RESPONSE);
                         expect(new Uint8Array(data))
-                            .toEqual(
-                                new Uint8Array(
-                                    Array.apply(null, Array(627))
-                                        .map(function() {
-                                            return 0;
-                                        })));
-                        backend.onRead(
-                            new Uint8Array(
-                                [4, 254, 255, 3, 1, 1, 2, 2, 1, 1, 1, 0]));
+                            .toEqual(new Uint8Array(
+                                Array.apply(null, Array(636)).map(function() {
+                                    return 0;
+                                })));
+                        backend.onRead(new Uint8Array(
+                            [4, 254, 255, 3, 1, 1, 2, 2, 1, 1, 1, 0]));
                     } else if (counter === 1) {
                         expect(command).toBe(parser.MessageType.Command);
                         expect(mask).toBe(
@@ -295,7 +288,7 @@ describe('Device configuration service', function() {
         }
         beforeEach(function() {
             full_config_data =
-                new Uint8Array(Array.apply(null, Array(629)).map(function() {
+                new Uint8Array(Array.apply(null, Array(649)).map(function() {
                     return 0;
                 }));
             full_config_data[1] = parser.MessageType.Command;
@@ -468,6 +461,7 @@ describe('Device configuration service', function() {
                         .toEqual(Array.apply(null, Array(272)).map(function() {
                             return 0;
                         }));
+                    expect(config.name).toEqual('');
                     done();
                 });
                 var mask = deviceConfig.field.ID;
@@ -535,6 +529,7 @@ describe('Device configuration service', function() {
                         .toEqual(Array.apply(null, Array(272)).map(function() {
                             return 0;
                         }));
+                    expect(config.name).toEqual('');
                     done();
                 });
                 var mask = deviceConfig.field.PCB;
@@ -606,6 +601,7 @@ describe('Device configuration service', function() {
                         .toEqual(Array.apply(null, Array(272)).map(function() {
                             return 0;
                         }));
+                    expect(config.name).toEqual('');
                     done();
                 });
                 var mask = deviceConfig.field.MIX_TABLE;
@@ -673,6 +669,7 @@ describe('Device configuration service', function() {
                         .toEqual(Array.apply(null, Array(272)).map(function() {
                             return 0;
                         }));
+                    expect(config.name).toEqual('');
                     done();
                 });
                 var mask = deviceConfig.field.MAG_BIAS;
@@ -741,6 +738,7 @@ describe('Device configuration service', function() {
                         .toEqual(Array.apply(null, Array(272)).map(function() {
                             return 0;
                         }));
+                    expect(config.name).toEqual('');
                     done();
                 });
                 var mask = deviceConfig.field.CHANNEL;
@@ -808,6 +806,7 @@ describe('Device configuration service', function() {
                         .toEqual(Array.apply(null, Array(272)).map(function() {
                             return 0;
                         }));
+                    expect(config.name).toEqual('');
                     done();
                 });
                 var mask = deviceConfig.field.PID_PARAMETERS;
@@ -884,6 +883,7 @@ describe('Device configuration service', function() {
                         .toEqual(Array.apply(null, Array(272)).map(function() {
                             return 0;
                         }));
+                    expect(config.name).toEqual('');
                     done();
                 });
                 var mask = deviceConfig.field.STATE_PARAMETERS;
@@ -946,11 +946,11 @@ describe('Device configuration service', function() {
                     ]);
                     expect(config.enableParameters).toEqual([0.0, 0.0]);
                     expect(config.ledStates)
-                        .toEqual(
-                            Array.apply(null, Array(272))
-                                .map(function(val, idx) {
-                                    return (idx % 200);
-                                }));
+                        .toEqual(Array.apply(null, Array(272))
+                                     .map(function(val, idx) {
+                                         return (idx % 200);
+                                     }));
+                    expect(config.name).toEqual('');
                     done();
                 });
                 var mask = deviceConfig.field.LED_STATES;
@@ -970,8 +970,72 @@ describe('Device configuration service', function() {
                 backend.onRead(new Uint8Array(cobs.encode(full_config_data)));
             });
 
-            describe('parsing partial LED states data', function() {
+            it('parses device name', function(done) {
+                deviceConfig.setConfigCallback(function() {
+                    var config = deviceConfig.getConfig();
+                    expect(config.version)
+                        .toEqual(deviceConfig.getDesiredVersion());
+                    expect(config.id).toEqual(0);
+                    expect(config.pcbOrientation).toEqual([0.0, 0.0, 0.0]);
+                    expect(config.pcbTranslation).toEqual([0.0, 0.0, 0.0]);
+                    expect(config.mixTableFz).toEqual([0, 0, 0, 0, 0, 0, 0, 0]);
+                    expect(config.mixTableTx).toEqual([0, 0, 0, 0, 0, 0, 0, 0]);
+                    expect(config.mixTableTy).toEqual([0, 0, 0, 0, 0, 0, 0, 0]);
+                    expect(config.mixTableTz).toEqual([0, 0, 0, 0, 0, 0, 0, 0]);
+                    expect(config.magBias).toEqual([0.0, 0.0, 0.0]);
+                    expect(config.assignedChannel).toEqual([0, 0, 0, 0, 0, 0]);
+                    expect(config.commandInversion).toEqual(0);
+                    expect(config.channelMidpoint).toEqual([0, 0, 0, 0, 0, 0]);
+                    expect(config.channelDeadzone).toEqual([0, 0, 0, 0, 0, 0]);
+                    expect(config.thrustMasterPIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.pitchMasterPIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.rollMasterPIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.yawMasterPIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.thrustSlavePIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.pitchSlavePIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.rollSlavePIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.yawSlavePIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.pidBypass).toEqual(0);
+                    expect(config.stateEstimationParameters).toEqual([
+                        0.0, 0.0
+                    ]);
+                    expect(config.enableParameters).toEqual([0.0, 0.0]);
+                    expect(config.ledStates)
+                        .toEqual(Array.apply(null, Array(272)).map(function() {
+                            return 0;
+                        }));
+                    expect(config.name).toEqual('AbcD');
+                    done();
+                });
+                var mask = deviceConfig.field.DEVICE_NAME;
+                full_config_data[6] = (mask & 0xFF);
+                full_config_data[7] = ((mask >> 8) & 0xFF);
+                [65, 98, 99, 68, 0, 0, 0, 0, 0]
+                    .forEach(function(val, idx) {
+                        full_config_data[8 + idx] = val;
+                    });
+                full_config_data = full_config_data.slice(0, 30);
+                recalcChecksum(full_config_data);
+                backend.onRead(new Uint8Array(cobs.encode(full_config_data)));
+            });
 
+            describe('parsing partial LED states data', function() {
 
                 it('parses first half', function(done) {
                     deviceConfig.setConfigCallback(function() {
@@ -1034,15 +1098,15 @@ describe('Device configuration service', function() {
                         ]);
                         expect(config.enableParameters).toEqual([0.0, 0.0]);
                         expect(config.ledStates)
-                            .toEqual(
-                                Array.apply(null, Array(272))
-                                    .map(function(val, idx) {
-                                        if (idx < 136) {
-                                            return 0;
-                                        }
-                                        idx -= 136;
-                                        return (idx % 200);
-                                    }));
+                            .toEqual(Array.apply(null, Array(272))
+                                         .map(function(val, idx) {
+                                             if (idx < 136) {
+                                                 return 0;
+                                             }
+                                             idx -= 136;
+                                             return (idx % 200);
+                                         }));
+                        expect(config.name).toEqual('');
                         done();
                     });
                     var mask = deviceConfig.field.LED_STATES;
@@ -1124,14 +1188,14 @@ describe('Device configuration service', function() {
                         ]);
                         expect(config.enableParameters).toEqual([0.0, 0.0]);
                         expect(config.ledStates)
-                            .toEqual(
-                                Array.apply(null, Array(272))
-                                    .map(function(val, idx) {
-                                        if (idx >= 136) {
-                                            return 0;
-                                        }
-                                        return (idx % 200);
-                                    }));
+                            .toEqual(Array.apply(null, Array(272))
+                                         .map(function(val, idx) {
+                                             if (idx >= 136) {
+                                                 return 0;
+                                             }
+                                             return (idx % 200);
+                                         }));
+                        expect(config.name).toEqual('');
                         done();
                     });
                     var mask = deviceConfig.field.LED_STATES;
@@ -1213,17 +1277,17 @@ describe('Device configuration service', function() {
                         ]);
                         expect(config.enableParameters).toEqual([0.0, 0.0]);
                         expect(config.ledStates)
-                            .toEqual(
-                                Array.apply(null, Array(272))
-                                    .map(function(val, idx) {
-                                        if (idx >= 68 && idx < 204) {
-                                            return 0;
-                                        }
-                                        if (idx >= 204) {
-                                            idx -= 136;
-                                        }
-                                        return (idx % 200);
-                                    }));
+                            .toEqual(Array.apply(null, Array(272))
+                                         .map(function(val, idx) {
+                                             if (idx >= 68 && idx < 204) {
+                                                 return 0;
+                                             }
+                                             if (idx >= 204) {
+                                                 idx -= 136;
+                                             }
+                                             return (idx % 200);
+                                         }));
+                        expect(config.name).toEqual('');
                         done();
                     });
                     var mask = deviceConfig.field.LED_STATES;
@@ -1244,6 +1308,121 @@ describe('Device configuration service', function() {
                         new Uint8Array(cobs.encode(full_config_data)));
                 });
             });
+        });
+    });
+
+    describe('.setLoggingCallback()', function() {
+        function recalcChecksum(v) {
+            v[0] = 0;
+            for (var i = 0; i < v.length; ++i) {
+                v[0] ^= v[i];
+            }
+        }
+        function generateDataFor(v, delay) {
+            full_message_data =
+                new Uint8Array(Array.apply(null, Array(10)).map(function() {
+                    return 0;
+                }));
+            full_message_data[1] = parser.MessageType.Command;
+            var command = parser.CommandFields.COM_SET_CARD_RECORDING |
+                parser.CommandFields.COM_SET_SD_WRITE_DELAY;
+            for (var i = 0; i < 4; ++i) {
+                full_message_data[i + 2] = ((command >> (i * 8)) & 0xFF);
+            }
+            full_message_data[6] = delay & 0xFF;
+            full_message_data[7] = (delay >> 8) & 0xFF;
+            full_message_data[8] = v;
+            recalcChecksum(full_message_data);
+            return full_message_data;
+        }
+
+        it('exists', function() {
+            expect(deviceConfig.setLoggingCallback).toBeDefined();
+        });
+
+        it('warns in the command log by default', function(done) {
+            commandLog.onMessage(function name(val) {
+                if (val.indexOf(
+                        'No callback defined for receiving logging state!' +
+                        ' Callback arguments: (isLogging, isLocked, delay)') !==
+                    -1) {
+                    done();
+                }
+            });
+            backend.onRead(new Uint8Array(cobs.encode(generateDataFor(0))));
+            $rootScope.$digest();
+        });
+
+        it('responds to logging data', function(done) {
+            deviceConfig.setLoggingCallback(function() {
+                done();
+            });
+            backend.onRead(new Uint8Array(cobs.encode(generateDataFor(0))));
+            $rootScope.$digest();
+        });
+
+        it('properly decodes no logging with no lock', function(done) {
+            deviceConfig.setLoggingCallback(function(isLogging, isLocked) {
+                if (!isLogging && !isLocked) {
+                    done();
+                }
+            });
+            backend.onRead(new Uint8Array(cobs.encode(generateDataFor(0))));
+            $rootScope.$digest();
+        });
+
+        it('properly decodes logging with no lock', function(done) {
+            deviceConfig.setLoggingCallback(function(isLogging, isLocked) {
+                if (isLogging && !isLocked) {
+                    done();
+                }
+            });
+            backend.onRead(new Uint8Array(cobs.encode(generateDataFor(1))));
+            $rootScope.$digest();
+        });
+
+        it('properly decodes no logging with lock', function(done) {
+            deviceConfig.setLoggingCallback(function(isLogging, isLocked) {
+                if (!isLogging && isLocked) {
+                    done();
+                }
+            });
+            backend.onRead(new Uint8Array(cobs.encode(generateDataFor(2))));
+            $rootScope.$digest();
+        });
+
+        it('properly decodes logging with lock', function(done) {
+            deviceConfig.setLoggingCallback(function(isLogging, isLocked) {
+                if (isLogging && isLocked) {
+                    done();
+                }
+            });
+            backend.onRead(new Uint8Array(cobs.encode(generateDataFor(3))));
+            $rootScope.$digest();
+        });
+
+        it('properly decodes delay', function(done) {
+            deviceConfig.setLoggingCallback(function(
+                isLogging, isLocked, delay) {
+                if (delay === 738) {
+                    done();
+                }
+            });
+            backend.onRead(
+                new Uint8Array(cobs.encode(generateDataFor(0, 738))));
+            $rootScope.$digest();
+        });
+
+        it('rejects truncated data', function(done) {
+            commandLog.onMessage(function name(val) {
+                if (val.indexOf('Bad data given for logging info') !== -1) {
+                    done();
+                }
+            });
+            var data = generateDataFor(0);
+            data = data.slice(0, data.length - 1);
+            backend.onRead(new Uint8Array(cobs.encode(data)));
+            $rootScope.$digest();
         });
     });
 });

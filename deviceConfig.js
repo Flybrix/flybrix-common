@@ -6,13 +6,19 @@
     deviceConfig.$inject = ['serial', 'commandLog', 'serializer'];
 
     function deviceConfig(serial, commandLog, serializer) {
-        var eepromConfigSize = 354 + 273;
+        var eepromConfigSize = 363 + 273;
         var config = new Config();
 
-        var desiredVersion = [1, 3, 0];  // checked at startup!
+        var desiredVersion = [1, 4, 0];  // checked at startup!
 
         var configCallback = function() {
             commandLog('No callback defined for receiving configurations!');
+        };
+
+        var loggingCallback = function() {
+            commandLog(
+                'No callback defined for receiving logging state!' +
+                ' Callback arguments: (isLogging, isLocked, delay)');
         };
 
         var configFields = {
@@ -25,6 +31,7 @@
             PID_PARAMETERS: 1 << 6,
             STATE_PARAMETERS: 1 << 7,
             LED_STATES: 1 << 8,
+            DEVICE_NAME: 1 << 9,
         };
 
         serial.setCommandCallback(function(mask, message_buffer) {
@@ -34,6 +41,17 @@
             if (mask & serial.field.COM_SET_PARTIAL_EEPROM_DATA) {
                 comSetPartialEepromData(message_buffer);
             }
+            if (mask & (serial.field.COM_SET_CARD_RECORDING |
+                        serial.field.COM_SET_SD_WRITE_DELAY)) {
+                var dataBuffer = new Uint8Array(message_buffer);
+                if (dataBuffer.length >= 3) {
+                    var delay = dataBuffer[0] | (dataBuffer[1] << 8);
+                    var data = dataBuffer[2];
+                    loggingCallback((data & 1) !== 0, (data & 2) !== 0, delay);
+                } else {
+                    commandLog('Bad data given for logging info');
+                }
+            }
         });
 
         return {
@@ -42,6 +60,7 @@
             send: send,
             getConfig: getConfig,
             setConfigCallback: setConfigCallback,
+            setLoggingCallback: setLoggingCallback,
             getDesiredVersion: getDesiredVersion,
             field: configFields,
         };
@@ -112,6 +131,7 @@
             this.ledStates = Array.apply(null, Array(272)).map(function() {
                 return 0;
             });
+            this.name = '';
         }
 
         function parsePID(b, dataView, arr) {
@@ -148,6 +168,9 @@
             b.parseFloat32Array(dataView, structure.stateEstimationParameters);
             b.parseFloat32Array(dataView, structure.enableParameters);
             b.parseUint8Array(dataView, structure.ledStates);
+            var stringData = new Uint8Array(9);
+            b.parseUint8Array(dataView, stringData);
+            structure.name = asciiDecode(stringData);
         }
 
         function parsePartial(dataView, structure) {
@@ -213,6 +236,11 @@
                     }
                 }
             }
+            if (mask & configFields.DEVICE_NAME) {
+                var stringData = new Uint8Array(9);
+                b.parseUint8Array(dataView, stringData);
+                structure.name = asciiDecode(stringData);
+            }
         }
 
         function setConfig(dataView, structure) {
@@ -245,6 +273,7 @@
             b.setFloat32Array(dataView, structure.stateEstimationParameters);
             b.setFloat32Array(dataView, structure.enableParameters);
             b.setUint8Array(dataView, structure.ledStates);
+            b.setUint8Array(dataView, asciiEncode(structure.name, 9));
         }
 
         function comSetEepromData(message_buffer) {
@@ -287,8 +316,32 @@
             configCallback = callback;
         }
 
+        function setLoggingCallback(callback) {
+            loggingCallback = callback;
+        }
+
         function getConfig() {
             return config;
+        }
+
+        function asciiEncode(name, length) {
+            var response = new Uint8Array(length);
+            name.split('').forEach(function(c, idx) {
+                response[idx] = c.charCodeAt(0);
+            });
+            response[length-1] = 0;
+            return response;
+        }
+
+        function asciiDecode(name) {
+            var response = '';
+            for (var i = 0; i < name.length && i < 8; ++i) {
+                if (name[i] === 0) {
+                    return response;
+                }
+                response += String.fromCharCode(name[i]);
+            }
+            return response;
         }
     }
 }());
