@@ -37,7 +37,7 @@ describe('Device configuration service', function() {
         });
 
         it('equals newest firmware version', function() {
-            expect(deviceConfig.getDesiredVersion()).toEqual([1, 3, 0]);
+            expect(deviceConfig.getDesiredVersion()).toEqual([1, 4, 0]);
         });
     });
 
@@ -88,10 +88,26 @@ describe('Device configuration service', function() {
             expect(config.pidBypass).toEqual(0);
             expect(config.stateEstimationParameters).toEqual([0.0, 0.0]);
             expect(config.enableParameters).toEqual([0.0, 0.0]);
-            expect(config.ledStates)
-                .toEqual(Array.apply(null, Array(272)).map(function() {
-                    return 0;
-                }));
+            expect(config.ledStates.length).toEqual(16);
+            for (var i = 0; i < 16; ++i) {
+                var state = config.ledStates[i];
+                state.status = 0;
+                state.pattern = 0;
+                state.colors.right_front.red = 0;
+                state.colors.right_front.green = 0;
+                state.colors.right_front.blue = 0;
+                state.colors.right_back.red = 0;
+                state.colors.right_back.green = 0;
+                state.colors.right_back.blue = 0;
+                state.colors.left_front.red = 0;
+                state.colors.left_front.green = 0;
+                state.colors.left_front.blue = 0;
+                state.colors.left_back.red = 0;
+                state.colors.left_back.green = 0;
+                state.colors.left_back.blue = 0;
+                state.indicator_red = false;
+                state.indicator_green = false;
+            }
             expect(config.name).toEqual('');
         });
     });
@@ -231,14 +247,14 @@ describe('Device configuration service', function() {
                             return 0;
                         }));
                     expected_data[0] = 1;
-                    expected_data[1] = 3;
+                    expected_data[1] = 4;
                     expect(new Uint8Array(data)).toEqual(expected_data);
                     done();
                 });
             };
             var config_copy =
                 JSON.parse(JSON.stringify(deviceConfig.getConfig()));
-            config_copy.version = [1, 3, 0];
+            config_copy.version = [1, 4, 0];
             deviceConfig.send(config_copy);
             $timeout.flush();
         });
@@ -401,7 +417,8 @@ describe('Device configuration service', function() {
 
         describe('receiving partial config', function() {
             beforeEach(function() {
-                // We need the versions to match so we can send data without a
+                // We need the versions to match so we can send data without
+                // a
                 // version included
                 backend.onRead(new Uint8Array(cobs.encode(full_config_data)));
 
@@ -457,10 +474,25 @@ describe('Device configuration service', function() {
                         0.0, 0.0
                     ]);
                     expect(config.enableParameters).toEqual([0.0, 0.0]);
-                    expect(config.ledStates)
-                        .toEqual(Array.apply(null, Array(272)).map(function() {
-                            return 0;
-                        }));
+                    for (var i = 0; i < 16; ++i) {
+                        var state = config.ledStates[i];
+                        expect(state.status).toEqual(0);
+                        expect(state.pattern).toEqual(0);
+                        expect(state.colors.right_front.red).toEqual(0);
+                        expect(state.colors.right_front.green).toEqual(0);
+                        expect(state.colors.right_front.blue).toEqual(0);
+                        expect(state.colors.right_back.red).toEqual(0);
+                        expect(state.colors.right_back.green).toEqual(0);
+                        expect(state.colors.right_back.blue).toEqual(0);
+                        expect(state.colors.left_front.red).toEqual(0);
+                        expect(state.colors.left_front.green).toEqual(0);
+                        expect(state.colors.left_front.blue).toEqual(0);
+                        expect(state.colors.left_back.red).toEqual(0);
+                        expect(state.colors.left_back.green).toEqual(0);
+                        expect(state.colors.left_back.blue).toEqual(0);
+                        expect(state.indicator_red).toEqual(false);
+                        expect(state.indicator_green).toEqual(false);
+                    }
                     expect(config.name).toEqual('');
                     done();
                 });
@@ -525,10 +557,25 @@ describe('Device configuration service', function() {
                         0.0, 0.0
                     ]);
                     expect(config.enableParameters).toEqual([0.0, 0.0]);
-                    expect(config.ledStates)
-                        .toEqual(Array.apply(null, Array(272)).map(function() {
-                            return 0;
-                        }));
+                    for (var i = 0; i < 16; ++i) {
+                        var state = config.ledStates[i];
+                        expect(state.status).toEqual(0);
+                        expect(state.pattern).toEqual(0);
+                        expect(state.colors.right_front.red).toEqual(0);
+                        expect(state.colors.right_front.green).toEqual(0);
+                        expect(state.colors.right_front.blue).toEqual(0);
+                        expect(state.colors.right_back.red).toEqual(0);
+                        expect(state.colors.right_back.green).toEqual(0);
+                        expect(state.colors.right_back.blue).toEqual(0);
+                        expect(state.colors.left_front.red).toEqual(0);
+                        expect(state.colors.left_front.green).toEqual(0);
+                        expect(state.colors.left_front.blue).toEqual(0);
+                        expect(state.colors.left_back.red).toEqual(0);
+                        expect(state.colors.left_back.green).toEqual(0);
+                        expect(state.colors.left_back.blue).toEqual(0);
+                        expect(state.indicator_red).toEqual(false);
+                        expect(state.indicator_green).toEqual(false);
+                    }
                     expect(config.name).toEqual('');
                     done();
                 });
@@ -597,10 +644,25 @@ describe('Device configuration service', function() {
                         0.0, 0.0
                     ]);
                     expect(config.enableParameters).toEqual([0.0, 0.0]);
-                    expect(config.ledStates)
-                        .toEqual(Array.apply(null, Array(272)).map(function() {
-                            return 0;
-                        }));
+                    for (var i = 0; i < 16; ++i) {
+                        var state = config.ledStates[i];
+                        expect(state.status).toEqual(0);
+                        expect(state.pattern).toEqual(0);
+                        expect(state.colors.right_front.red).toEqual(0);
+                        expect(state.colors.right_front.green).toEqual(0);
+                        expect(state.colors.right_front.blue).toEqual(0);
+                        expect(state.colors.right_back.red).toEqual(0);
+                        expect(state.colors.right_back.green).toEqual(0);
+                        expect(state.colors.right_back.blue).toEqual(0);
+                        expect(state.colors.left_front.red).toEqual(0);
+                        expect(state.colors.left_front.green).toEqual(0);
+                        expect(state.colors.left_front.blue).toEqual(0);
+                        expect(state.colors.left_back.red).toEqual(0);
+                        expect(state.colors.left_back.green).toEqual(0);
+                        expect(state.colors.left_back.blue).toEqual(0);
+                        expect(state.indicator_red).toEqual(false);
+                        expect(state.indicator_green).toEqual(false);
+                    }
                     expect(config.name).toEqual('');
                     done();
                 });
@@ -665,10 +727,25 @@ describe('Device configuration service', function() {
                         0.0, 0.0
                     ]);
                     expect(config.enableParameters).toEqual([0.0, 0.0]);
-                    expect(config.ledStates)
-                        .toEqual(Array.apply(null, Array(272)).map(function() {
-                            return 0;
-                        }));
+                    for (var i = 0; i < 16; ++i) {
+                        var state = config.ledStates[i];
+                        expect(state.status).toEqual(0);
+                        expect(state.pattern).toEqual(0);
+                        expect(state.colors.right_front.red).toEqual(0);
+                        expect(state.colors.right_front.green).toEqual(0);
+                        expect(state.colors.right_front.blue).toEqual(0);
+                        expect(state.colors.right_back.red).toEqual(0);
+                        expect(state.colors.right_back.green).toEqual(0);
+                        expect(state.colors.right_back.blue).toEqual(0);
+                        expect(state.colors.left_front.red).toEqual(0);
+                        expect(state.colors.left_front.green).toEqual(0);
+                        expect(state.colors.left_front.blue).toEqual(0);
+                        expect(state.colors.left_back.red).toEqual(0);
+                        expect(state.colors.left_back.green).toEqual(0);
+                        expect(state.colors.left_back.blue).toEqual(0);
+                        expect(state.indicator_red).toEqual(false);
+                        expect(state.indicator_green).toEqual(false);
+                    }
                     expect(config.name).toEqual('');
                     done();
                 });
@@ -734,10 +811,25 @@ describe('Device configuration service', function() {
                         0.0, 0.0
                     ]);
                     expect(config.enableParameters).toEqual([0.0, 0.0]);
-                    expect(config.ledStates)
-                        .toEqual(Array.apply(null, Array(272)).map(function() {
-                            return 0;
-                        }));
+                    for (var i = 0; i < 16; ++i) {
+                        var state = config.ledStates[i];
+                        expect(state.status).toEqual(0);
+                        expect(state.pattern).toEqual(0);
+                        expect(state.colors.right_front.red).toEqual(0);
+                        expect(state.colors.right_front.green).toEqual(0);
+                        expect(state.colors.right_front.blue).toEqual(0);
+                        expect(state.colors.right_back.red).toEqual(0);
+                        expect(state.colors.right_back.green).toEqual(0);
+                        expect(state.colors.right_back.blue).toEqual(0);
+                        expect(state.colors.left_front.red).toEqual(0);
+                        expect(state.colors.left_front.green).toEqual(0);
+                        expect(state.colors.left_front.blue).toEqual(0);
+                        expect(state.colors.left_back.red).toEqual(0);
+                        expect(state.colors.left_back.green).toEqual(0);
+                        expect(state.colors.left_back.blue).toEqual(0);
+                        expect(state.indicator_red).toEqual(false);
+                        expect(state.indicator_green).toEqual(false);
+                    }
                     expect(config.name).toEqual('');
                     done();
                 });
@@ -802,10 +894,25 @@ describe('Device configuration service', function() {
                         0.0, 0.0
                     ]);
                     expect(config.enableParameters).toEqual([0.0, 0.0]);
-                    expect(config.ledStates)
-                        .toEqual(Array.apply(null, Array(272)).map(function() {
-                            return 0;
-                        }));
+                    for (var i = 0; i < 16; ++i) {
+                        var state = config.ledStates[i];
+                        expect(state.status).toEqual(0);
+                        expect(state.pattern).toEqual(0);
+                        expect(state.colors.right_front.red).toEqual(0);
+                        expect(state.colors.right_front.green).toEqual(0);
+                        expect(state.colors.right_front.blue).toEqual(0);
+                        expect(state.colors.right_back.red).toEqual(0);
+                        expect(state.colors.right_back.green).toEqual(0);
+                        expect(state.colors.right_back.blue).toEqual(0);
+                        expect(state.colors.left_front.red).toEqual(0);
+                        expect(state.colors.left_front.green).toEqual(0);
+                        expect(state.colors.left_front.blue).toEqual(0);
+                        expect(state.colors.left_back.red).toEqual(0);
+                        expect(state.colors.left_back.green).toEqual(0);
+                        expect(state.colors.left_back.blue).toEqual(0);
+                        expect(state.indicator_red).toEqual(false);
+                        expect(state.indicator_green).toEqual(false);
+                    }
                     expect(config.name).toEqual('');
                     done();
                 });
@@ -879,10 +986,25 @@ describe('Device configuration service', function() {
                         3.25, 1232.75
                     ]);
                     expect(config.enableParameters).toEqual([7.125, 323232.5]);
-                    expect(config.ledStates)
-                        .toEqual(Array.apply(null, Array(272)).map(function() {
-                            return 0;
-                        }));
+                    for (var i = 0; i < 16; ++i) {
+                        var state = config.ledStates[i];
+                        expect(state.status).toEqual(0);
+                        expect(state.pattern).toEqual(0);
+                        expect(state.colors.right_front.red).toEqual(0);
+                        expect(state.colors.right_front.green).toEqual(0);
+                        expect(state.colors.right_front.blue).toEqual(0);
+                        expect(state.colors.right_back.red).toEqual(0);
+                        expect(state.colors.right_back.green).toEqual(0);
+                        expect(state.colors.right_back.blue).toEqual(0);
+                        expect(state.colors.left_front.red).toEqual(0);
+                        expect(state.colors.left_front.green).toEqual(0);
+                        expect(state.colors.left_front.blue).toEqual(0);
+                        expect(state.colors.left_back.red).toEqual(0);
+                        expect(state.colors.left_back.green).toEqual(0);
+                        expect(state.colors.left_back.blue).toEqual(0);
+                        expect(state.indicator_red).toEqual(false);
+                        expect(state.indicator_green).toEqual(false);
+                    }
                     expect(config.name).toEqual('');
                     done();
                 });
@@ -945,11 +1067,25 @@ describe('Device configuration service', function() {
                         0.0, 0.0
                     ]);
                     expect(config.enableParameters).toEqual([0.0, 0.0]);
-                    expect(config.ledStates)
-                        .toEqual(Array.apply(null, Array(272))
-                                     .map(function(val, idx) {
-                                         return (idx % 200);
-                                     }));
+                    for (var i = 0; i < 16; ++i) {
+                        var state = config.ledStates[i];
+                        expect(state.status).toEqual(256 + 257 * i);
+                        expect(state.pattern).toEqual(2 + i);
+                        expect(state.colors.right_front.red).toEqual(3 + i);
+                        expect(state.colors.right_front.green).toEqual(4 + i);
+                        expect(state.colors.right_front.blue).toEqual(5 + i);
+                        expect(state.colors.right_back.red).toEqual(6 + i);
+                        expect(state.colors.right_back.green).toEqual(7 + i);
+                        expect(state.colors.right_back.blue).toEqual(8 + i);
+                        expect(state.colors.left_front.red).toEqual(9 + i);
+                        expect(state.colors.left_front.green).toEqual(10 + i);
+                        expect(state.colors.left_front.blue).toEqual(11 + i);
+                        expect(state.colors.left_back.red).toEqual(12 + i);
+                        expect(state.colors.left_back.green).toEqual(13 + i);
+                        expect(state.colors.left_back.blue).toEqual(14 + i);
+                        expect(state.indicator_red).toEqual(i % 2 === 0);
+                        expect(state.indicator_green).toEqual(i % 2 === 1);
+                    }
                     expect(config.name).toEqual('');
                     done();
                 });
@@ -960,7 +1096,13 @@ describe('Device configuration service', function() {
                 full_config_data[9] = 0xFF;
                 Array.apply(null, Array(272))
                     .map(function(val, idx) {
-                        return (idx % 200);
+                        var id = idx / 17;
+                        var m = idx % 17;
+                        if (m < 15) {
+                            return m + id;
+                        } else {
+                            return (m + id) % 2;
+                        }
                     })
                     .forEach(function(val, idx) {
                         full_config_data[10 + idx] = val;
@@ -1016,116 +1158,40 @@ describe('Device configuration service', function() {
                         0.0, 0.0
                     ]);
                     expect(config.enableParameters).toEqual([0.0, 0.0]);
-                    expect(config.ledStates)
-                        .toEqual(Array.apply(null, Array(272)).map(function() {
-                            return 0;
-                        }));
+                    for (var i = 0; i < 16; ++i) {
+                        var state = config.ledStates[i];
+                        expect(state.status).toEqual(0);
+                        expect(state.pattern).toEqual(0);
+                        expect(state.colors.right_front.red).toEqual(0);
+                        expect(state.colors.right_front.green).toEqual(0);
+                        expect(state.colors.right_front.blue).toEqual(0);
+                        expect(state.colors.right_back.red).toEqual(0);
+                        expect(state.colors.right_back.green).toEqual(0);
+                        expect(state.colors.right_back.blue).toEqual(0);
+                        expect(state.colors.left_front.red).toEqual(0);
+                        expect(state.colors.left_front.green).toEqual(0);
+                        expect(state.colors.left_front.blue).toEqual(0);
+                        expect(state.colors.left_back.red).toEqual(0);
+                        expect(state.colors.left_back.green).toEqual(0);
+                        expect(state.colors.left_back.blue).toEqual(0);
+                        expect(state.indicator_red).toEqual(false);
+                        expect(state.indicator_green).toEqual(false);
+                    }
                     expect(config.name).toEqual('AbcD');
                     done();
                 });
                 var mask = deviceConfig.field.DEVICE_NAME;
                 full_config_data[6] = (mask & 0xFF);
                 full_config_data[7] = ((mask >> 8) & 0xFF);
-                [65, 98, 99, 68, 0, 0, 0, 0, 0]
-                    .forEach(function(val, idx) {
-                        full_config_data[8 + idx] = val;
-                    });
+                [65, 98, 99, 68, 0, 0, 0, 0, 0].forEach(function(val, idx) {
+                    full_config_data[8 + idx] = val;
+                });
                 full_config_data = full_config_data.slice(0, 30);
                 recalcChecksum(full_config_data);
                 backend.onRead(new Uint8Array(cobs.encode(full_config_data)));
             });
 
             describe('parsing partial LED states data', function() {
-
-                it('parses first half', function(done) {
-                    deviceConfig.setConfigCallback(function() {
-                        var config = deviceConfig.getConfig();
-                        expect(config.version)
-                            .toEqual(deviceConfig.getDesiredVersion());
-                        expect(config.id).toEqual(0);
-                        expect(config.pcbOrientation).toEqual([0.0, 0.0, 0.0]);
-                        expect(config.pcbTranslation).toEqual([0.0, 0.0, 0.0]);
-                        expect(config.mixTableFz).toEqual([
-                            0, 0, 0, 0, 0, 0, 0, 0
-                        ]);
-                        expect(config.mixTableTx).toEqual([
-                            0, 0, 0, 0, 0, 0, 0, 0
-                        ]);
-                        expect(config.mixTableTy).toEqual([
-                            0, 0, 0, 0, 0, 0, 0, 0
-                        ]);
-                        expect(config.mixTableTz).toEqual([
-                            0, 0, 0, 0, 0, 0, 0, 0
-                        ]);
-                        expect(config.magBias).toEqual([0.0, 0.0, 0.0]);
-                        expect(config.assignedChannel).toEqual([
-                            0, 0, 0, 0, 0, 0
-                        ]);
-                        expect(config.commandInversion).toEqual(0);
-                        expect(config.channelMidpoint).toEqual([
-                            0, 0, 0, 0, 0, 0
-                        ]);
-                        expect(config.channelDeadzone).toEqual([
-                            0, 0, 0, 0, 0, 0
-                        ]);
-                        expect(config.thrustMasterPIDParameters).toEqual([
-                            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
-                        ]);
-                        expect(config.pitchMasterPIDParameters).toEqual([
-                            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
-                        ]);
-                        expect(config.rollMasterPIDParameters).toEqual([
-                            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
-                        ]);
-                        expect(config.yawMasterPIDParameters).toEqual([
-                            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
-                        ]);
-                        expect(config.thrustSlavePIDParameters).toEqual([
-                            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
-                        ]);
-                        expect(config.pitchSlavePIDParameters).toEqual([
-                            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
-                        ]);
-                        expect(config.rollSlavePIDParameters).toEqual([
-                            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
-                        ]);
-                        expect(config.yawSlavePIDParameters).toEqual([
-                            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
-                        ]);
-                        expect(config.pidBypass).toEqual(0);
-                        expect(config.stateEstimationParameters).toEqual([
-                            0.0, 0.0
-                        ]);
-                        expect(config.enableParameters).toEqual([0.0, 0.0]);
-                        expect(config.ledStates)
-                            .toEqual(Array.apply(null, Array(272))
-                                         .map(function(val, idx) {
-                                             if (idx < 136) {
-                                                 return 0;
-                                             }
-                                             idx -= 136;
-                                             return (idx % 200);
-                                         }));
-                        expect(config.name).toEqual('');
-                        done();
-                    });
-                    var mask = deviceConfig.field.LED_STATES;
-                    full_config_data[6] = (mask & 0xFF);
-                    full_config_data[7] = ((mask >> 8) & 0xFF);
-                    full_config_data[8] = 0x00;
-                    full_config_data[9] = 0xFF;
-                    Array.apply(null, Array(136))
-                        .map(function(val, idx) {
-                            return (idx % 200);
-                        })
-                        .forEach(function(val, idx) {
-                            full_config_data[10 + idx] = val;
-                        });
-                    full_config_data = full_config_data.slice(0, 147);
-                    recalcChecksum(full_config_data);
-                    backend.onRead(
-                        new Uint8Array(cobs.encode(full_config_data)));
-                });
 
                 it('parses second half', function(done) {
                     deviceConfig.setConfigCallback(function() {
@@ -1187,14 +1253,207 @@ describe('Device configuration service', function() {
                             0.0, 0.0
                         ]);
                         expect(config.enableParameters).toEqual([0.0, 0.0]);
-                        expect(config.ledStates)
-                            .toEqual(Array.apply(null, Array(272))
-                                         .map(function(val, idx) {
-                                             if (idx >= 136) {
-                                                 return 0;
-                                             }
-                                             return (idx % 200);
-                                         }));
+                        for (var j = 0; j < 16; ++j) {
+                            var state = config.ledStates[j];
+                            if (j < 8) {
+                                expect(state.status).toEqual(0);
+                                expect(state.pattern).toEqual(0);
+                                expect(state.colors.right_front.red).toEqual(0);
+                                expect(state.colors.right_front.green)
+                                    .toEqual(0);
+                                expect(state.colors.right_front.blue)
+                                    .toEqual(0);
+                                expect(state.colors.right_back.red).toEqual(0);
+                                expect(state.colors.right_back.green)
+                                    .toEqual(0);
+                                expect(state.colors.right_back.blue).toEqual(0);
+                                expect(state.colors.left_front.red).toEqual(0);
+                                expect(state.colors.left_front.green)
+                                    .toEqual(0);
+                                expect(state.colors.left_front.blue).toEqual(0);
+                                expect(state.colors.left_back.red).toEqual(0);
+                                expect(state.colors.left_back.green).toEqual(0);
+                                expect(state.colors.left_back.blue).toEqual(0);
+                                expect(state.indicator_red).toEqual(false);
+                                expect(state.indicator_green).toEqual(false);
+                            } else {
+                                var i = j - 8;
+                                expect(state.status).toEqual(256 + 257 * i);
+                                expect(state.pattern).toEqual(2 + i);
+                                expect(state.colors.right_front.red)
+                                    .toEqual(3 + i);
+                                expect(state.colors.right_front.green)
+                                    .toEqual(4 + i);
+                                expect(state.colors.right_front.blue)
+                                    .toEqual(5 + i);
+                                expect(state.colors.right_back.red)
+                                    .toEqual(6 + i);
+                                expect(state.colors.right_back.green)
+                                    .toEqual(7 + i);
+                                expect(state.colors.right_back.blue)
+                                    .toEqual(8 + i);
+                                expect(state.colors.left_front.red)
+                                    .toEqual(9 + i);
+                                expect(state.colors.left_front.green)
+                                    .toEqual(10 + i);
+                                expect(state.colors.left_front.blue)
+                                    .toEqual(11 + i);
+                                expect(state.colors.left_back.red)
+                                    .toEqual(12 + i);
+                                expect(state.colors.left_back.green)
+                                    .toEqual(13 + i);
+                                expect(state.colors.left_back.blue)
+                                    .toEqual(14 + i);
+                                expect(state.indicator_red)
+                                    .toEqual(i % 2 === 0);
+                                expect(state.indicator_green)
+                                    .toEqual(i % 2 === 1);
+                            }
+                        }
+                        expect(config.name).toEqual('');
+                        done();
+                    });
+                    var mask = deviceConfig.field.LED_STATES;
+                    full_config_data[6] = (mask & 0xFF);
+                    full_config_data[7] = ((mask >> 8) & 0xFF);
+                    full_config_data[8] = 0x00;
+                    full_config_data[9] = 0xFF;
+                    Array.apply(null, Array(136))
+                        .map(function(val, idx) {
+                            var id = idx / 17;
+                            var m = idx % 17;
+                            if (m < 15) {
+                                return m + id;
+                            } else {
+                                return (m + id) % 2;
+                            }
+                        })
+                        .forEach(function(val, idx) {
+                            full_config_data[10 + idx] = val;
+                        });
+                    full_config_data = full_config_data.slice(0, 147);
+                    recalcChecksum(full_config_data);
+                    backend.onRead(
+                        new Uint8Array(cobs.encode(full_config_data)));
+                });
+
+                it('parses first half', function(done) {
+                    deviceConfig.setConfigCallback(function() {
+                        var config = deviceConfig.getConfig();
+                        expect(config.version)
+                            .toEqual(deviceConfig.getDesiredVersion());
+                        expect(config.id).toEqual(0);
+                        expect(config.pcbOrientation).toEqual([0.0, 0.0, 0.0]);
+                        expect(config.pcbTranslation).toEqual([0.0, 0.0, 0.0]);
+                        expect(config.mixTableFz).toEqual([
+                            0, 0, 0, 0, 0, 0, 0, 0
+                        ]);
+                        expect(config.mixTableTx).toEqual([
+                            0, 0, 0, 0, 0, 0, 0, 0
+                        ]);
+                        expect(config.mixTableTy).toEqual([
+                            0, 0, 0, 0, 0, 0, 0, 0
+                        ]);
+                        expect(config.mixTableTz).toEqual([
+                            0, 0, 0, 0, 0, 0, 0, 0
+                        ]);
+                        expect(config.magBias).toEqual([0.0, 0.0, 0.0]);
+                        expect(config.assignedChannel).toEqual([
+                            0, 0, 0, 0, 0, 0
+                        ]);
+                        expect(config.commandInversion).toEqual(0);
+                        expect(config.channelMidpoint).toEqual([
+                            0, 0, 0, 0, 0, 0
+                        ]);
+                        expect(config.channelDeadzone).toEqual([
+                            0, 0, 0, 0, 0, 0
+                        ]);
+                        expect(config.thrustMasterPIDParameters).toEqual([
+                            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                        ]);
+                        expect(config.pitchMasterPIDParameters).toEqual([
+                            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                        ]);
+                        expect(config.rollMasterPIDParameters).toEqual([
+                            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                        ]);
+                        expect(config.yawMasterPIDParameters).toEqual([
+                            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                        ]);
+                        expect(config.thrustSlavePIDParameters).toEqual([
+                            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                        ]);
+                        expect(config.pitchSlavePIDParameters).toEqual([
+                            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                        ]);
+                        expect(config.rollSlavePIDParameters).toEqual([
+                            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                        ]);
+                        expect(config.yawSlavePIDParameters).toEqual([
+                            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                        ]);
+                        expect(config.pidBypass).toEqual(0);
+                        expect(config.stateEstimationParameters).toEqual([
+                            0.0, 0.0
+                        ]);
+                        expect(config.enableParameters).toEqual([0.0, 0.0]);
+                        for (var j = 0; j < 16; ++j) {
+                            var state = config.ledStates[j];
+                            if (j > 7) {
+                                expect(state.status).toEqual(0);
+                                expect(state.pattern).toEqual(0);
+                                expect(state.colors.right_front.red).toEqual(0);
+                                expect(state.colors.right_front.green)
+                                    .toEqual(0);
+                                expect(state.colors.right_front.blue)
+                                    .toEqual(0);
+                                expect(state.colors.right_back.red).toEqual(0);
+                                expect(state.colors.right_back.green)
+                                    .toEqual(0);
+                                expect(state.colors.right_back.blue).toEqual(0);
+                                expect(state.colors.left_front.red).toEqual(0);
+                                expect(state.colors.left_front.green)
+                                    .toEqual(0);
+                                expect(state.colors.left_front.blue).toEqual(0);
+                                expect(state.colors.left_back.red).toEqual(0);
+                                expect(state.colors.left_back.green).toEqual(0);
+                                expect(state.colors.left_back.blue).toEqual(0);
+                                expect(state.indicator_red).toEqual(false);
+                                expect(state.indicator_green).toEqual(false);
+                            } else {
+                                var i = j;
+                                expect(state.status).toEqual(256 + 257 * i);
+                                expect(state.pattern).toEqual(2 + i);
+                                expect(state.colors.right_front.red)
+                                    .toEqual(3 + i);
+                                expect(state.colors.right_front.green)
+                                    .toEqual(4 + i);
+                                expect(state.colors.right_front.blue)
+                                    .toEqual(5 + i);
+                                expect(state.colors.right_back.red)
+                                    .toEqual(6 + i);
+                                expect(state.colors.right_back.green)
+                                    .toEqual(7 + i);
+                                expect(state.colors.right_back.blue)
+                                    .toEqual(8 + i);
+                                expect(state.colors.left_front.red)
+                                    .toEqual(9 + i);
+                                expect(state.colors.left_front.green)
+                                    .toEqual(10 + i);
+                                expect(state.colors.left_front.blue)
+                                    .toEqual(11 + i);
+                                expect(state.colors.left_back.red)
+                                    .toEqual(12 + i);
+                                expect(state.colors.left_back.green)
+                                    .toEqual(13 + i);
+                                expect(state.colors.left_back.blue)
+                                    .toEqual(14 + i);
+                                expect(state.indicator_red)
+                                    .toEqual(i % 2 === 0);
+                                expect(state.indicator_green)
+                                    .toEqual(i % 2 === 1);
+                            }
+                        }
                         expect(config.name).toEqual('');
                         done();
                     });
@@ -1205,7 +1464,13 @@ describe('Device configuration service', function() {
                     full_config_data[9] = 0x00;
                     Array.apply(null, Array(136))
                         .map(function(val, idx) {
-                            return (idx % 200);
+                            var id = idx / 17;
+                            var m = idx % 17;
+                            if (m < 15) {
+                                return m + id;
+                            } else {
+                                return (m + id) % 2;
+                            }
                         })
                         .forEach(function(val, idx) {
                             full_config_data[10 + idx] = val;
@@ -1276,17 +1541,66 @@ describe('Device configuration service', function() {
                             0.0, 0.0
                         ]);
                         expect(config.enableParameters).toEqual([0.0, 0.0]);
-                        expect(config.ledStates)
-                            .toEqual(Array.apply(null, Array(272))
-                                         .map(function(val, idx) {
-                                             if (idx >= 68 && idx < 204) {
-                                                 return 0;
-                                             }
-                                             if (idx >= 204) {
-                                                 idx -= 136;
-                                             }
-                                             return (idx % 200);
-                                         }));
+                        for (var j = 0; j < 16; ++j) {
+                            var state = config.ledStates[j];
+                            if (j > 3 && j < 12) {
+                                expect(state.status).toEqual(0);
+                                expect(state.pattern).toEqual(0);
+                                expect(state.colors.right_front.red).toEqual(0);
+                                expect(state.colors.right_front.green)
+                                    .toEqual(0);
+                                expect(state.colors.right_front.blue)
+                                    .toEqual(0);
+                                expect(state.colors.right_back.red).toEqual(0);
+                                expect(state.colors.right_back.green)
+                                    .toEqual(0);
+                                expect(state.colors.right_back.blue).toEqual(0);
+                                expect(state.colors.left_front.red).toEqual(0);
+                                expect(state.colors.left_front.green)
+                                    .toEqual(0);
+                                expect(state.colors.left_front.blue).toEqual(0);
+                                expect(state.colors.left_back.red).toEqual(0);
+                                expect(state.colors.left_back.green).toEqual(0);
+                                expect(state.colors.left_back.blue).toEqual(0);
+                                expect(state.indicator_red).toEqual(false);
+                                expect(state.indicator_green).toEqual(false);
+                            } else {
+                                var i = j;
+                                if (i > 8) {
+                                    i -= 8;
+                                }
+                                expect(state.status).toEqual(256 + 257 * i);
+                                expect(state.pattern).toEqual(2 + i);
+                                expect(state.colors.right_front.red)
+                                    .toEqual(3 + i);
+                                expect(state.colors.right_front.green)
+                                    .toEqual(4 + i);
+                                expect(state.colors.right_front.blue)
+                                    .toEqual(5 + i);
+                                expect(state.colors.right_back.red)
+                                    .toEqual(6 + i);
+                                expect(state.colors.right_back.green)
+                                    .toEqual(7 + i);
+                                expect(state.colors.right_back.blue)
+                                    .toEqual(8 + i);
+                                expect(state.colors.left_front.red)
+                                    .toEqual(9 + i);
+                                expect(state.colors.left_front.green)
+                                    .toEqual(10 + i);
+                                expect(state.colors.left_front.blue)
+                                    .toEqual(11 + i);
+                                expect(state.colors.left_back.red)
+                                    .toEqual(12 + i);
+                                expect(state.colors.left_back.green)
+                                    .toEqual(13 + i);
+                                expect(state.colors.left_back.blue)
+                                    .toEqual(14 + i);
+                                expect(state.indicator_red)
+                                    .toEqual(i % 2 === 0);
+                                expect(state.indicator_green)
+                                    .toEqual(i % 2 === 1);
+                            }
+                        }
                         expect(config.name).toEqual('');
                         done();
                     });
@@ -1297,7 +1611,13 @@ describe('Device configuration service', function() {
                     full_config_data[9] = 0xF0;
                     Array.apply(null, Array(136))
                         .map(function(val, idx) {
-                            return (idx % 200);
+                            var id = idx / 17;
+                            var m = idx % 17;
+                            if (m < 15) {
+                                return m + id;
+                            } else {
+                                return (m + id) % 2;
+                            }
                         })
                         .forEach(function(val, idx) {
                             full_config_data[10 + idx] = val;

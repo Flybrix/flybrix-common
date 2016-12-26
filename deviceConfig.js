@@ -7,7 +7,8 @@
 
     function deviceConfig(serial, commandLog, serializer) {
         var eepromConfigSize = 363 + 273;
-        var config = new Config();
+
+        var config;
 
         var desiredVersion = [1, 4, 0];  // checked at startup!
 
@@ -54,17 +55,6 @@
             }
         });
 
-        return {
-            request: request,
-            reinit: reinit,
-            send: send,
-            getConfig: getConfig,
-            setConfigCallback: setConfigCallback,
-            setLoggingCallback: setLoggingCallback,
-            getDesiredVersion: getDesiredVersion,
-            field: configFields,
-        };
-
         function getDesiredVersion() {
             return desiredVersion;
         }
@@ -102,6 +92,82 @@
                 });
         }
 
+        var LedPatterns = {
+            NO_OVERRIDE: 0,
+            FLASH: 1,
+            BEACON: 2,
+            BREATHE: 3,
+            ALTERNATE: 4,
+            SOLID: 5,
+        };
+
+        function LedColor(r, g, b) {
+            this.red = r;
+            this.green = g;
+            this.blue = b;
+        }
+
+        function ledColorParse(v, serializer, dataView) {
+            v.red = dataView.getUint8(serializer.index, 1);
+            serializer.add(1);
+            v.green = dataView.getUint8(serializer.index, 1);
+            serializer.add(1);
+            v.blue = dataView.getUint8(serializer.index, 1);
+            serializer.add(1);
+        };
+
+        function ledColorSerialize(v, serializer, dataView) {
+            dataView.setUint8(serializer.index, v.red);
+            serializer.add(1);
+            dataView.setUint8(serializer.index, v.green);
+            serializer.add(1);
+            dataView.setUint8(serializer.index, v.blue);
+            serializer.add(1);
+        };
+
+        function LedState() {
+            this.status = 0;
+            this.pattern = LedPatterns.NO_OVERRIDE;
+            this.colors = {
+                right_front: new LedColor(0, 0, 0),
+                right_back: new LedColor(0, 0, 0),
+                left_front: new LedColor(0, 0, 0),
+                left_back: new LedColor(0, 0, 0),
+            };
+            this.indicator_red = false;
+            this.indicator_green = false;
+        }
+
+        function ledStateParse(v, serializer, dataView) {
+            v.status = dataView.getUint16(serializer.index, 1);
+            serializer.add(2);
+            v.pattern = dataView.getUint8(serializer.index, 1);
+            serializer.add(1);
+            ledColorParse(v.colors.right_front, serializer, dataView);
+            ledColorParse(v.colors.right_back, serializer, dataView);
+            ledColorParse(v.colors.left_front, serializer, dataView);
+            ledColorParse(v.colors.left_back, serializer, dataView);
+            v.indicator_red = dataView.getUint8(serializer.index, 1) !== 0;
+            serializer.add(1);
+            v.indicator_green = dataView.getUint8(serializer.index, 1) !== 0;
+            serializer.add(1);
+        };
+
+        function ledStateSerialize(v, serializer, dataView) {
+            dataView.setUint16(serializer.index, v.status);
+            serializer.add(2);
+            dataView.setUint8(serializer.index, v.pattern);
+            serializer.add(1);
+            ledColorSerialize(v.colors.right_front, serializer, dataView);
+            ledColorSerialize(v.colors.right_back, serializer, dataView);
+            ledColorSerialize(v.colors.left_front, serializer, dataView);
+            ledColorSerialize(v.colors.left_back, serializer, dataView);
+            dataView.setUint8(serializer.index, v.indicator_red ? 1 : 0);
+            serializer.add(1);
+            dataView.setUint8(serializer.index, v.indicator_green ? 1 : 0);
+            serializer.add(1);
+        };
+
         function Config() {
             this.version = [0.0, 0.0, 0.0];
             this.id = 0;
@@ -128,8 +194,8 @@
             this.pidBypass = 0;
             this.stateEstimationParameters = [0.0, 0.0];
             this.enableParameters = [0.0, 0.0];
-            this.ledStates = Array.apply(null, Array(272)).map(function() {
-                return 0;
+            this.ledStates = Array.apply(null, Array(16)).map(function() {
+                return new LedState();
             });
             this.name = '';
         }
@@ -167,7 +233,9 @@
             b.add(1);
             b.parseFloat32Array(dataView, structure.stateEstimationParameters);
             b.parseFloat32Array(dataView, structure.enableParameters);
-            b.parseUint8Array(dataView, structure.ledStates);
+            structure.ledStates.forEach(function(ledState) {
+                ledStateParse(ledState, b, dataView);
+            });
             var stringData = new Uint8Array(9);
             b.parseUint8Array(dataView, stringData);
             structure.name = asciiDecode(stringData);
@@ -228,11 +296,7 @@
                 var RECORD_LENGTH = 17;
                 for (var i = 0; i < 16; ++i) {
                     if (led_mask & (1 << i)) {
-                        for (var j = 0; j < RECORD_LENGTH; ++j) {
-                            structure.ledStates[i * RECORD_LENGTH + j] =
-                                dataView.getUint8(b.index);
-                            b.add(1);
-                        }
+                        ledStateParse(structure.ledStates[i], b, dataView);
                     }
                 }
             }
@@ -272,7 +336,9 @@
             b.add(1);
             b.setFloat32Array(dataView, structure.stateEstimationParameters);
             b.setFloat32Array(dataView, structure.enableParameters);
-            b.setUint8Array(dataView, structure.ledStates);
+            structure.ledStates.forEach(function(ledState) {
+                ledStateSerialize(ledState, b, dataView);
+            });
             b.setUint8Array(dataView, asciiEncode(structure.name, 9));
         }
 
@@ -329,7 +395,7 @@
             name.split('').forEach(function(c, idx) {
                 response[idx] = c.charCodeAt(0);
             });
-            response[length-1] = 0;
+            response[length - 1] = 0;
             return response;
         }
 
@@ -343,5 +409,18 @@
             }
             return response;
         }
+
+        config = new Config();
+
+        return {
+            request: request,
+            reinit: reinit,
+            send: send,
+            getConfig: getConfig,
+            setConfigCallback: setConfigCallback,
+            setLoggingCallback: setLoggingCallback,
+            getDesiredVersion: getDesiredVersion,
+            field: configFields,
+        };
     }
 }());
