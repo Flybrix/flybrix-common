@@ -294,6 +294,458 @@ describe('Device configuration service', function() {
         });
     });
 
+    describe('.sendPartial()', function() {
+        var config;
+
+        beforeEach(function() {
+            config = {
+                version: [1, 4, 0],
+                id: 0x12345678,
+                pcbOrientation: [3.25, 1232.75, 7.125],
+                pcbTranslation: [323232.5, 77.5, 1.0],
+                mixTableFz: [0, 1, 2, 3, 4, 5, 6, 7],
+                mixTableTx: [8, 9, 10, 11, 12, 13, 14, 15],
+                mixTableTy: [16, 17, 18, 19, 20, 21, 22, 23],
+                mixTableTz: [24, 25, 26, 27, 28, 29, 30, 31],
+                magBias: [3.25, 1232.75, 7.125],
+                assignedChannel: [0, 1, 2, 3, 4, 5],
+                commandInversion: 6,
+                channelMidpoint:
+                    [0x0807, 0x0a09, 0x0c0b, 0x0e0d, 0x100f, 0x1211],
+                channelDeadzone:
+                    [0x1413, 0x1615, 0x1817, 0x1a19, 0x1c1b, 0x1e1d],
+                thrustMasterPIDParameters:
+                    [0.125, 0.125, 0.125, 0.125, 0.125, 0.125, 0.125],
+                pitchMasterPIDParameters: [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5],
+                rollMasterPIDParameters: [2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0],
+                yawMasterPIDParameters: [8.0, 8.0, 8.0, 8.0, 8.0, 8.0, 8.0],
+                thrustSlavePIDParameters:
+                    [32.0, 32.0, 32.0, 32.0, 32.0, 32.0, 32.0],
+                pitchSlavePIDParameters:
+                    [128.0, 128.0, 128.0, 128.0, 128.0, 128.0, 128.0],
+                rollSlavePIDParameters:
+                    [512.0, 512.0, 512.0, 512.0, 512.0, 512.0, 512.0],
+                yawSlavePIDParameters:
+                    [2048.0, 2048.0, 2048.0, 2048.0, 2048.0, 2048.0, 2048.0],
+                pidBypass: 4,
+                stateEstimationParameters: [3.25, 1232.75],
+                enableParameters: [7.125, 323232.5],
+                ledStates: [],
+                name: 'AbcD',
+            };
+            for (var i = 0; i < 16; ++i) {
+                var v = {
+                    status: 256 + 257 * i,
+                    pattern: 2 + i,
+                    colors: {
+                        right_front: {
+                            red: 3 + i,
+                            green: 4 + i,
+                            blue: 5 + i,
+                        },
+                        right_back: {
+                            red: 6 + i,
+                            green: 7 + i,
+                            blue: 8 + i,
+                        },
+                        left_front: {
+                            red: 9 + i,
+                            green: 10 + i,
+                            blue: 11 + i,
+                        },
+                        left_back: {
+                            red: 12 + i,
+                            green: 13 + i,
+                            blue: 14 + i,
+                        },
+                    },
+                    indicator_red: i % 2 === 0,
+                    indicator_green: i % 2 === 1,
+                };
+                config.ledStates.push(v);
+            }
+        });
+
+        it('exists', function() {
+            expect(deviceConfig.sendPartial).toBeDefined();
+        });
+
+        it('sends empty mask by default', function(done) {
+            backend.send = function(val) {
+                var decoder = new cobs.Reader();
+                decoder.AppendToBuffer(val, function(command, mask, data) {
+                    expect(command).toBe(parser.MessageType.Command);
+                    expect(mask).toBe(
+                        parser.CommandFields.COM_SET_PARTIAL_EEPROM_DATA |
+                        parser.CommandFields.COM_REQ_RESPONSE);
+                    expect(new Uint8Array(data)).toEqual(new Uint8Array([
+                        0, 0
+                    ]));
+                    done();
+                });
+            };
+            deviceConfig.sendPartial();
+            $timeout.flush();
+        });
+
+        it('sends version', function(done) {
+            backend.send = function(val) {
+                var decoder = new cobs.Reader();
+                decoder.AppendToBuffer(val, function(command, mask, data) {
+                    expect(command).toBe(parser.MessageType.Command);
+                    expect(mask).toBe(
+                        parser.CommandFields.COM_SET_PARTIAL_EEPROM_DATA |
+                        parser.CommandFields.COM_REQ_RESPONSE);
+                    expect(new Uint8Array(data)).toEqual(new Uint8Array([
+                        1, 0, 1, 4, 0
+                    ]));
+                    done();
+                });
+            };
+            deviceConfig.sendPartial(deviceConfig.field.VERSION, 0, config);
+            $timeout.flush();
+        });
+
+        it('sends ID', function(done) {
+            backend.send = function(val) {
+                var decoder = new cobs.Reader();
+                decoder.AppendToBuffer(val, function(command, mask, data) {
+                    expect(command).toBe(parser.MessageType.Command);
+                    expect(mask).toBe(
+                        parser.CommandFields.COM_SET_PARTIAL_EEPROM_DATA |
+                        parser.CommandFields.COM_REQ_RESPONSE);
+                    expect(new Uint8Array(data)).toEqual(new Uint8Array([
+                        2, 0, 0x78, 0x56, 0x34, 0x12
+                    ]));
+                    done();
+                });
+            };
+            deviceConfig.sendPartial(deviceConfig.field.ID, 0, config);
+            $timeout.flush();
+        });
+
+        it('sends PCB data', function(done) {
+            backend.send = function(val) {
+                var decoder = new cobs.Reader();
+                decoder.AppendToBuffer(val, function(command, mask, data) {
+                    expect(command).toBe(parser.MessageType.Command);
+                    expect(mask).toBe(
+                        parser.CommandFields.COM_SET_PARTIAL_EEPROM_DATA |
+                        parser.CommandFields.COM_REQ_RESPONSE);
+                    expect(new Uint8Array(data)).toEqual(new Uint8Array([
+                        4,    0, 0,    0,    0x50, 0x40, 0,    0x18, 0x9a,
+                        0x44, 0, 0,    0xe4, 0x40, 0x10, 0xd4, 0x9d, 0x48,
+                        0,    0, 0x9b, 0x42, 0,    0,    0x80, 0x3f
+                    ]));
+                    done();
+                });
+            };
+            deviceConfig.sendPartial(deviceConfig.field.PCB, 0, config);
+            $timeout.flush();
+        });
+
+        it('sends mix table', function(done) {
+            backend.send = function(val) {
+                var decoder = new cobs.Reader();
+                decoder.AppendToBuffer(val, function(command, mask, data) {
+                    expect(command).toBe(parser.MessageType.Command);
+                    expect(mask).toBe(
+                        parser.CommandFields.COM_SET_PARTIAL_EEPROM_DATA |
+                        parser.CommandFields.COM_REQ_RESPONSE);
+                    var full_config_data = new Uint8Array(34);
+                    full_config_data[0] = 8;
+                    full_config_data[1] = 0;
+                    Array.apply(null, Array(32))
+                        .map(function(val, idx) {
+                            return (idx % 200);
+                        })
+                        .forEach(function(val, idx) {
+                            full_config_data[2 + idx] = val;
+                        });
+                    expect(new Uint8Array(data)).toEqual(full_config_data);
+                    done();
+                });
+            };
+            deviceConfig.sendPartial(deviceConfig.field.MIX_TABLE, 0, config);
+            $timeout.flush();
+        });
+
+        it('sends magnetic bias', function(done) {
+            backend.send = function(val) {
+                var decoder = new cobs.Reader();
+                decoder.AppendToBuffer(val, function(command, mask, data) {
+                    expect(command).toBe(parser.MessageType.Command);
+                    expect(mask).toBe(
+                        parser.CommandFields.COM_SET_PARTIAL_EEPROM_DATA |
+                        parser.CommandFields.COM_REQ_RESPONSE);
+                    expect(new Uint8Array(data)).toEqual(new Uint8Array([
+                        16, 0, 0, 0, 0x50, 0x40, 0, 0x18, 0x9a, 0x44, 0, 0,
+                        0xe4, 0x40
+                    ]));
+                    done();
+                });
+            };
+            deviceConfig.sendPartial(deviceConfig.field.MAG_BIAS, 0, config);
+            $timeout.flush();
+        });
+
+        it('sends channel data', function(done) {
+            backend.send = function(val) {
+                var decoder = new cobs.Reader();
+                decoder.AppendToBuffer(val, function(command, mask, data) {
+                    expect(command).toBe(parser.MessageType.Command);
+                    expect(mask).toBe(
+                        parser.CommandFields.COM_SET_PARTIAL_EEPROM_DATA |
+                        parser.CommandFields.COM_REQ_RESPONSE);
+                    var full_config_data = new Uint8Array(33);
+                    full_config_data[0] = 32;
+                    full_config_data[1] = 0;
+                    Array.apply(null, Array(31))
+                        .map(function(val, idx) {
+                            return (idx % 200);
+                        })
+                        .forEach(function(val, idx) {
+                            full_config_data[2 + idx] = val;
+                        });
+                    expect(new Uint8Array(data)).toEqual(full_config_data);
+                    done();
+                });
+            };
+            deviceConfig.sendPartial(deviceConfig.field.CHANNEL, 0, config);
+            $timeout.flush();
+        });
+
+        it('sends PID parameters data', function(done) {
+            backend.send = function(val) {
+                var decoder = new cobs.Reader();
+                decoder.AppendToBuffer(val, function(command, mask, data) {
+                    expect(command).toBe(parser.MessageType.Command);
+                    expect(mask).toBe(
+                        parser.CommandFields.COM_SET_PARTIAL_EEPROM_DATA |
+                        parser.CommandFields.COM_REQ_RESPONSE);
+                    var full_config_data = new Uint8Array(8 * 7 * 4 + 3);
+                    full_config_data[0] = 64;
+                    full_config_data[1] = 0;
+                    Array.apply(null, Array(8 * 7 * 4 + 1))
+                        .map(function(val, idx) {
+                            if (idx === 8 * 7 * 4) {
+                                // PID bypass flags
+                                return 4;
+                            }
+                            // other items, type Float32
+                            if (idx % 4 !== 3) {
+                                return 0;
+                            }
+                            return (0x3e + Math.floor(idx / 28));
+                        })
+                        .forEach(function(val, idx) {
+                            full_config_data[2 + idx] = val;
+                        });
+                    expect(new Uint8Array(data)).toEqual(full_config_data);
+                    done();
+                });
+            };
+            deviceConfig.sendPartial(
+                deviceConfig.field.PID_PARAMETERS, 0, config);
+            $timeout.flush();
+        });
+
+        it('sends STATE parameters data', function(done) {
+            backend.send = function(val) {
+                var decoder = new cobs.Reader();
+                decoder.AppendToBuffer(val, function(command, mask, data) {
+                    expect(command).toBe(parser.MessageType.Command);
+                    expect(mask).toBe(
+                        parser.CommandFields.COM_SET_PARTIAL_EEPROM_DATA |
+                        parser.CommandFields.COM_REQ_RESPONSE);
+                    expect(new Uint8Array(data)).toEqual(new Uint8Array([
+                        128, 0, 0, 0, 0x50, 0x40, 0, 0x18, 0x9a, 0x44, 0, 0,
+                        0xe4, 0x40, 0x10, 0xd4, 0x9d, 0x48
+                    ]));
+                    done();
+                });
+            };
+            deviceConfig.sendPartial(
+                deviceConfig.field.STATE_PARAMETERS, 0, config);
+            $timeout.flush();
+        });
+
+        it('sends LED states data', function(done) {
+            backend.send = function(val) {
+                var decoder = new cobs.Reader();
+                decoder.AppendToBuffer(val, function(command, mask, data) {
+                    expect(command).toBe(parser.MessageType.Command);
+                    expect(mask).toBe(
+                        parser.CommandFields.COM_SET_PARTIAL_EEPROM_DATA |
+                        parser.CommandFields.COM_REQ_RESPONSE);
+                    var full_config_data = new Uint8Array(276);
+                    full_config_data[0] = 0;
+                    full_config_data[1] = 1;
+                    full_config_data[2] = 255;
+                    full_config_data[3] = 255;
+                    Array.apply(null, Array(272))
+                        .map(function(val, idx) {
+                            var id = idx / 17;
+                            var m = idx % 17;
+                            if (m < 15) {
+                                return m + id;
+                            } else {
+                                return (m + id) % 2;
+                            }
+                        })
+                        .forEach(function(val, idx) {
+                            full_config_data[4 + idx] = val;
+                        });
+                    expect(new Uint8Array(data)).toEqual(full_config_data);
+                    done();
+                });
+            };
+            deviceConfig.sendPartial(
+                deviceConfig.field.LED_STATES, 256 * 256 - 1, config);
+            $timeout.flush();
+        });
+
+        it('sends first half of LED states data', function(done) {
+            backend.send = function(val) {
+                var decoder = new cobs.Reader();
+                decoder.AppendToBuffer(val, function(command, mask, data) {
+                    expect(command).toBe(parser.MessageType.Command);
+                    expect(mask).toBe(
+                        parser.CommandFields.COM_SET_PARTIAL_EEPROM_DATA |
+                        parser.CommandFields.COM_REQ_RESPONSE);
+                    var full_config_data = new Uint8Array(140);
+                    full_config_data[0] = 0;
+                    full_config_data[1] = 1;
+                    full_config_data[2] = 255;
+                    full_config_data[3] = 0;
+                    Array.apply(null, Array(136))
+                        .map(function(val, idx) {
+                            var id = idx / 17;
+                            var m = idx % 17;
+                            if (m < 15) {
+                                return m + id;
+                            } else {
+                                return (m + id) % 2;
+                            }
+                        })
+                        .forEach(function(val, idx) {
+                            full_config_data[4 + idx] = val;
+                        });
+                    expect(new Uint8Array(data)).toEqual(full_config_data);
+                    done();
+                });
+            };
+            deviceConfig.sendPartial(
+                deviceConfig.field.LED_STATES, 255, config);
+            $timeout.flush();
+        });
+
+        it('sends second half of LED states data', function(done) {
+            backend.send = function(val) {
+                var decoder = new cobs.Reader();
+                decoder.AppendToBuffer(val, function(command, mask, data) {
+                    expect(command).toBe(parser.MessageType.Command);
+                    expect(mask).toBe(
+                        parser.CommandFields.COM_SET_PARTIAL_EEPROM_DATA |
+                        parser.CommandFields.COM_REQ_RESPONSE);
+                    var full_config_data = new Uint8Array(140);
+                    full_config_data[0] = 0;
+                    full_config_data[1] = 1;
+                    full_config_data[2] = 0;
+                    full_config_data[3] = 255;
+                    Array.apply(null, Array(136))
+                        .map(function(val, idx) {
+                            idx += 136;
+                            var id = idx / 17;
+                            var m = idx % 17;
+                            if (m < 15) {
+                                return m + id;
+                            } else {
+                                return (m + id) % 2;
+                            }
+                        })
+                        .forEach(function(val, idx) {
+                            full_config_data[4 + idx] = val;
+                        });
+                    expect(new Uint8Array(data)).toEqual(full_config_data);
+                    done();
+                });
+            };
+            deviceConfig.sendPartial(
+                deviceConfig.field.LED_STATES, 255 * 256, config);
+            $timeout.flush();
+        });
+
+        it('sends device name', function(done) {
+            backend.send = function(val) {
+                var decoder = new cobs.Reader();
+                decoder.AppendToBuffer(val, function(command, mask, data) {
+                    expect(command).toBe(parser.MessageType.Command);
+                    expect(mask).toBe(
+                        parser.CommandFields.COM_SET_PARTIAL_EEPROM_DATA |
+                        parser.CommandFields.COM_REQ_RESPONSE);
+                    expect(new Uint8Array(data)).toEqual(new Uint8Array([
+                        0, 2, 65, 98, 99, 68, 0, 0, 0, 0, 0
+                    ]));
+                    done();
+                });
+            };
+            deviceConfig.sendPartial(deviceConfig.field.DEVICE_NAME, 0, config);
+            $timeout.flush();
+        });
+
+        it('sends temporary configuration', function(done) {
+            backend.send = function(val) {
+                var decoder = new cobs.Reader();
+                decoder.AppendToBuffer(val, function(command, mask, data) {
+                    expect(command).toBe(parser.MessageType.Command);
+                    expect(mask).toBe(
+                        parser.CommandFields.COM_SET_PARTIAL_TEMPORARY_CONFIG |
+                        parser.CommandFields.COM_REQ_RESPONSE);
+                    expect(new Uint8Array(data)).toEqual(new Uint8Array([
+                        0, 2, 65, 98, 99, 68, 0, 0, 0, 0, 0
+                    ]));
+                    done();
+                });
+            };
+            deviceConfig.sendPartial(
+                deviceConfig.field.DEVICE_NAME, 0, config, true);
+            $timeout.flush();
+        });
+
+        it('asks for confirmation', function(done) {
+            var counter = 0;
+            backend.send = function(val) {
+                var decoder = new cobs.Reader();
+                decoder.AppendToBuffer(val, function(command, mask, data) {
+                    if (counter === 0) {
+                        expect(command).toBe(parser.MessageType.Command);
+                        expect(mask).toBe(
+                            parser.CommandFields.COM_SET_PARTIAL_EEPROM_DATA |
+                            parser.CommandFields.COM_REQ_RESPONSE);
+                        expect(new Uint8Array(data)).toEqual(new Uint8Array([
+                            0, 2, 65, 98, 99, 68, 0, 0, 0, 0, 0
+                        ]));
+                        backend.onRead(new Uint8Array(
+                            [4, 254, 255, 1, 2, 16, 1, 1, 2, 16, 1, 0]));
+                    } else if (counter === 1) {
+                        expect(command).toBe(parser.MessageType.Command);
+                        expect(mask).toBe(
+                            parser.CommandFields.COM_REQ_EEPROM_DATA |
+                            parser.CommandFields.COM_REQ_RESPONSE);
+                        expect(new Uint8Array(data)).toEqual(new Uint8Array([
+                        ]));
+                        done();
+                    }
+                    ++counter;
+                });
+            };
+            deviceConfig.sendPartial(
+                deviceConfig.field.DEVICE_NAME, 0, config, false, true);
+            $timeout.flush();
+        });
+    });
+
     describe('.setConfigCallback()', function() {
         var full_config_data;
         function recalcChecksum(v) {

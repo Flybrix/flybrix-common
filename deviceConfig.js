@@ -92,6 +92,32 @@
                 });
         }
 
+        function sendPartial(
+            mask, led_mask, newConfig, temporary, request_update) {
+            if (mask === undefined) {
+                mask = 0;
+            }
+            if (led_mask === undefined) {
+                led_mask = 0;
+            }
+            if (newConfig === undefined) {
+                newConfig = config;
+            }
+            var target = temporary ?
+                serial.field.COM_SET_PARTIAL_TEMPORARY_CONFIG :
+                serial.field.COM_SET_PARTIAL_EEPROM_DATA;
+
+            var eepromConfigBytes = new ArrayBuffer(eepromConfigSize);
+            var view = new DataView(eepromConfigBytes, 0);
+            var endpoint = setConfigPartial(view, newConfig, mask, led_mask);
+            var data = new Uint8Array(eepromConfigBytes.slice(0, endpoint));
+            serial.send(target, data, false).then(function() {
+                if (request_update) {
+                    request();
+                }
+            });
+        }
+
         var LedPatterns = {
             NO_OVERRIDE: 0,
             FLASH: 1,
@@ -154,7 +180,7 @@
         };
 
         function ledStateSerialize(v, serializer, dataView) {
-            dataView.setUint16(serializer.index, v.status);
+            dataView.setUint16(serializer.index, v.status, 1);
             serializer.add(2);
             dataView.setUint8(serializer.index, v.pattern);
             serializer.add(1);
@@ -342,6 +368,70 @@
             b.setUint8Array(dataView, asciiEncode(structure.name, 9));
         }
 
+        function setConfigPartial(dataView, structure, mask, led_mask) {
+            var b = new serializer();
+            dataView.setUint16(b.index, mask, 1);
+            b.add(2);
+            if (mask & configFields.VERSION) {
+                b.setInt8Array(dataView, structure.version);
+            }
+            if (mask & configFields.ID) {
+                dataView.setUint32(b.index, structure.id, 1);
+                b.add(4);
+            }
+            if (mask & configFields.PCB) {
+                b.setFloat32Array(dataView, structure.pcbOrientation);
+                b.setFloat32Array(dataView, structure.pcbTranslation);
+            }
+            if (mask & configFields.MIX_TABLE) {
+                b.setInt8Array(dataView, structure.mixTableFz);
+                b.setInt8Array(dataView, structure.mixTableTx);
+                b.setInt8Array(dataView, structure.mixTableTy);
+                b.setInt8Array(dataView, structure.mixTableTz);
+            }
+            if (mask & configFields.MAG_BIAS) {
+                b.setFloat32Array(dataView, structure.magBias);
+            }
+            if (mask & configFields.CHANNEL) {
+                b.setUint8Array(dataView, structure.assignedChannel);
+                dataView.setUint8(b.index, structure.commandInversion);
+                b.add(1);
+                b.setUint16Array(dataView, structure.channelMidpoint);
+                b.setUint16Array(dataView, structure.channelDeadzone);
+            }
+            if (mask & configFields.PID_PARAMETERS) {
+                b.setFloat32Array(
+                    dataView, structure.thrustMasterPIDParameters);
+                b.setFloat32Array(dataView, structure.pitchMasterPIDParameters);
+                b.setFloat32Array(dataView, structure.rollMasterPIDParameters);
+                b.setFloat32Array(dataView, structure.yawMasterPIDParameters);
+                b.setFloat32Array(dataView, structure.thrustSlavePIDParameters);
+                b.setFloat32Array(dataView, structure.pitchSlavePIDParameters);
+                b.setFloat32Array(dataView, structure.rollSlavePIDParameters);
+                b.setFloat32Array(dataView, structure.yawSlavePIDParameters);
+                dataView.setUint8(b.index, structure.pidBypass);
+                b.add(1);
+            }
+            if (mask & configFields.STATE_PARAMETERS) {
+                b.setFloat32Array(
+                    dataView, structure.stateEstimationParameters);
+                b.setFloat32Array(dataView, structure.enableParameters);
+            }
+            if (mask & configFields.LED_STATES) {
+                dataView.setUint16(b.index, led_mask, 1);
+                b.add(2);
+                for (var i = 0; i < 16; ++i) {
+                    if (led_mask & (1 << i)) {
+                        ledStateSerialize(structure.ledStates[i], b, dataView);
+                    }
+                }
+            }
+            if (mask & configFields.DEVICE_NAME) {
+                b.setUint8Array(dataView, asciiEncode(structure.name, 9));
+            }
+            return b.index;
+        }
+
         function comSetEepromData(message_buffer) {
             commandLog('Received config!');
             var data = new DataView(message_buffer, 0);
@@ -416,6 +506,7 @@
             request: request,
             reinit: reinit,
             send: send,
+            sendPartial: sendPartial,
             getConfig: getConfig,
             setConfigCallback: setConfigCallback,
             setLoggingCallback: setLoggingCallback,
