@@ -11,6 +11,7 @@ gulp.task('min', function() {
         'parser.js',
         'serial.js',
         'deviceConfig.js',
+        'led.js',
         'rcData.js',
     ];
     gulp.src(files)

@@ -118,15 +118,6 @@
             });
         }
 
-        var LedPatterns = {
-            NO_OVERRIDE: 0,
-            FLASH: 1,
-            BEACON: 2,
-            BREATHE: 3,
-            ALTERNATE: 4,
-            SOLID: 5,
-        };
-
         function LedColor(r, g, b) {
             this.red = r;
             this.green = g;
@@ -153,7 +144,7 @@
 
         function LedState() {
             this.status = 0;
-            this.pattern = LedPatterns.NO_OVERRIDE;
+            this.pattern = 0;
             this.colors = {
                 right_front: new LedColor(0, 0, 0),
                 right_back: new LedColor(0, 0, 0),
