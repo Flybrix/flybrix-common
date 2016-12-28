@@ -15,12 +15,15 @@
             SOLID: 5,
         };
 
-        var colors = [0, 0, 0, 0].map(function() {
-            return {
+        var keys = ['right_front', 'right_back', 'left_front', 'left_back'];
+        var colors = {};
+
+        keys.forEach(function(key) {
+            colors[key] = {
                 red: 0,
                 green: 0,
                 blue: 0,
-            };
+            }
         });
 
         var ledState = {
@@ -33,12 +36,35 @@
 
         var configPart = {ledStates: [ledState]};
 
-        function set(red, green, blue) {
-            colors.forEach(function(v) {
-                v.red = red;
-                v.green = green;
-                v.blue = blue;
+        function set(
+            color_rf, color_rb, color_lf, color_lb, pattern, red, green) {
+            if (!(pattern > 0 && pattern < 6)) {
+                pattern = LedPatterns.SOLID;
+            }
+            ledState.pattern = pattern;
+            [color_rf, color_rb, color_lf, color_lb].forEach(function(
+                color, idx) {
+                if (!color) {
+                    return;
+                }
+                var v = colors[keys[idx]];
+                v.red = color.red;
+                v.green = color.green;
+                v.blue = color.blue;
             });
+            if (red !== undefined) {
+                ledState.indicator_red = red;
+            }
+            if (green !== undefined) {
+                ledState.indicator_green = green;
+            }
+
+            apply();
+        }
+
+        function setSimple(red, green, blue) {
+            var color = {red: red || 0, green: green || 0, blue: blue || 0};
+            set(color, color, color, color, LedPatterns.SOLID);
 
             apply();
         }
@@ -54,6 +80,7 @@
 
         return {
             set: set,
+            setSimple: setSimple,
             patterns: LedPatterns,
         };
     }
