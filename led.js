@@ -38,10 +38,9 @@
 
         function set(
             color_rf, color_rb, color_lf, color_lb, pattern, red, green) {
-            if (!(pattern > 0 && pattern < 6)) {
-                pattern = LedPatterns.SOLID;
+            if (pattern > 0 && pattern < 6) {
+                ledState.pattern = pattern;
             }
-            ledState.pattern = pattern;
             [color_rf, color_rb, color_lf, color_lb].forEach(function(
                 color, idx) {
                 if (!color) {
@@ -65,11 +64,9 @@
         function setSimple(red, green, blue) {
             var color = {red: red || 0, green: green || 0, blue: blue || 0};
             set(color, color, color, color, LedPatterns.SOLID);
-
-            apply();
         }
 
-        function apply(arg) {
+        function apply() {
             deviceConfig.sendPartial(
                 deviceConfig.field.LED_STATES,  // Set LED state part
                 1,           // more specifically, the first state 2^0 = 1
