@@ -85,6 +85,10 @@ describe('Device configuration service', function() {
             expect(config.yawSlavePIDParameters).toEqual([
                 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
             ]);
+            expect(config.thrustGain).toBe(0);
+            expect(config.pitchGain).toBe(0);
+            expect(config.rollGain).toBe(0);
+            expect(config.yawGain).toBe(0);
             expect(config.pidBypass).toEqual(0);
             expect(config.stateEstimationParameters).toEqual([0.0, 0.0]);
             expect(config.enableParameters).toEqual([0.0, 0.0]);
@@ -224,7 +228,7 @@ describe('Device configuration service', function() {
                         parser.CommandFields.COM_REQ_RESPONSE);
                     expect(new Uint8Array(data))
                         .toEqual(new Uint8Array(
-                            Array.apply(null, Array(636)).map(function() {
+                            Array.apply(null, Array(652)).map(function() {
                                 return 0;
                             })));
                     done();
@@ -243,7 +247,7 @@ describe('Device configuration service', function() {
                         parser.CommandFields.COM_SET_EEPROM_DATA |
                         parser.CommandFields.COM_REQ_RESPONSE);
                     var expected_data = new Uint8Array(
-                        Array.apply(null, Array(636)).map(function() {
+                        Array.apply(null, Array(652)).map(function() {
                             return 0;
                         }));
                     expected_data[0] = 1;
@@ -272,7 +276,7 @@ describe('Device configuration service', function() {
                             parser.CommandFields.COM_REQ_RESPONSE);
                         expect(new Uint8Array(data))
                             .toEqual(new Uint8Array(
-                                Array.apply(null, Array(636)).map(function() {
+                                Array.apply(null, Array(652)).map(function() {
                                     return 0;
                                 })));
                         backend.onRead(new Uint8Array(
@@ -327,6 +331,10 @@ describe('Device configuration service', function() {
                     [512.0, 512.0, 512.0, 512.0, 512.0, 512.0, 512.0],
                 yawSlavePIDParameters:
                     [2048.0, 2048.0, 2048.0, 2048.0, 2048.0, 2048.0, 2048.0],
+                thrustGain: 0.5,
+                pitchGain: 2.0,
+                rollGain: 8.0,
+                yawGain: 32.0,
                 pidBypass: 4,
                 stateEstimationParameters: [3.25, 1232.75],
                 enableParameters: [7.125, 323232.5],
@@ -523,18 +531,22 @@ describe('Device configuration service', function() {
                     expect(mask).toBe(
                         parser.CommandFields.COM_SET_PARTIAL_EEPROM_DATA |
                         parser.CommandFields.COM_REQ_RESPONSE);
-                    var full_config_data = new Uint8Array(8 * 7 * 4 + 3);
+                    var full_config_data =
+                        new Uint8Array(8 * 7 * 4 + 4 * 4 + 3);
                     full_config_data[0] = 64;
                     full_config_data[1] = 0;
-                    Array.apply(null, Array(8 * 7 * 4 + 1))
+                    Array.apply(null, Array(8 * 7 * 4 + 4 * 4 + 1))
                         .map(function(val, idx) {
-                            if (idx === 8 * 7 * 4) {
+                            if (idx === 8 * 7 * 4 + 4 * 4) {
                                 // PID bypass flags
                                 return 4;
                             }
                             // other items, type Float32
                             if (idx % 4 !== 3) {
                                 return 0;
+                            }
+                            if (idx >= 8 * 7 * 4) {
+                                return (0x3e + 1 + Math.floor(idx / 4 - 8 * 7));
                             }
                             return (0x3e + Math.floor(idx / 28));
                         })
@@ -756,7 +768,7 @@ describe('Device configuration service', function() {
         }
         beforeEach(function() {
             full_config_data =
-                new Uint8Array(Array.apply(null, Array(649)).map(function() {
+                new Uint8Array(Array.apply(null, Array(665)).map(function() {
                     return 0;
                 }));
             full_config_data[1] = parser.MessageType.Command;
@@ -921,6 +933,10 @@ describe('Device configuration service', function() {
                     expect(config.yawSlavePIDParameters).toEqual([
                         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
                     ]);
+                    expect(config.thrustGain).toBe(0);
+                    expect(config.pitchGain).toBe(0);
+                    expect(config.rollGain).toBe(0);
+                    expect(config.yawGain).toBe(0);
                     expect(config.pidBypass).toEqual(0);
                     expect(config.stateEstimationParameters).toEqual([
                         0.0, 0.0
@@ -1004,6 +1020,10 @@ describe('Device configuration service', function() {
                     expect(config.yawSlavePIDParameters).toEqual([
                         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
                     ]);
+                    expect(config.thrustGain).toBe(0);
+                    expect(config.pitchGain).toBe(0);
+                    expect(config.rollGain).toBe(0);
+                    expect(config.yawGain).toBe(0);
                     expect(config.pidBypass).toEqual(0);
                     expect(config.stateEstimationParameters).toEqual([
                         0.0, 0.0
@@ -1091,6 +1111,10 @@ describe('Device configuration service', function() {
                     expect(config.yawSlavePIDParameters).toEqual([
                         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
                     ]);
+                    expect(config.thrustGain).toBe(0);
+                    expect(config.pitchGain).toBe(0);
+                    expect(config.rollGain).toBe(0);
+                    expect(config.yawGain).toBe(0);
                     expect(config.pidBypass).toEqual(0);
                     expect(config.stateEstimationParameters).toEqual([
                         0.0, 0.0
@@ -1174,6 +1198,10 @@ describe('Device configuration service', function() {
                     expect(config.yawSlavePIDParameters).toEqual([
                         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
                     ]);
+                    expect(config.thrustGain).toBe(0);
+                    expect(config.pitchGain).toBe(0);
+                    expect(config.rollGain).toBe(0);
+                    expect(config.yawGain).toBe(0);
                     expect(config.pidBypass).toEqual(0);
                     expect(config.stateEstimationParameters).toEqual([
                         0.0, 0.0
@@ -1258,6 +1286,10 @@ describe('Device configuration service', function() {
                     expect(config.yawSlavePIDParameters).toEqual([
                         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
                     ]);
+                    expect(config.thrustGain).toBe(0);
+                    expect(config.pitchGain).toBe(0);
+                    expect(config.rollGain).toBe(0);
+                    expect(config.yawGain).toBe(0);
                     expect(config.pidBypass).toEqual(0);
                     expect(config.stateEstimationParameters).toEqual([
                         0.0, 0.0
@@ -1341,6 +1373,10 @@ describe('Device configuration service', function() {
                     expect(config.yawSlavePIDParameters).toEqual([
                         2048.0, 2048.0, 2048.0, 2048.0, 2048.0, 2048.0, 2048.0
                     ]);
+                    expect(config.thrustGain).toBe(0.5);
+                    expect(config.pitchGain).toBe(2.0);
+                    expect(config.rollGain).toBe(8.0);
+                    expect(config.yawGain).toBe(32.0);
                     expect(config.pidBypass).toEqual(4);
                     expect(config.stateEstimationParameters).toEqual([
                         0.0, 0.0
@@ -1371,9 +1407,9 @@ describe('Device configuration service', function() {
                 var mask = deviceConfig.field.PID_PARAMETERS;
                 full_config_data[6] = (mask & 0xFF);
                 full_config_data[7] = ((mask >> 8) & 0xFF);
-                Array.apply(null, Array(8 * 7 * 4 + 1))
+                Array.apply(null, Array(8 * 7 * 4 + 4 * 4 + 1))
                     .map(function(val, idx) {
-                        if (idx === 8 * 7 * 4) {
+                        if (idx === 8 * 7 * 4 + 4 * 4) {
                             // PID bypass flags
                             return 4;
                         }
@@ -1381,13 +1417,16 @@ describe('Device configuration service', function() {
                         if (idx % 4 !== 3) {
                             return 0;
                         }
+                        if (idx >= 8 * 7 * 4) {
+                            return (0x3e + 1 + Math.floor(idx / 4 - 8 * 7));
+                        }
                         return (0x3e + Math.floor(idx / 28));
                     })
                     .forEach(function(val, idx) {
                         full_config_data[8 + idx] = val;
                     });
                 full_config_data =
-                    full_config_data.slice(0, 8 + 8 * 7 * 4 + 1 + 1);
+                    full_config_data.slice(0, 8 + 8 * 7 * 4 + 4 * 4 + 1 + 1);
                 recalcChecksum(full_config_data);
                 backend.onRead(new Uint8Array(cobs.encode(full_config_data)));
             });
@@ -1433,6 +1472,10 @@ describe('Device configuration service', function() {
                     expect(config.yawSlavePIDParameters).toEqual([
                         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
                     ]);
+                    expect(config.thrustGain).toBe(0);
+                    expect(config.pitchGain).toBe(0);
+                    expect(config.rollGain).toBe(0);
+                    expect(config.yawGain).toBe(0);
                     expect(config.pidBypass).toEqual(0);
                     expect(config.stateEstimationParameters).toEqual([
                         3.25, 1232.75
@@ -1514,6 +1557,10 @@ describe('Device configuration service', function() {
                     expect(config.yawSlavePIDParameters).toEqual([
                         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
                     ]);
+                    expect(config.thrustGain).toBe(0);
+                    expect(config.pitchGain).toBe(0);
+                    expect(config.rollGain).toBe(0);
+                    expect(config.yawGain).toBe(0);
                     expect(config.pidBypass).toEqual(0);
                     expect(config.stateEstimationParameters).toEqual([
                         0.0, 0.0
@@ -1605,6 +1652,10 @@ describe('Device configuration service', function() {
                     expect(config.yawSlavePIDParameters).toEqual([
                         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
                     ]);
+                    expect(config.thrustGain).toBe(0);
+                    expect(config.pitchGain).toBe(0);
+                    expect(config.rollGain).toBe(0);
+                    expect(config.yawGain).toBe(0);
                     expect(config.pidBypass).toEqual(0);
                     expect(config.stateEstimationParameters).toEqual([
                         0.0, 0.0
@@ -1700,6 +1751,10 @@ describe('Device configuration service', function() {
                         expect(config.yawSlavePIDParameters).toEqual([
                             0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
                         ]);
+                        expect(config.thrustGain).toBe(0);
+                        expect(config.pitchGain).toBe(0);
+                        expect(config.rollGain).toBe(0);
+                        expect(config.yawGain).toBe(0);
                         expect(config.pidBypass).toEqual(0);
                         expect(config.stateEstimationParameters).toEqual([
                             0.0, 0.0
@@ -1844,6 +1899,10 @@ describe('Device configuration service', function() {
                         expect(config.yawSlavePIDParameters).toEqual([
                             0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
                         ]);
+                        expect(config.thrustGain).toBe(0);
+                        expect(config.pitchGain).toBe(0);
+                        expect(config.rollGain).toBe(0);
+                        expect(config.yawGain).toBe(0);
                         expect(config.pidBypass).toEqual(0);
                         expect(config.stateEstimationParameters).toEqual([
                             0.0, 0.0
@@ -1988,6 +2047,10 @@ describe('Device configuration service', function() {
                         expect(config.yawSlavePIDParameters).toEqual([
                             0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
                         ]);
+                        expect(config.thrustGain).toBe(0);
+                        expect(config.pitchGain).toBe(0);
+                        expect(config.rollGain).toBe(0);
+                        expect(config.yawGain).toBe(0);
                         expect(config.pidBypass).toEqual(0);
                         expect(config.stateEstimationParameters).toEqual([
                             0.0, 0.0

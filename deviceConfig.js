@@ -6,7 +6,7 @@
     deviceConfig.$inject = ['serial', 'commandLog', 'serializer'];
 
     function deviceConfig(serial, commandLog, serializer) {
-        var eepromConfigSize = 363 + 273;
+        var eepromConfigSize = 379 + 273;
 
         var config;
 
@@ -208,6 +208,10 @@
             this.pitchSlavePIDParameters = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0];
             this.rollSlavePIDParameters = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0];
             this.yawSlavePIDParameters = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0];
+            this.thrustGain = 0.0;
+            this.pitchGain = 0.0;
+            this.rollGain = 0.0;
+            this.yawGain = 0.0;
             this.pidBypass = 0;
             this.stateEstimationParameters = [0.0, 0.0];
             this.enableParameters = [0.0, 0.0];
@@ -246,6 +250,14 @@
             parsePID(b, dataView, structure.pitchSlavePIDParameters);
             parsePID(b, dataView, structure.rollSlavePIDParameters);
             parsePID(b, dataView, structure.yawSlavePIDParameters);
+            structure.thrustGain = dataView.getFloat32(b.index, 1);
+            b.add(4);
+            structure.pitchGain = dataView.getFloat32(b.index, 1);
+            b.add(4);
+            structure.rollGain = dataView.getFloat32(b.index, 1);
+            b.add(4);
+            structure.yawGain = dataView.getFloat32(b.index, 1);
+            b.add(4);
             structure.pidBypass = dataView.getUint8(b.index);
             b.add(1);
             b.parseFloat32Array(dataView, structure.stateEstimationParameters);
@@ -299,6 +311,14 @@
                 parsePID(b, dataView, structure.pitchSlavePIDParameters);
                 parsePID(b, dataView, structure.rollSlavePIDParameters);
                 parsePID(b, dataView, structure.yawSlavePIDParameters);
+                structure.thrustGain = dataView.getFloat32(b.index, 1);
+                b.add(4);
+                structure.pitchGain = dataView.getFloat32(b.index, 1);
+                b.add(4);
+                structure.rollGain = dataView.getFloat32(b.index, 1);
+                b.add(4);
+                structure.yawGain = dataView.getFloat32(b.index, 1);
+                b.add(4);
                 structure.pidBypass = dataView.getUint8(b.index);
                 b.add(1);
             }
@@ -349,6 +369,14 @@
             b.setFloat32Array(dataView, structure.pitchSlavePIDParameters);
             b.setFloat32Array(dataView, structure.rollSlavePIDParameters);
             b.setFloat32Array(dataView, structure.yawSlavePIDParameters);
+            dataView.setFloat32(b.index, structure.thrustGain, 1);
+            b.add(4);
+            dataView.setFloat32(b.index, structure.pitchGain, 1);
+            b.add(4);
+            dataView.setFloat32(b.index, structure.rollGain, 1);
+            b.add(4);
+            dataView.setFloat32(b.index, structure.yawGain, 1);
+            b.add(4);
             dataView.setUint8(b.index, structure.pidBypass);
             b.add(1);
             b.setFloat32Array(dataView, structure.stateEstimationParameters);
@@ -400,6 +428,14 @@
                 b.setFloat32Array(dataView, structure.pitchSlavePIDParameters);
                 b.setFloat32Array(dataView, structure.rollSlavePIDParameters);
                 b.setFloat32Array(dataView, structure.yawSlavePIDParameters);
+                dataView.setFloat32(b.index, structure.thrustGain, 1);
+                b.add(4);
+                dataView.setFloat32(b.index, structure.pitchGain, 1);
+                b.add(4);
+                dataView.setFloat32(b.index, structure.rollGain, 1);
+                b.add(4);
+                dataView.setFloat32(b.index, structure.yawGain, 1);
+                b.add(4);
                 dataView.setUint8(b.index, structure.pidBypass);
                 b.add(1);
             }
