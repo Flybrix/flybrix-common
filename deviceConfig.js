@@ -10,7 +10,7 @@
 
         var config;
 
-        var desiredVersion = [1, 4, 0];  // checked at startup!
+        var desiredVersion = [1, 5, 0];  // checked at startup!
 
         var configCallback = function() {
             commandLog('No callback defined for receiving configurations!');

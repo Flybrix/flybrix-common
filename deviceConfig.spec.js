@@ -37,7 +37,7 @@ describe('Device configuration service', function() {
         });
 
         it('equals newest firmware version', function() {
-            expect(deviceConfig.getDesiredVersion()).toEqual([1, 4, 0]);
+            expect(deviceConfig.getDesiredVersion()).toEqual([1, 5, 0]);
         });
     });
 
@@ -251,14 +251,14 @@ describe('Device configuration service', function() {
                             return 0;
                         }));
                     expected_data[0] = 1;
-                    expected_data[1] = 4;
+                    expected_data[1] = 5;
                     expect(new Uint8Array(data)).toEqual(expected_data);
                     done();
                 });
             };
             var config_copy =
                 JSON.parse(JSON.stringify(deviceConfig.getConfig()));
-            config_copy.version = [1, 4, 0];
+            config_copy.version = [1, 5, 0];
             deviceConfig.send(config_copy);
             $timeout.flush();
         });
@@ -303,7 +303,7 @@ describe('Device configuration service', function() {
 
         beforeEach(function() {
             config = {
-                version: [1, 4, 0],
+                version: [1, 5, 0],
                 id: 0x12345678,
                 pcbOrientation: [3.25, 1232.75, 7.125],
                 pcbTranslation: [323232.5, 77.5, 1.0],
@@ -405,7 +405,7 @@ describe('Device configuration service', function() {
                         parser.CommandFields.COM_SET_PARTIAL_EEPROM_DATA |
                         parser.CommandFields.COM_REQ_RESPONSE);
                     expect(new Uint8Array(data)).toEqual(new Uint8Array([
-                        1, 0, 1, 4, 0
+                        1, 0, 1, 5, 0
                     ]));
                     done();
                 });
