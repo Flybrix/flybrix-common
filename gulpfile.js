@@ -5,6 +5,7 @@ var concat = require('gulp-concat');
 gulp.task('min', function() {
     var files = [
         'module.js',
+        'encodable.js',
         'cobs.js',
         'commandLog.js',
         'serializer.js',
