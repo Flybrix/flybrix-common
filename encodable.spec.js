@@ -22,12 +22,46 @@ describe('Encodable service', function() {
         }).toThrow();
     });
 
+    describe('empty value', function() {
+        it('is false for bool', function() {
+            expect(encodable('bool').empty()).toEqual(false);
+        });
+
+        it('is zero for number', function() {
+            expect(encodable('number', 'Float64').empty()).toEqual(0);
+        });
+
+        it('is empty string for string', function() {
+            expect(encodable('string', '').empty()).toEqual('');
+        });
+
+        it('is array of empties for array', function() {
+            expect(encodable('array', {count: 3, element: encodable('bool')})
+                       .empty())
+                .toEqual([false, false, false]);
+        });
+
+        it('is map of empties for map', function() {
+            expect(encodable(
+                       'map',
+                       [
+                         {key: 'name', element: encodable('string', 9)},
+                         {key: 'price', element: encodable('number', 'Uint32')},
+                       ])
+                       .empty())
+                .toEqual({
+                    name: '',
+                    price: 0,
+                });
+        });
+    });
+
     describe('boolean encoder', function() {
         it('encodes true', function() {
             var data = new Uint8Array(1);
             var view = new DataView(data.buffer, 0);
             var b = new serializer();
-            var encoder = encodable('bool', 9);
+            var encoder = encodable('bool');
             encoder.encode(view, b, true);
             expect(data).toEqual(new Uint8Array([1]));
         });

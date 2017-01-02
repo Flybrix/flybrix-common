@@ -26,6 +26,9 @@
     // Handling numbers
 
     var numberHandlers = {};
+    function numberZero() {
+        return 0;
+    }
     ['Uint', 'Int'].forEach(function(keyPrefix) {
         [1, 2, 4].forEach(function(byteCount) {
             var key = keyPrefix + (byteCount * 8);
@@ -38,7 +41,7 @@
                 serializer.add(byteCount);
                 return data;
             }
-            numberHandlers[key] = new Handler(encode, decode);
+            numberHandlers[key] = new Handler(encode, decode, numberZero);
         });
     });
     [4, 8].forEach(function(byteCount) {
@@ -52,7 +55,7 @@
             serializer.add(byteCount);
             return data;
         }
-        numberHandlers[key] = new Handler(encode, decode);
+        numberHandlers[key] = new Handler(encode, decode, numberZero);
     });
 
     function compileNumber(type) {
@@ -73,6 +76,9 @@
         },
         function(dataView, serializer) {
             return numberHandlers.Uint8.decode(dataView, serializer) !== 0;
+        },
+        function() {
+            return false;
         });
 
     function compileBoolean() {
@@ -92,7 +98,10 @@
         function decode(dataView, serializer) {
             return asciiDecode(handler.decode(dataView, serializer), length);
         }
-        return new Handler(encode, decode);
+        function empty() {
+            return '';
+        }
+        return new Handler(encode, decode, empty);
     }
 
     function asciiEncode(name, length) {
@@ -141,7 +150,14 @@
             }
             return data;
         }
-        return new Handler(encode, decode);
+        function empty() {
+            var data = [];
+            for (var i = 0; i < length; ++i) {
+                data.push(element.empty());
+            }
+            return data;
+        }
+        return new Handler(encode, decode, empty);
     }
 
     // Handling maps
@@ -173,11 +189,19 @@
             });
             return data;
         }
-        return new Handler(encode, decode);
+        function empty() {
+            var data = {};
+            properties.forEach(function(property) {
+                data[property.key] = property.element.empty();
+            });
+            return data;
+        }
+        return new Handler(encode, decode, empty);
     }
 
-    function Handler(encode, decode) {
+    function Handler(encode, decode, empty) {
         this.encode = encode;
         this.decode = decode;
+        this.empty = empty;
     }
 }());
