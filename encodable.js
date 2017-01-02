@@ -10,6 +10,7 @@
         'string': compileString,
         'map': compileMap,
         'array': compileArray,
+        'bool': compileBoolean,
     };
 
     function Encodable(type, properties) {
@@ -71,6 +72,20 @@
                 '". Allowed number types: (Uint|Int)(8|16|32|64), eg. Uint16.');
         }
         return handler;
+    }
+
+    // Handling bools
+
+    var boolHandler = new Handler(
+        function(dataView, serializer, data) {
+            numberHandlers.Uint8.encode(dataView, serializer, data ? 1 : 0)
+        },
+        function(dataView, serializer) {
+            return numberHandlers.Uint8.decode(dataView, serializer) !== 0;
+        });
+
+    function compileBoolean() {
+        return boolHandler;
     }
 
     // Handling strings

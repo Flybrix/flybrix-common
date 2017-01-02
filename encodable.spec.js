@@ -22,6 +22,44 @@ describe('Encodable service', function() {
         }).toThrow();
     });
 
+    describe('boolean encoder', function() {
+        it('encodes true', function() {
+            var data = new Uint8Array(1);
+            var view = new DataView(data.buffer, 0);
+            var b = new serializer();
+            var encoder = new encodable('bool', 9);
+            encoder.encode(view, b, true);
+            expect(data).toEqual(new Uint8Array([1]));
+        });
+
+        it('encodes false', function() {
+            var data = new Uint8Array(1);
+            var view = new DataView(data.buffer, 0);
+            var b = new serializer();
+            var encoder = new encodable('bool');
+            encoder.encode(view, b, false);
+            expect(data).toEqual(new Uint8Array([0]));
+        });
+    });
+
+    describe('string decoder', function() {
+        it('decodes true', function() {
+            var data = new Uint8Array([5]);
+            var view = new DataView(data.buffer, 0);
+            var b = new serializer();
+            var encoder = new encodable('bool');
+            expect(encoder.decode(view, b)).toEqual(true);
+        });
+
+        it('decodes false', function() {
+            var data = new Uint8Array([0]);
+            var view = new DataView(data.buffer, 0);
+            var b = new serializer();
+            var encoder = new encodable('bool');
+            expect(encoder.decode(view, b)).toEqual(false);
+        });
+    });
+
     describe('number encoder', function() {
         it('refuses bad number types', function() {
             expect(function() {
