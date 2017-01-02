@@ -15,10 +15,10 @@ describe('Encodable service', function() {
 
     it('refuses bad keys', function() {
         expect(function() {
-            new encodable();
+            encodable();
         }).toThrow();
         expect(function() {
-            new encodable('meh');
+            encodable('meh');
         }).toThrow();
     });
 
@@ -27,7 +27,7 @@ describe('Encodable service', function() {
             var data = new Uint8Array(1);
             var view = new DataView(data.buffer, 0);
             var b = new serializer();
-            var encoder = new encodable('bool', 9);
+            var encoder = encodable('bool', 9);
             encoder.encode(view, b, true);
             expect(data).toEqual(new Uint8Array([1]));
         });
@@ -36,7 +36,7 @@ describe('Encodable service', function() {
             var data = new Uint8Array(1);
             var view = new DataView(data.buffer, 0);
             var b = new serializer();
-            var encoder = new encodable('bool');
+            var encoder = encodable('bool');
             encoder.encode(view, b, false);
             expect(data).toEqual(new Uint8Array([0]));
         });
@@ -47,7 +47,7 @@ describe('Encodable service', function() {
             var data = new Uint8Array([5]);
             var view = new DataView(data.buffer, 0);
             var b = new serializer();
-            var encoder = new encodable('bool');
+            var encoder = encodable('bool');
             expect(encoder.decode(view, b)).toEqual(true);
         });
 
@@ -55,7 +55,7 @@ describe('Encodable service', function() {
             var data = new Uint8Array([0]);
             var view = new DataView(data.buffer, 0);
             var b = new serializer();
-            var encoder = new encodable('bool');
+            var encoder = encodable('bool');
             expect(encoder.decode(view, b)).toEqual(false);
         });
     });
@@ -63,10 +63,10 @@ describe('Encodable service', function() {
     describe('number encoder', function() {
         it('refuses bad number types', function() {
             expect(function() {
-                new encodable('number');
+                encodable('number');
             }).toThrow();
             expect(function() {
-                new encodable('number', 'Uint33');
+                encodable('number', 'Uint33');
             }).toThrow();
         });
 
@@ -74,7 +74,7 @@ describe('Encodable service', function() {
             var data = new Uint8Array(1);
             var view = new DataView(data.buffer, 0);
             var b = new serializer();
-            var encoder = new encodable('number', 'Uint8');
+            var encoder = encodable('number', 'Uint8');
             encoder.encode(view, b, 180);
             expect(data).toEqual(new Uint8Array([180]));
         });
@@ -83,7 +83,7 @@ describe('Encodable service', function() {
             var data = new Uint8Array(2);
             var view = new DataView(data.buffer, 0);
             var b = new serializer();
-            var encoder = new encodable('number', 'Uint16');
+            var encoder = encodable('number', 'Uint16');
             encoder.encode(view, b, 0xF00D);
             expect(data).toEqual(new Uint8Array([0x0D, 0xF0]));
         });
@@ -92,7 +92,7 @@ describe('Encodable service', function() {
             var data = new Uint8Array(4);
             var view = new DataView(data.buffer, 0);
             var b = new serializer();
-            var encoder = new encodable('number', 'Uint32');
+            var encoder = encodable('number', 'Uint32');
             encoder.encode(view, b, 0xF00DD33D);
             expect(data).toEqual(new Uint8Array([0x3D, 0xD3, 0x0D, 0xF0]));
         });
@@ -101,7 +101,7 @@ describe('Encodable service', function() {
             var data = new Uint8Array(1);
             var view = new DataView(data.buffer, 0);
             var b = new serializer();
-            var encoder = new encodable('number', 'Int8');
+            var encoder = encodable('number', 'Int8');
             encoder.encode(view, b, -100);
             expect(data).toEqual(new Uint8Array([156]));
         });
@@ -110,7 +110,7 @@ describe('Encodable service', function() {
             var data = new Uint8Array(2);
             var view = new DataView(data.buffer, 0);
             var b = new serializer();
-            var encoder = new encodable('number', 'Int16');
+            var encoder = encodable('number', 'Int16');
             encoder.encode(view, b, -10000);
             expect(data).toEqual(new Uint8Array([240, 216]));
         });
@@ -119,7 +119,7 @@ describe('Encodable service', function() {
             var data = new Uint8Array(4);
             var view = new DataView(data.buffer, 0);
             var b = new serializer();
-            var encoder = new encodable('number', 'Int32');
+            var encoder = encodable('number', 'Int32');
             encoder.encode(view, b, -1000000000);
             expect(data).toEqual(new Uint8Array([0x00, 0x36, 0x65, 0xC4]));
         });
@@ -128,7 +128,7 @@ describe('Encodable service', function() {
             var data = new Uint8Array(4);
             var view = new DataView(data.buffer, 0);
             var b = new serializer();
-            var encoder = new encodable('number', 'Float32');
+            var encoder = encodable('number', 'Float32');
             encoder.encode(view, b, 1005.75);
             expect(data).toEqual(new Uint8Array([0x00, 0x70, 0x7b, 0x44]));
         });
@@ -137,7 +137,7 @@ describe('Encodable service', function() {
             var data = new Uint8Array(8);
             var view = new DataView(data.buffer, 0);
             var b = new serializer();
-            var encoder = new encodable('number', 'Float64');
+            var encoder = encodable('number', 'Float64');
             encoder.encode(view, b, 1005.75);
             expect(data).toEqual(new Uint8Array(
                 [0x00, 0x00, 0x00, 0x00, 0x00, 0x6e, 0x8f, 0x40]));
@@ -149,7 +149,7 @@ describe('Encodable service', function() {
             var data = new Uint8Array([180]);
             var view = new DataView(data.buffer, 0);
             var b = new serializer();
-            var encoder = new encodable('number', 'Uint8');
+            var encoder = encodable('number', 'Uint8');
             expect(encoder.decode(view, b)).toEqual(180);
         });
 
@@ -157,7 +157,7 @@ describe('Encodable service', function() {
             var data = new Uint8Array([0x0D, 0xF0]);
             var view = new DataView(data.buffer, 0);
             var b = new serializer();
-            var encoder = new encodable('number', 'Uint16');
+            var encoder = encodable('number', 'Uint16');
             expect(encoder.decode(view, b)).toEqual(0xF00D);
         });
 
@@ -165,7 +165,7 @@ describe('Encodable service', function() {
             var data = new Uint8Array([0x3D, 0xD3, 0x0D, 0xF0]);
             var view = new DataView(data.buffer, 0);
             var b = new serializer();
-            var encoder = new encodable('number', 'Uint32');
+            var encoder = encodable('number', 'Uint32');
             expect(encoder.decode(view, b)).toEqual(0xF00DD33D);
         });
 
@@ -173,7 +173,7 @@ describe('Encodable service', function() {
             var data = new Uint8Array([156]);
             var view = new DataView(data.buffer, 0);
             var b = new serializer();
-            var encoder = new encodable('number', 'Int8');
+            var encoder = encodable('number', 'Int8');
             expect(encoder.decode(view, b)).toEqual(-100);
         });
 
@@ -181,7 +181,7 @@ describe('Encodable service', function() {
             var data = new Uint8Array([240, 216]);
             var view = new DataView(data.buffer, 0);
             var b = new serializer();
-            var encoder = new encodable('number', 'Int16');
+            var encoder = encodable('number', 'Int16');
             expect(encoder.decode(view, b)).toEqual(-10000);
         });
 
@@ -189,7 +189,7 @@ describe('Encodable service', function() {
             var data = new Uint8Array([0x00, 0x36, 0x65, 0xC4]);
             var view = new DataView(data.buffer, 0);
             var b = new serializer();
-            var encoder = new encodable('number', 'Int32');
+            var encoder = encodable('number', 'Int32');
             expect(encoder.decode(view, b)).toEqual(-1000000000);
         });
 
@@ -197,7 +197,7 @@ describe('Encodable service', function() {
             var data = new Uint8Array([0x00, 0x70, 0x7b, 0x44]);
             var view = new DataView(data.buffer, 0);
             var b = new serializer();
-            var encoder = new encodable('number', 'Float32');
+            var encoder = encodable('number', 'Float32');
             expect(encoder.decode(view, b)).toEqual(1005.75);
         });
 
@@ -206,7 +206,7 @@ describe('Encodable service', function() {
                 [0x00, 0x00, 0x00, 0x00, 0x00, 0x6e, 0x8f, 0x40]);
             var view = new DataView(data.buffer, 0);
             var b = new serializer();
-            var encoder = new encodable('number', 'Float64');
+            var encoder = encodable('number', 'Float64');
             expect(encoder.decode(view, b)).toEqual(1005.75);
         });
     });
@@ -216,7 +216,7 @@ describe('Encodable service', function() {
             var data = new Uint8Array(9);
             var view = new DataView(data.buffer, 0);
             var b = new serializer();
-            var encoder = new encodable('string', 9);
+            var encoder = encodable('string', 9);
             encoder.encode(view, b, 'Abcd');
             expect(data).toEqual(
                 new Uint8Array([65, 98, 99, 100, 0, 0, 0, 0, 0]));
@@ -226,7 +226,7 @@ describe('Encodable service', function() {
             var data = new Uint8Array(6);
             var view = new DataView(data.buffer, 0);
             var b = new serializer();
-            var encoder = new encodable('string', 6);
+            var encoder = encodable('string', 6);
             encoder.encode(view, b, 'Abc0123456');
             expect(data).toEqual(new Uint8Array([65, 98, 99, 48, 49, 0]));
         });
@@ -237,7 +237,7 @@ describe('Encodable service', function() {
             var data = new Uint8Array([65, 98, 99, 100, 0, 0, 0, 48, 49]);
             var view = new DataView(data.buffer, 0);
             var b = new serializer();
-            var encoder = new encodable('string', 9);
+            var encoder = encodable('string', 9);
             expect(encoder.decode(view, b)).toEqual('Abcd');
         });
 
@@ -245,7 +245,7 @@ describe('Encodable service', function() {
             var data = new Uint8Array([65, 98, 99, 48, 49, 50]);
             var view = new DataView(data.buffer, 0);
             var b = new serializer();
-            var encoder = new encodable('string', 6);
+            var encoder = encodable('string', 6);
             expect(encoder.decode(view, b)).toEqual('Abc01');
         });
     });
@@ -253,29 +253,29 @@ describe('Encodable service', function() {
     describe('array encoder', function() {
         it('requires count property', function() {
             expect(function() {
-                new encodable('array');
+                encodable('array');
             }).toThrow();
             expect(function() {
-                new encodable('array', new encodable('array', {
-                                  element: new encodable('string', 9),
-                              }));
+                encodable('array', encodable('array', {
+                              element: encodable('string', 9),
+                          }));
             }).toThrow();
         });
 
         it('requires encodable element type', function() {
             expect(function() {
-                new encodable('array');
+                encodable('array');
             }).toThrow();
             expect(function() {
-                new encodable('array', new encodable('array', {
-                                  count: 5,
-                              }));
+                encodable('array', encodable('array', {
+                              count: 5,
+                          }));
             }).toThrow();
             expect(function() {
-                new encodable('array', new encodable('array', {
-                                  count: 5,
-                                  element: 77,
-                              }));
+                encodable('array', encodable('array', {
+                              count: 5,
+                              element: 77,
+                          }));
             }).toThrow();
         });
 
@@ -283,9 +283,9 @@ describe('Encodable service', function() {
             var data = new Uint8Array(45);
             var view = new DataView(data.buffer, 0);
             var b = new serializer();
-            var encoder = new encodable('array', {
+            var encoder = encodable('array', {
                 count: 5,
-                element: new encodable('string', 9),
+                element: encodable('string', 9),
             });
             encoder.encode(
                 view, b, ['Abcd', '123', '0Aa1', '00', 'abcdabcdabcd']);
@@ -305,9 +305,9 @@ describe('Encodable service', function() {
             ]);
             var view = new DataView(data.buffer, 0);
             var b = new serializer();
-            var encoder = new encodable('array', {
+            var encoder = encodable('array', {
                 count: 4,
-                element: new encodable('string', 8),
+                element: encodable('string', 8),
             });
             expect(encoder.decode(view, b)).toEqual([
                 'Abcd', '123', '0Aa1', 'abcdabc'
@@ -318,33 +318,32 @@ describe('Encodable service', function() {
     describe('map encoder', function() {
         it('requires array as properties', function() {
             expect(function() {
-                new encodable('map');
+                encodable('map');
             }).toThrow();
             expect(function() {
-                new encodable('map', {});
+                encodable('map', {});
             }).toThrow();
             expect(function() {
-                new encodable('map', []);
+                encodable('map', []);
             }).not.toThrow();
         });
 
         it('requires array elements to be {key, element} maps', function() {
             expect(function() {
-                new encodable('map');
+                encodable('map');
             }).toThrow();
             expect(function() {
-                new encodable('map', [{key: 'asdf'}]);
+                encodable('map', [{key: 'asdf'}]);
             }).toThrow();
             expect(function() {
-                new encodable('map', [{key: 'asdf', element: 5}]);
+                encodable('map', [{key: 'asdf', element: 5}]);
             }).toThrow();
             expect(function() {
-                new encodable('map', [{element: new encodable('string', 9)}]);
+                encodable('map', [{element: encodable('string', 9)}]);
             }).toThrow();
             expect(function() {
-                new encodable(
-                    'map',
-                    [{key: 'asdf', element: new encodable('string', 9)}]);
+                encodable(
+                    'map', [{key: 'asdf', element: encodable('string', 9)}]);
             }).not.toThrow();
         });
 
@@ -352,9 +351,9 @@ describe('Encodable service', function() {
             var data = new Uint8Array(13);
             var view = new DataView(data.buffer, 0);
             var b = new serializer();
-            var encoder = new encodable('map', [
-                {key: 'name', element: new encodable('string', 9)},
-                {key: 'price', element: new encodable('number', 'Uint32')},
+            var encoder = encodable('map', [
+                {key: 'name', element: encodable('string', 9)},
+                {key: 'price', element: encodable('number', 'Uint32')},
             ]);
             encoder.encode(view, b, {
                 name: 'Abcd',
@@ -371,9 +370,9 @@ describe('Encodable service', function() {
                 [65, 98, 99, 100, 0, 0, 0, 0, 0, 0xCC, 0xBB, 0xAA, 0xEE]);
             var view = new DataView(data.buffer, 0);
             var b = new serializer();
-            var encoder = new encodable('map', [
-                {key: 'name', element: new encodable('string', 9)},
-                {key: 'price', element: new encodable('number', 'Uint32')},
+            var encoder = encodable('map', [
+                {key: 'name', element: encodable('string', 9)},
+                {key: 'price', element: encodable('number', 'Uint32')},
             ]);
             expect(encoder.decode(view, b)).toEqual({
                 name: 'Abcd',

@@ -2,7 +2,7 @@
     'use strict';
 
     angular.module('flybrixCommon').factory('encodable', function() {
-        return Encodable;
+        return encodable;
     });
 
     var compiler = {
@@ -13,24 +13,15 @@
         'bool': compileBoolean,
     };
 
-    function Encodable(type, properties) {
+    function encodable(type, properties) {
         var comp = compiler[type];
         if (comp === undefined) {
             throw new Error(
                 'Unsupported type: "' + type +
                 '". Allowed types: number, string, map, array.');
         }
-        this.handler = comp(properties);
+        return comp(properties);
     }
-
-    Encodable.prototype = {
-        decode: function(dataView, serializer) {
-            return this.handler.decode(dataView, serializer);
-        },
-        encode: function(dataView, serializer, data) {
-            this.handler.encode(dataView, serializer, data);
-        },
-    };
 
     // Handling numbers
 
@@ -93,7 +84,7 @@
     function compileString(length) {
         var handler = compileArray({
             count: length,
-            element: new Encodable('number', 'Uint8'),
+            element: numberHandlers.Uint8,
         });
         function encode(dataView, serializer, data) {
             handler.encode(dataView, serializer, asciiEncode(data, length));
@@ -134,9 +125,9 @@
             throw new Error(
                 'Array type requires "count" in its property object');
         }
-        if (!(element instanceof Encodable)) {
+        if (!(element instanceof Handler)) {
             throw new Error(
-                'Array type requires Encodable type as "element" in its property object');
+                'Array type requires Handler type as "element" in its property object');
         }
         function encode(dataView, serializer, data) {
             for (var i = 0; i < length; ++i) {
@@ -159,13 +150,13 @@
         var length = properties.length;
         if (length === undefined) {
             throw new Error(
-                'Map type requires an array of {key: String, element: Encoder} maps');
+                'Map type requires an array of {key: String, element: Handler} maps');
         }
         properties.forEach(function(property) {
             if (property.key === undefined ||
-                !(property.element instanceof Encodable)) {
+                !(property.element instanceof Handler)) {
                 throw new Error(
-                    'Map type requires an array of {key: String, element: Encoder} maps');
+                    'Map type requires an array of {key: String, element: Handler} maps');
             }
         });
         function encode(dataView, serializer, data) {
