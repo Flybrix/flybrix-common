@@ -119,89 +119,72 @@
         }
 
         var configHandler = (function() {
-            var ledColor = encodable('map', [
-                {key: 'red', element: encodable('number', 'Uint8')},
-                {key: 'green', element: encodable('number', 'Uint8')},
-                {key: 'blue', element: encodable('number', 'Uint8')},
+            var e = encodable;
+            var ledColor = e.map([
+                {key: 'red', element: e.Uint8},
+                {key: 'green', element: e.Uint8},
+                {key: 'blue', element: e.Uint8},
             ]);
 
-            var ledState = encodable('map', [
-                {key: 'status', element: encodable('number', 'Uint16')},
-                {key: 'pattern', element: encodable('number', 'Uint8')},
+            var ledState = e.map([
+                {key: 'status', element: e.Uint16},
+                {key: 'pattern', element: e.Uint8},
                 {
                   key: 'colors',
-                  element: encodable(
-                      'map',
-                      [
-                        {key: 'right_front', element: ledColor},
-                        {key: 'right_back', element: ledColor},
-                        {key: 'left_front', element: ledColor},
-                        {key: 'left_back', element: ledColor},
-                      ])
+                  element: e.map([
+                      {key: 'right_front', element: ledColor},
+                      {key: 'right_back', element: ledColor},
+                      {key: 'left_front', element: ledColor},
+                      {key: 'left_back', element: ledColor},
+                  ])
                 },
-                {key: 'indicator_red', element: encodable('bool')},
-                {key: 'indicator_green', element: encodable('bool')},
+                {key: 'indicator_red', element: e.bool},
+                {key: 'indicator_green', element: e.bool},
             ]);
 
-            var u8 = encodable('number', 'Uint8');
-            var version = encodable('array', {count: 3, element: u8});
-            var id = encodable('number', 'Uint32');
-            var f32 = encodable('number', 'Float32');
-            var floatArr3Elem = encodable('array', {count: 3, element: f32});
-            var mixTableCoord = encodable('array', {count: 8, element: u8});
-            var channelAssign = encodable('array', {count: 6, element: u8});
-            var channelValue = encodable('array', {
-                count: 6,
-                element: encodable('number', 'Uint16'),
-            });
-            var pid = encodable('array', {count: 7, element: f32});
-            var ledStates = encodable('array', {
-                count: 16,
-                element: ledState,
-            });
-            var f32a2e = encodable('array', {count: 2, element: f32});
+            var coord3d = e.array(3, e.Float32);
 
-            var ledStates = encodable(
-                'array', {
-                    count: 16,
-                    element: ledState,
-                },
-                16);
+            var version = e.array(3, e.Uint8);
+            var channelMapping = e.array(6, e.Uint8);
+            var channelMark = e.array(6, e.Uint16);
+            var pid = e.array(7, e.Float32);
+            var stParam = e.array(2, e.Float32);
 
-            var name = encodable('string', 9);
-            return encodable(
-                'map',
+            var ledStates = e.array(16, ledState, 16);
+
+            var name = e.string(9);
+            return e.map(
                 [
-                  {key: 'version', element: version, part: 0},
-                  {key: 'id', element: id, part: 1},
-                  {key: 'pcbOrientation', element: floatArr3Elem, part: 2},
-                  {key: 'pcbTranslation', element: floatArr3Elem, part: 2},
-                  {key: 'mixTableFz', element: mixTableCoord, part: 3},
-                  {key: 'mixTableTx', element: mixTableCoord, part: 3},
-                  {key: 'mixTableTy', element: mixTableCoord, part: 3},
-                  {key: 'mixTableTz', element: mixTableCoord, part: 3},
-                  {key: 'magBias', element: floatArr3Elem, part: 4},
-                  {key: 'assignedChannel', element: channelAssign, part: 5},
-                  {key: 'commandInversion', element: u8, part: 5},
-                  {key: 'channelMidpoint', element: channelValue, part: 5},
-                  {key: 'channelDeadzone', element: channelValue, part: 5},
-                  {key: 'thrustMasterPIDParameters', element: pid, part: 6},
-                  {key: 'pitchMasterPIDParameters', element: pid, part: 6},
-                  {key: 'rollMasterPIDParameters', element: pid, part: 6},
-                  {key: 'yawMasterPIDParameters', element: pid, part: 6},
-                  {key: 'thrustSlavePIDParameters', element: pid, part: 6},
-                  {key: 'pitchSlavePIDParameters', element: pid, part: 6},
-                  {key: 'rollSlavePIDParameters', element: pid, part: 6},
-                  {key: 'yawSlavePIDParameters', element: pid, part: 6},
-                  {key: 'thrustGain', element: f32, part: 6},
-                  {key: 'pitchGain', element: f32, part: 6},
-                  {key: 'rollGain', element: f32, part: 6},
-                  {key: 'yawGain', element: f32, part: 6},
-                  {key: 'pidBypass', element: u8, part: 6},
-                  {key: 'stateEstimationParameters', element: f32a2e, part: 7},
-                  {key: 'enableParameters', element: f32a2e, part: 7},
-                  {key: 'ledStates', element: ledStates, part: 8},
-                  {key: 'name', element: encodable('string', 9), part: 9},
+                  {part: 0, key: 'version', element: e.array(3, e.Uint8)},
+                  {part: 1, key: 'id', element: e.Uint32},
+                  {part: 2, key: 'pcbOrientation', element: coord3d},
+                  {part: 2, key: 'pcbTranslation', element: coord3d},
+                  {part: 3, key: 'mixTableFz', element: e.array(8, e.Uint8)},
+                  {part: 3, key: 'mixTableTx', element: e.array(8, e.Uint8)},
+                  {part: 3, key: 'mixTableTy', element: e.array(8, e.Uint8)},
+                  {part: 3, key: 'mixTableTz', element: e.array(8, e.Uint8)},
+                  {part: 4, key: 'magBias', element: coord3d},
+                  {part: 5, key: 'assignedChannel', element: channelMapping},
+                  {part: 5, key: 'commandInversion', element: e.Uint8},
+                  {part: 5, key: 'channelMidpoint', element: channelMark},
+                  {part: 5, key: 'channelDeadzone', element: channelMark},
+                  {part: 6, key: 'thrustMasterPIDParameters', element: pid},
+                  {part: 6, key: 'pitchMasterPIDParameters', element: pid},
+                  {part: 6, key: 'rollMasterPIDParameters', element: pid},
+                  {part: 6, key: 'yawMasterPIDParameters', element: pid},
+                  {part: 6, key: 'thrustSlavePIDParameters', element: pid},
+                  {part: 6, key: 'pitchSlavePIDParameters', element: pid},
+                  {part: 6, key: 'rollSlavePIDParameters', element: pid},
+                  {part: 6, key: 'yawSlavePIDParameters', element: pid},
+                  {part: 6, key: 'thrustGain', element: e.Float32},
+                  {part: 6, key: 'pitchGain', element: e.Float32},
+                  {part: 6, key: 'rollGain', element: e.Float32},
+                  {part: 6, key: 'yawGain', element: e.Float32},
+                  {part: 6, key: 'pidBypass', element: e.Uint8},
+                  {part: 7, key: 'stateEstimationParameters', element: stParam},
+                  {part: 7, key: 'enableParameters', element: stParam},
+                  {part: 8, key: 'ledStates', element: ledStates},
+                  {part: 9, key: 'name', element: e.string(9)},
                 ],
                 16);
         }());

@@ -5,27 +5,14 @@
         return encodable;
     });
 
-    var compiler = {
-        'number': compileNumber,
-        'string': compileString,
-        'map': compileMap,
-        'array': compileArray,
-        'bool': compileBoolean,
+    var encodable = {
+        string: compileString,
+        map: compileMap,
+        array: compileArray,
     };
-
-    function encodable(type, properties, splitBits) {
-        var comp = compiler[type];
-        if (comp === undefined) {
-            throw new Error(
-                'Unsupported type: "' + type +
-                '". Allowed types: number, string, map, array.');
-        }
-        return comp(properties, splitBits);
-    }
 
     // Handling numbers
 
-    var numberHandlers = {};
     function numberZero() {
         return 0;
     }
@@ -41,7 +28,7 @@
                 serializer.add(byteCount);
                 return data;
             }
-            numberHandlers[key] = new Handler(encode, decode, numberZero);
+            encodable[key] = new Handler(encode, decode, numberZero);
         });
     });
     [4, 8].forEach(function(byteCount) {
@@ -55,43 +42,36 @@
             serializer.add(byteCount);
             return data;
         }
-        numberHandlers[key] = new Handler(encode, decode, numberZero);
+        encodable[key] = new Handler(encode, decode, numberZero);
     });
 
     function compileNumber(type) {
-        var handler = numberHandlers[type];
+        var handler = encodable['Uint' + type];
         if (handler === undefined) {
             throw new Error(
-                'Unsupported number type: "' + type +
-                '". Allowed number types: (Uint|Int)(8|16|32|64), eg. Uint16.');
+                'Unsupported split bit count: ' + type +
+                '. Allowed counts: 8, 16, 32, 64');
         }
         return handler;
     }
 
     // Handling bools
 
-    var boolHandler = new Handler(
+    encodable.bool = new Handler(
         function(dataView, serializer, data) {
-            numberHandlers.Uint8.encode(dataView, serializer, data ? 1 : 0)
+            encodable.Uint8.encode(dataView, serializer, data ? 1 : 0)
         },
         function(dataView, serializer) {
-            return numberHandlers.Uint8.decode(dataView, serializer) !== 0;
+            return encodable.Uint8.decode(dataView, serializer) !== 0;
         },
         function() {
             return false;
         });
 
-    function compileBoolean() {
-        return boolHandler;
-    }
-
     // Handling strings
 
     function compileString(length) {
-        var handler = compileArray({
-            count: length,
-            element: numberHandlers.Uint8,
-        });
+        var handler = compileArray(length, encodable.Uint8);
         function encode(dataView, serializer, data) {
             handler.encode(dataView, serializer, asciiEncode(data, length));
         }
@@ -127,16 +107,12 @@
 
     // Handling arrays
 
-    function compileArray(properties, splitBits) {
-        var length = properties.count;
-        var element = properties.element;
+    function compileArray(length, element, splitBits) {
         if (length === undefined) {
-            throw new Error(
-                'Array type requires "count" in its property object');
+            throw new Error('Array type requires length');
         }
         if (!(element instanceof Handler)) {
-            throw new Error(
-                'Array type requires Handler type as "element" in its property object');
+            throw new Error('Array type requires Handler type as element');
         }
         function encode(dataView, serializer, data) {
             for (var i = 0; i < length; ++i) {
@@ -158,7 +134,7 @@
             return data;
         }
         if (splitBits !== undefined) {
-            var numberEncoder = encodable('number', 'Uint' + splitBits);
+            var numberEncoder = compileNumber(splitBits);
             function encodePartial(dataView, serializer, data, masks) {
                 var mask = masks.pop();
                 numberEncoder.encode(dataView, serializer, mask);
@@ -240,7 +216,7 @@
             return data;
         }
         if (splitBits !== undefined) {
-            var numberEncoder = encodable('number', 'Uint' + splitBits);
+            var numberEncoder = compileNumber(splitBits);
             function encodePartial(dataView, serializer, data, masks) {
                 var mask = masks.pop();
                 numberEncoder.encode(dataView, serializer, mask);
