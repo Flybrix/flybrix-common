@@ -3,9 +3,9 @@
 
     angular.module('flybrixCommon').factory('deviceConfig', deviceConfig);
 
-    deviceConfig.$inject = ['serial', 'commandLog', 'serializer'];
+    deviceConfig.$inject = ['serial', 'commandLog', 'serializer', 'encodable'];
 
-    function deviceConfig(serial, commandLog, serializer) {
+    function deviceConfig(serial, commandLog, serializer, encodable) {
         var eepromConfigSize = 379 + 273;
 
         var config;
@@ -118,360 +118,123 @@
             });
         }
 
-        function LedColor(r, g, b) {
-            this.red = r;
-            this.green = g;
-            this.blue = b;
-        }
+        var configHandler = (function() {
+            var ledColor = encodable('map', [
+                {key: 'red', element: encodable('number', 'Uint8')},
+                {key: 'green', element: encodable('number', 'Uint8')},
+                {key: 'blue', element: encodable('number', 'Uint8')},
+            ]);
 
-        function ledColorParse(v, serializer, dataView) {
-            v.red = dataView.getUint8(serializer.index, 1);
-            serializer.add(1);
-            v.green = dataView.getUint8(serializer.index, 1);
-            serializer.add(1);
-            v.blue = dataView.getUint8(serializer.index, 1);
-            serializer.add(1);
-        };
+            var ledState = encodable('map', [
+                {key: 'status', element: encodable('number', 'Uint16')},
+                {key: 'pattern', element: encodable('number', 'Uint8')},
+                {
+                  key: 'colors',
+                  element: encodable(
+                      'map',
+                      [
+                        {key: 'right_front', element: ledColor},
+                        {key: 'right_back', element: ledColor},
+                        {key: 'left_front', element: ledColor},
+                        {key: 'left_back', element: ledColor},
+                      ])
+                },
+                {key: 'indicator_red', element: encodable('bool')},
+                {key: 'indicator_green', element: encodable('bool')},
+            ]);
 
-        function ledColorSerialize(v, serializer, dataView) {
-            dataView.setUint8(serializer.index, v.red);
-            serializer.add(1);
-            dataView.setUint8(serializer.index, v.green);
-            serializer.add(1);
-            dataView.setUint8(serializer.index, v.blue);
-            serializer.add(1);
-        };
-
-        function LedState() {
-            this.status = 0;
-            this.pattern = 0;
-            this.colors = {
-                right_front: new LedColor(0, 0, 0),
-                right_back: new LedColor(0, 0, 0),
-                left_front: new LedColor(0, 0, 0),
-                left_back: new LedColor(0, 0, 0),
-            };
-            this.indicator_red = false;
-            this.indicator_green = false;
-        }
-
-        function ledStateParse(v, serializer, dataView) {
-            v.status = dataView.getUint16(serializer.index, 1);
-            serializer.add(2);
-            v.pattern = dataView.getUint8(serializer.index, 1);
-            serializer.add(1);
-            ledColorParse(v.colors.right_front, serializer, dataView);
-            ledColorParse(v.colors.right_back, serializer, dataView);
-            ledColorParse(v.colors.left_front, serializer, dataView);
-            ledColorParse(v.colors.left_back, serializer, dataView);
-            v.indicator_red = dataView.getUint8(serializer.index, 1) !== 0;
-            serializer.add(1);
-            v.indicator_green = dataView.getUint8(serializer.index, 1) !== 0;
-            serializer.add(1);
-        };
-
-        function ledStateSerialize(v, serializer, dataView) {
-            dataView.setUint16(serializer.index, v.status, 1);
-            serializer.add(2);
-            dataView.setUint8(serializer.index, v.pattern);
-            serializer.add(1);
-            ledColorSerialize(v.colors.right_front, serializer, dataView);
-            ledColorSerialize(v.colors.right_back, serializer, dataView);
-            ledColorSerialize(v.colors.left_front, serializer, dataView);
-            ledColorSerialize(v.colors.left_back, serializer, dataView);
-            dataView.setUint8(serializer.index, v.indicator_red ? 1 : 0);
-            serializer.add(1);
-            dataView.setUint8(serializer.index, v.indicator_green ? 1 : 0);
-            serializer.add(1);
-        };
-
-        function Config() {
-            this.version = [0.0, 0.0, 0.0];
-            this.id = 0;
-            this.pcbOrientation = [0.0, 0.0, 0.0];
-            this.pcbTranslation = [0.0, 0.0, 0.0];
-            this.mixTableFz = [0, 0, 0, 0, 0, 0, 0, 0];
-            this.mixTableTx = [0, 0, 0, 0, 0, 0, 0, 0];
-            this.mixTableTy = [0, 0, 0, 0, 0, 0, 0, 0];
-            this.mixTableTz = [0, 0, 0, 0, 0, 0, 0, 0];
-            this.magBias = [0.0, 0.0, 0.0];
-            this.assignedChannel = [0, 0, 0, 0, 0, 0];
-            this.commandInversion = 0;
-            this.channelMidpoint = [0, 0, 0, 0, 0, 0];
-            this.channelDeadzone = [0, 0, 0, 0, 0, 0];
-            this.thrustMasterPIDParameters =
-                [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0];
-            this.pitchMasterPIDParameters = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0];
-            this.rollMasterPIDParameters = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0];
-            this.yawMasterPIDParameters = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0];
-            this.thrustSlavePIDParameters = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0];
-            this.pitchSlavePIDParameters = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0];
-            this.rollSlavePIDParameters = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0];
-            this.yawSlavePIDParameters = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0];
-            this.thrustGain = 0.0;
-            this.pitchGain = 0.0;
-            this.rollGain = 0.0;
-            this.yawGain = 0.0;
-            this.pidBypass = 0;
-            this.stateEstimationParameters = [0.0, 0.0];
-            this.enableParameters = [0.0, 0.0];
-            this.ledStates = Array.apply(null, Array(16)).map(function() {
-                return new LedState();
+            var u8 = encodable('number', 'Uint8');
+            var version = encodable('array', {count: 3, element: u8});
+            var id = encodable('number', 'Uint32');
+            var f32 = encodable('number', 'Float32');
+            var floatArr3Elem = encodable('array', {count: 3, element: f32});
+            var mixTableCoord = encodable('array', {count: 8, element: u8});
+            var channelAssign = encodable('array', {count: 6, element: u8});
+            var channelValue = encodable('array', {
+                count: 6,
+                element: encodable('number', 'Uint16'),
             });
-            this.name = '';
-        }
-
-        function parsePID(b, dataView, arr) {
-            b.parseFloat32Array(dataView, arr);
-        }
-
-        function parse(dataView, structure) {
-            var b = new serializer();
-            b.parseInt8Array(dataView, structure.version);
-            structure.id = dataView.getUint32(b.index, 1);
-            b.add(4);
-            b.parseFloat32Array(dataView, structure.pcbOrientation);
-            b.parseFloat32Array(dataView, structure.pcbTranslation);
-            b.parseInt8Array(dataView, structure.mixTableFz);
-            b.parseInt8Array(dataView, structure.mixTableTx);
-            b.parseInt8Array(dataView, structure.mixTableTy);
-            b.parseInt8Array(dataView, structure.mixTableTz);
-            b.parseFloat32Array(dataView, structure.magBias);
-            b.parseUint8Array(dataView, structure.assignedChannel);
-            structure.commandInversion = dataView.getUint8(b.index);
-            b.add(1);
-            b.parseUint16Array(dataView, structure.channelMidpoint);
-            b.parseUint16Array(dataView, structure.channelDeadzone);
-            parsePID(b, dataView, structure.thrustMasterPIDParameters);
-            parsePID(b, dataView, structure.pitchMasterPIDParameters);
-            parsePID(b, dataView, structure.rollMasterPIDParameters);
-            parsePID(b, dataView, structure.yawMasterPIDParameters);
-            parsePID(b, dataView, structure.thrustSlavePIDParameters);
-            parsePID(b, dataView, structure.pitchSlavePIDParameters);
-            parsePID(b, dataView, structure.rollSlavePIDParameters);
-            parsePID(b, dataView, structure.yawSlavePIDParameters);
-            structure.thrustGain = dataView.getFloat32(b.index, 1);
-            b.add(4);
-            structure.pitchGain = dataView.getFloat32(b.index, 1);
-            b.add(4);
-            structure.rollGain = dataView.getFloat32(b.index, 1);
-            b.add(4);
-            structure.yawGain = dataView.getFloat32(b.index, 1);
-            b.add(4);
-            structure.pidBypass = dataView.getUint8(b.index);
-            b.add(1);
-            b.parseFloat32Array(dataView, structure.stateEstimationParameters);
-            b.parseFloat32Array(dataView, structure.enableParameters);
-            structure.ledStates.forEach(function(ledState) {
-                ledStateParse(ledState, b, dataView);
+            var pid = encodable('array', {count: 7, element: f32});
+            var ledStates = encodable('array', {
+                count: 16,
+                element: ledState,
             });
-            var stringData = new Uint8Array(9);
-            b.parseUint8Array(dataView, stringData);
-            structure.name = asciiDecode(stringData);
-        }
+            var f32a2e = encodable('array', {count: 2, element: f32});
 
-        function parsePartial(dataView, structure) {
-            var b = new serializer();
-            var mask = dataView.getUint16(b.index, 1);
-            b.add(2);
+            var ledStates = encodable(
+                'array', {
+                    count: 16,
+                    element: ledState,
+                },
+                16);
 
-            if (mask & configFields.VERSION) {
-                b.parseInt8Array(dataView, structure.version);
-            }
-            if (mask & configFields.ID) {
-                structure.id = dataView.getUint32(b.index, 1);
-                b.add(4);
-            }
-            if (mask & configFields.PCB) {
-                b.parseFloat32Array(dataView, structure.pcbOrientation);
-                b.parseFloat32Array(dataView, structure.pcbTranslation);
-            }
-            if (mask & configFields.MIX_TABLE) {
-                b.parseInt8Array(dataView, structure.mixTableFz);
-                b.parseInt8Array(dataView, structure.mixTableTx);
-                b.parseInt8Array(dataView, structure.mixTableTy);
-                b.parseInt8Array(dataView, structure.mixTableTz);
-            }
-            if (mask & configFields.MAG_BIAS) {
-                b.parseFloat32Array(dataView, structure.magBias);
-            }
-            if (mask & configFields.CHANNEL) {
-                b.parseUint8Array(dataView, structure.assignedChannel);
-                structure.commandInversion = dataView.getUint8(b.index);
-                b.add(1);
-                b.parseUint16Array(dataView, structure.channelMidpoint);
-                b.parseUint16Array(dataView, structure.channelDeadzone);
-            }
-            if (mask & configFields.PID_PARAMETERS) {
-                parsePID(b, dataView, structure.thrustMasterPIDParameters);
-                parsePID(b, dataView, structure.pitchMasterPIDParameters);
-                parsePID(b, dataView, structure.rollMasterPIDParameters);
-                parsePID(b, dataView, structure.yawMasterPIDParameters);
-                parsePID(b, dataView, structure.thrustSlavePIDParameters);
-                parsePID(b, dataView, structure.pitchSlavePIDParameters);
-                parsePID(b, dataView, structure.rollSlavePIDParameters);
-                parsePID(b, dataView, structure.yawSlavePIDParameters);
-                structure.thrustGain = dataView.getFloat32(b.index, 1);
-                b.add(4);
-                structure.pitchGain = dataView.getFloat32(b.index, 1);
-                b.add(4);
-                structure.rollGain = dataView.getFloat32(b.index, 1);
-                b.add(4);
-                structure.yawGain = dataView.getFloat32(b.index, 1);
-                b.add(4);
-                structure.pidBypass = dataView.getUint8(b.index);
-                b.add(1);
-            }
-            if (mask & configFields.STATE_PARAMETERS) {
-                b.parseFloat32Array(
-                    dataView, structure.stateEstimationParameters);
-                b.parseFloat32Array(dataView, structure.enableParameters);
-            }
-            if (mask & configFields.LED_STATES) {
-                var led_mask = dataView.getUint16(b.index, 1);
-                b.add(2);
-                var RECORD_LENGTH = 17;
-                for (var i = 0; i < 16; ++i) {
-                    if (led_mask & (1 << i)) {
-                        ledStateParse(structure.ledStates[i], b, dataView);
-                    }
-                }
-            }
-            if (mask & configFields.DEVICE_NAME) {
-                var stringData = new Uint8Array(9);
-                b.parseUint8Array(dataView, stringData);
-                structure.name = asciiDecode(stringData);
-            }
+            var name = encodable('string', 9);
+            return encodable(
+                'map',
+                [
+                  {key: 'version', element: version, part: 0},
+                  {key: 'id', element: id, part: 1},
+                  {key: 'pcbOrientation', element: floatArr3Elem, part: 2},
+                  {key: 'pcbTranslation', element: floatArr3Elem, part: 2},
+                  {key: 'mixTableFz', element: mixTableCoord, part: 3},
+                  {key: 'mixTableTx', element: mixTableCoord, part: 3},
+                  {key: 'mixTableTy', element: mixTableCoord, part: 3},
+                  {key: 'mixTableTz', element: mixTableCoord, part: 3},
+                  {key: 'magBias', element: floatArr3Elem, part: 4},
+                  {key: 'assignedChannel', element: channelAssign, part: 5},
+                  {key: 'commandInversion', element: u8, part: 5},
+                  {key: 'channelMidpoint', element: channelValue, part: 5},
+                  {key: 'channelDeadzone', element: channelValue, part: 5},
+                  {key: 'thrustMasterPIDParameters', element: pid, part: 6},
+                  {key: 'pitchMasterPIDParameters', element: pid, part: 6},
+                  {key: 'rollMasterPIDParameters', element: pid, part: 6},
+                  {key: 'yawMasterPIDParameters', element: pid, part: 6},
+                  {key: 'thrustSlavePIDParameters', element: pid, part: 6},
+                  {key: 'pitchSlavePIDParameters', element: pid, part: 6},
+                  {key: 'rollSlavePIDParameters', element: pid, part: 6},
+                  {key: 'yawSlavePIDParameters', element: pid, part: 6},
+                  {key: 'thrustGain', element: f32, part: 6},
+                  {key: 'pitchGain', element: f32, part: 6},
+                  {key: 'rollGain', element: f32, part: 6},
+                  {key: 'yawGain', element: f32, part: 6},
+                  {key: 'pidBypass', element: u8, part: 6},
+                  {key: 'stateEstimationParameters', element: f32a2e, part: 7},
+                  {key: 'enableParameters', element: f32a2e, part: 7},
+                  {key: 'ledStates', element: ledStates, part: 8},
+                  {key: 'name', element: encodable('string', 9), part: 9},
+                ],
+                16);
+        }());
+
+        function applyPropertiesTo(source, destination) {
+            Object.keys(source).forEach(function(key) {
+                destination[key] = source[key];
+            });
         }
 
         function setConfig(dataView, structure) {
-            var b = new serializer();
-            b.setInt8Array(dataView, structure.version);
-            dataView.setUint32(b.index, structure.id, 1);
-            b.add(4);
-            b.setFloat32Array(dataView, structure.pcbOrientation);
-            b.setFloat32Array(dataView, structure.pcbTranslation);
-            b.setInt8Array(dataView, structure.mixTableFz);
-            b.setInt8Array(dataView, structure.mixTableTx);
-            b.setInt8Array(dataView, structure.mixTableTy);
-            b.setInt8Array(dataView, structure.mixTableTz);
-            b.setFloat32Array(dataView, structure.magBias);
-            b.setUint8Array(dataView, structure.assignedChannel);
-            dataView.setUint8(b.index, structure.commandInversion);
-            b.add(1);
-            b.setUint16Array(dataView, structure.channelMidpoint);
-            b.setUint16Array(dataView, structure.channelDeadzone);
-            b.setFloat32Array(dataView, structure.thrustMasterPIDParameters);
-            b.setFloat32Array(dataView, structure.pitchMasterPIDParameters);
-            b.setFloat32Array(dataView, structure.rollMasterPIDParameters);
-            b.setFloat32Array(dataView, structure.yawMasterPIDParameters);
-            b.setFloat32Array(dataView, structure.thrustSlavePIDParameters);
-            b.setFloat32Array(dataView, structure.pitchSlavePIDParameters);
-            b.setFloat32Array(dataView, structure.rollSlavePIDParameters);
-            b.setFloat32Array(dataView, structure.yawSlavePIDParameters);
-            dataView.setFloat32(b.index, structure.thrustGain, 1);
-            b.add(4);
-            dataView.setFloat32(b.index, structure.pitchGain, 1);
-            b.add(4);
-            dataView.setFloat32(b.index, structure.rollGain, 1);
-            b.add(4);
-            dataView.setFloat32(b.index, structure.yawGain, 1);
-            b.add(4);
-            dataView.setUint8(b.index, structure.pidBypass);
-            b.add(1);
-            b.setFloat32Array(dataView, structure.stateEstimationParameters);
-            b.setFloat32Array(dataView, structure.enableParameters);
-            structure.ledStates.forEach(function(ledState) {
-                ledStateSerialize(ledState, b, dataView);
-            });
-            b.setUint8Array(dataView, asciiEncode(structure.name, 9));
+            configHandler.encode(dataView, new serializer(), structure);
         }
 
         function setConfigPartial(dataView, structure, mask, led_mask) {
             var b = new serializer();
-            dataView.setUint16(b.index, mask, 1);
-            b.add(2);
-            if (mask & configFields.VERSION) {
-                b.setInt8Array(dataView, structure.version);
-            }
-            if (mask & configFields.ID) {
-                dataView.setUint32(b.index, structure.id, 1);
-                b.add(4);
-            }
-            if (mask & configFields.PCB) {
-                b.setFloat32Array(dataView, structure.pcbOrientation);
-                b.setFloat32Array(dataView, structure.pcbTranslation);
-            }
-            if (mask & configFields.MIX_TABLE) {
-                b.setInt8Array(dataView, structure.mixTableFz);
-                b.setInt8Array(dataView, structure.mixTableTx);
-                b.setInt8Array(dataView, structure.mixTableTy);
-                b.setInt8Array(dataView, structure.mixTableTz);
-            }
-            if (mask & configFields.MAG_BIAS) {
-                b.setFloat32Array(dataView, structure.magBias);
-            }
-            if (mask & configFields.CHANNEL) {
-                b.setUint8Array(dataView, structure.assignedChannel);
-                dataView.setUint8(b.index, structure.commandInversion);
-                b.add(1);
-                b.setUint16Array(dataView, structure.channelMidpoint);
-                b.setUint16Array(dataView, structure.channelDeadzone);
-            }
-            if (mask & configFields.PID_PARAMETERS) {
-                b.setFloat32Array(
-                    dataView, structure.thrustMasterPIDParameters);
-                b.setFloat32Array(dataView, structure.pitchMasterPIDParameters);
-                b.setFloat32Array(dataView, structure.rollMasterPIDParameters);
-                b.setFloat32Array(dataView, structure.yawMasterPIDParameters);
-                b.setFloat32Array(dataView, structure.thrustSlavePIDParameters);
-                b.setFloat32Array(dataView, structure.pitchSlavePIDParameters);
-                b.setFloat32Array(dataView, structure.rollSlavePIDParameters);
-                b.setFloat32Array(dataView, structure.yawSlavePIDParameters);
-                dataView.setFloat32(b.index, structure.thrustGain, 1);
-                b.add(4);
-                dataView.setFloat32(b.index, structure.pitchGain, 1);
-                b.add(4);
-                dataView.setFloat32(b.index, structure.rollGain, 1);
-                b.add(4);
-                dataView.setFloat32(b.index, structure.yawGain, 1);
-                b.add(4);
-                dataView.setUint8(b.index, structure.pidBypass);
-                b.add(1);
-            }
-            if (mask & configFields.STATE_PARAMETERS) {
-                b.setFloat32Array(
-                    dataView, structure.stateEstimationParameters);
-                b.setFloat32Array(dataView, structure.enableParameters);
-            }
-            if (mask & configFields.LED_STATES) {
-                dataView.setUint16(b.index, led_mask, 1);
-                b.add(2);
-                for (var i = 0; i < 16; ++i) {
-                    if (led_mask & (1 << i)) {
-                        ledStateSerialize(structure.ledStates[i], b, dataView);
-                    }
-                }
-            }
-            if (mask & configFields.DEVICE_NAME) {
-                b.setUint8Array(dataView, asciiEncode(structure.name, 9));
-            }
+            configHandler.encodePartial(
+                dataView, b, structure, [led_mask, mask]);
             return b.index;
         }
 
         function comSetEepromData(message_buffer) {
             commandLog('Received config!');
-            var data = new DataView(message_buffer, 0);
-            config = new Config();
-            parse(data, config);
+            config = configHandler.decode(
+                new DataView(message_buffer, 0), new serializer());
             respondToSetEeprom();
         }
 
         function comSetPartialEepromData(message_buffer) {
             commandLog('Received partial config!');
-            var data = new DataView(message_buffer, 0);
-            config = angular.copy(config);
-            parsePartial(data, config);
+            config = configHandler.decodePartial(
+                new DataView(message_buffer, 0), new serializer(),
+                angular.copy(config)),
             respondToSetEeprom();
         }
 
@@ -507,27 +270,7 @@
             return config;
         }
 
-        function asciiEncode(name, length) {
-            var response = new Uint8Array(length);
-            name.split('').forEach(function(c, idx) {
-                response[idx] = c.charCodeAt(0);
-            });
-            response[length - 1] = 0;
-            return response;
-        }
-
-        function asciiDecode(name) {
-            var response = '';
-            for (var i = 0; i < name.length && i < 8; ++i) {
-                if (name[i] === 0) {
-                    return response;
-                }
-                response += String.fromCharCode(name[i]);
-            }
-            return response;
-        }
-
-        config = new Config();
+        config = configHandler.empty();
 
         return {
             request: request,

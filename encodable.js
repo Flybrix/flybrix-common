@@ -13,14 +13,14 @@
         'bool': compileBoolean,
     };
 
-    function encodable(type, properties) {
+    function encodable(type, properties, splitBits) {
         var comp = compiler[type];
         if (comp === undefined) {
             throw new Error(
                 'Unsupported type: "' + type +
                 '". Allowed types: number, string, map, array.');
         }
-        return comp(properties);
+        return comp(properties, splitBits);
     }
 
     // Handling numbers
@@ -127,7 +127,7 @@
 
     // Handling arrays
 
-    function compileArray(properties) {
+    function compileArray(properties, splitBits) {
         var length = properties.count;
         var element = properties.element;
         if (length === undefined) {
@@ -157,12 +157,55 @@
             }
             return data;
         }
-        return new Handler(encode, decode, empty);
+        if (splitBits !== undefined) {
+            var numberEncoder = encodable('number', 'Uint' + splitBits);
+            function encodePartial(dataView, serializer, data, masks) {
+                var mask = masks.pop();
+                numberEncoder.encode(dataView, serializer, mask);
+                for (var i = 0; i < length; ++i) {
+                    if (mask & (1 << i)) {
+                        element.encodePartial(
+                            dataView, serializer, data[i], masks);
+                    }
+                }
+            }
+            function decodePartial(dataView, serializer, original) {
+                var mask = numberEncoder.decode(dataView, serializer);
+                var data = [];
+                for (var i = 0; i < length; ++i) {
+                    if (mask & (1 << i)) {
+                        data.push(element.decodePartial(
+                            dataView, serializer, original[i]));
+                    } else {
+                        data.push(original[i]);
+                    }
+                }
+                return data;
+            }
+            return new Handler(
+                encode, decode, empty, encodePartial, decodePartial);
+        } else {
+            function encodePartial(dataView, serializer, data, masks) {
+                for (var i = 0; i < length; ++i) {
+                    element.encodePartial(dataView, serializer, data[i], masks);
+                }
+            }
+            function decodePartial(dataView, serializer, original) {
+                var data = [];
+                for (var i = 0; i < length; ++i) {
+                    data.push(element.decodePartial(
+                        dataView, serializer, original[i]));
+                }
+                return data;
+            }
+            return new Handler(
+                encode, decode, empty, encodePartial, decodePartial);
+        }
     }
 
     // Handling maps
 
-    function compileMap(properties) {
+    function compileMap(properties, splitBits) {
         var length = properties.length;
         if (length === undefined) {
             throw new Error(
@@ -196,12 +239,60 @@
             });
             return data;
         }
-        return new Handler(encode, decode, empty);
+        if (splitBits !== undefined) {
+            var numberEncoder = encodable('number', 'Uint' + splitBits);
+            function encodePartial(dataView, serializer, data, masks) {
+                var mask = masks.pop();
+                numberEncoder.encode(dataView, serializer, mask);
+                properties.forEach(function(property) {
+                    if (mask & (1 << property.part)) {
+                        property.element.encodePartial(
+                            dataView, serializer, data[property.key], masks);
+                    }
+                });
+            }
+            function decodePartial(dataView, serializer, original) {
+                var mask = numberEncoder.decode(dataView, serializer);
+                var data = {};
+                properties.forEach(function(property) {
+                    if (mask & (1 << property.part)) {
+                        data[property.key] = property.element.decodePartial(
+                            dataView, serializer, original[property.key]);
+                    } else {
+                        data[property.key] = original[property.key];
+                    }
+                });
+                return data;
+            }
+            return new Handler(
+                encode, decode, empty, encodePartial, decodePartial);
+        } else {
+            function encodePartial(dataView, serializer, data, masks) {
+                properties.forEach(function(property) {
+                    property.element.encodePartial(
+                        dataView, serializer, data[property.key], masks);
+                });
+            }
+            function decodePartial(dataView, serializer, original) {
+                var data = {};
+                properties.forEach(function(property) {
+                    data[property.key] = property.element.decodePartial(
+                        dataView, serializer, original[property.key]);
+                });
+                return data;
+            }
+            return new Handler(
+                encode, decode, empty, encodePartial, decodePartial);
+        }
     }
 
-    function Handler(encode, decode, empty) {
+    function Handler(encode, decode, empty, encodePartial, decodePartial) {
+        encodePartial = encodePartial || encode;
+        decodePartial = decodePartial || decode;
         this.encode = encode;
         this.decode = decode;
+        this.encodePartial = encodePartial;
+        this.decodePartial = decodePartial;
         this.empty = empty;
     }
 }());
