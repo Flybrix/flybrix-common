@@ -3,9 +3,9 @@
 
     angular.module('flybrixCommon').factory('rcData', rcData);
 
-    rcData.$inject = ['serial', 'serializer'];
+    rcData.$inject = ['serial', 'serializer', 'encodable'];
 
-    function rcData(serial, serializer) {
+    function rcData(serial, serializer, encodable) {
         var AUX = {
             LOW: 0,
             MID: 1,
@@ -22,6 +22,19 @@
         var aux2 = AUX.HIGH;
 
         var urgent = true;
+
+        var commandHandler = encodable.map([
+            {key: 'throttle', element: encodable.Int16},
+            {key: 'pitch', element: encodable.Int16},
+            {key: 'roll', element: encodable.Int16},
+            {key: 'yaw', element: encodable.Int16},
+        ]);
+
+        var rcHandler = encodable.map([
+            {key: 'enabled', element: encodable.bool},
+            {key: 'command', element: commandHandler},
+            {key: 'auxcode', element: encodable.Uint8},
+        ]);
 
         return {
             setThrottle: setThrottle,
@@ -47,41 +60,36 @@
             }
             urgent = false;
 
-            var b = new serializer();
-            var dataBytes = new ArrayBuffer(10);
-            var view = new DataView(dataBytes, 0);
-
             // Set RC to enabled
-            view.setUint8(b.index, 1);
-            b.add(1);
+            var response = {enabled: true};
+            var command = {};
 
             // invert pitch and roll
             var throttle_threshold =
                 -0.8;  // keep bottom 10% of throttle stick to mean 'off'
-            var command_throttle = constrain(
+            command.throttle = constrain(
                 (throttle - throttle_threshold) * 4095 /
                     (1 - throttle_threshold),
                 0, 4095);
-            var command_pitch =
+            command.pitch =
                 constrain(-(applyDeadzone(pitch, 0.1)) * 4095 / 2, -2047, 2047);
-            var command_roll =
+            command.roll =
                 constrain((applyDeadzone(roll, 0.1)) * 4095 / 2, -2047, 2047);
-            var command_yaw =
+            command.yaw =
                 constrain(-(applyDeadzone(yaw, 0.1)) * 4095 / 2, -2047, 2047);
 
-            var command_vector =
-                [command_throttle, command_pitch, command_roll, command_yaw];
-            b.setInt16Array(view, command_vector);
+            response.command = command;
 
             // aux format is
             // {AUX1_low, AUX1_mid, AUX1_high,
             //  AUX2_low, AUX2_mid, AUX2_high,
             //  x, x} (LSB-->MSB)
-            var auxcode = (1 << aux1) + (1 << (aux2 + 3));
-            view.setUint8(b.index, auxcode);
-            return serial.send(
-                serial.field.COM_SET_SERIAL_RC, new Uint8Array(dataBytes),
-                false);
+            response.auxcode = (1 << aux1) + (1 << (aux2 + 3));
+
+            var data = new Uint8Array(10);
+            rcHandler.encode(
+                new DataView(data.buffer), new serializer(), response);
+            return serial.send(serial.field.COM_SET_SERIAL_RC, data, false);
         }
 
         function setThrottle(v) {
