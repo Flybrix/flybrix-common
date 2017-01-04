@@ -9,6 +9,7 @@
         string: compileString,
         map: compileMap,
         array: compileArray,
+        Handler: Handler,
     };
 
     // Handling numbers
@@ -133,6 +134,7 @@
             }
             return data;
         }
+        var handler;
         if (splitBits !== undefined) {
             var numberEncoder = compileNumber(splitBits);
             function encodePartial(dataView, serializer, data, masks) {
@@ -158,7 +160,7 @@
                 }
                 return data;
             }
-            return new Handler(
+            handler = new Handler(
                 encode, decode, empty, encodePartial, decodePartial);
         } else {
             function encodePartial(dataView, serializer, data, masks) {
@@ -174,9 +176,14 @@
                 }
                 return data;
             }
-            return new Handler(
+            handler = new Handler(
                 encode, decode, empty, encodePartial, decodePartial);
         }
+        handler.children = {
+            element: element,
+            count: length,
+        };
+        return handler;
     }
 
     // Handling maps
@@ -215,6 +222,7 @@
             });
             return data;
         }
+        var handler;
         if (splitBits !== undefined) {
             var numberEncoder = compileNumber(splitBits);
             function encodePartial(dataView, serializer, data, masks) {
@@ -240,7 +248,7 @@
                 });
                 return data;
             }
-            return new Handler(
+            handler = new Handler(
                 encode, decode, empty, encodePartial, decodePartial);
         } else {
             function encodePartial(dataView, serializer, data, masks) {
@@ -257,9 +265,11 @@
                 });
                 return data;
             }
-            return new Handler(
+            handler = new Handler(
                 encode, decode, empty, encodePartial, decodePartial);
         }
+        handler.children = properties;
+        return handler;
     }
 
     function Handler(encode, decode, empty, encodePartial, decodePartial) {
