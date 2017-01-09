@@ -381,4 +381,73 @@ describe('Encodable service', function() {
             });
         });
     });
+
+    describe('polyarray encoder', function() {
+        it('requires array as properties', function() {
+            expect(function() {
+                encodable.polyarray();
+            }).toThrow();
+            expect(function() {
+                encodable.polyarray({});
+            }).toThrow();
+            expect(function() {
+                encodable.polyarray([]);
+            }).not.toThrow();
+        });
+
+        it('requires array elements to be Handler objects', function() {
+            expect(function() {
+                encodable.polyarray();
+            }).toThrow();
+            expect(function() {
+                encodable.polyarray(['asdf']);
+            }).toThrow();
+            expect(function() {
+                encodable.polyarray([5]);
+            }).toThrow();
+            expect(function() {
+                encodable.polyarray([{element: encodable.string(9)}]);
+            }).toThrow();
+            expect(function() {
+                encodable.polyarray([encodable.string(9)]);
+            }).not.toThrow();
+        });
+
+        it('encodes any data', function() {
+            var data = new Uint8Array(18);
+            var view = new DataView(data.buffer, 0);
+            var b = new serializer();
+            var encoder = encodable.polyarray([
+                encodable.string(9),
+                encodable.Uint32,
+                encodable.Uint32,
+                encodable.Uint8,
+            ]);
+            encoder.encode(view, b, ['Abcd', 0xEEAABBCC, 0x78563412, 0xF1]);
+            expect(data).toEqual(new Uint8Array([
+                65, 98, 99, 100, 0, 0, 0, 0, 0, 0xCC, 0xBB, 0xAA, 0xEE, 0x12,
+                0x34, 0x56, 0x78, 0xF1
+            ]));
+        });
+    });
+
+    describe('polyarray decoder', function() {
+        it('decodes any data', function() {
+            var data = new Uint8Array([
+                65, 98, 99, 100, 0, 0, 0, 0, 0, 0xCC, 0xBB, 0xAA, 0xEE, 0x12,
+                0x34, 0x56, 0x78, 0xF1
+            ]);
+            var view = new DataView(data.buffer, 0);
+            var b = new serializer();
+            var encoder = encodable.polyarray([
+                encodable.string(9),
+                encodable.Uint32,
+                encodable.Uint32,
+                encodable.Uint8,
+            ]);
+            expect(encoder.decode(view, b)).toEqual([
+                'Abcd', 0xEEAABBCC, 0x78563412, 0xF1
+            ]);
+        });
+    });
 });

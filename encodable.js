@@ -9,7 +9,7 @@
         string: compileString,
         map: compileMap,
         array: compileArray,
-        Handler: Handler,
+        polyarray: compilePolyarray,
     };
 
     // Handling numbers
@@ -183,6 +183,89 @@
             element: element,
             count: length,
         };
+        return handler;
+    }
+
+    // Handling polyarrays
+
+    function compilePolyarray(properties, splitBits) {
+        var length = properties.length;
+        if (length === undefined) {
+            throw new Error(
+                'Polyarray type requires an array of Handler objects');
+        }
+        properties.forEach(function(property) {
+            if (!(property instanceof Handler)) {
+                throw new Error(
+                    'Polyarray type requires an array of Handler objects');
+            }
+        });
+        function encode(dataView, serializer, data) {
+            properties.forEach(function(property, idx) {
+                property.encode(dataView, serializer, data[idx]);
+            });
+        }
+        function decode(dataView, serializer) {
+            var data = [];
+            properties.forEach(function(property, idx) {
+                data.push(property.decode(dataView, serializer));
+            });
+            return data;
+        }
+        function empty() {
+            var data = [];
+            properties.forEach(function(property) {
+                data.push(property.empty());
+            });
+            return data;
+        }
+        var handler;
+        if (splitBits !== undefined) {
+            var numberEncoder = compileNumber(splitBits);
+            function encodePartial(dataView, serializer, data, masks) {
+                var mask = masks.pop();
+                numberEncoder.encode(dataView, serializer, mask);
+                properties.forEach(function(property, idx) {
+                    if (mask & (1 << idx)) {
+                        property.encodePartial(
+                            dataView, serializer, data[idx], masks);
+                    }
+                });
+            }
+            function decodePartial(dataView, serializer, original) {
+                var mask = numberEncoder.decode(dataView, serializer);
+                var data = [];
+                properties.forEach(function(property, idx) {
+                    if (mask & (1 << idx)) {
+                        data.push(property.decodePartial(
+                            dataView, serializer, original[idx]));
+                    } else {
+                        data.push(original[idx]);
+                    }
+                });
+                return data;
+            }
+            handler = new Handler(
+                encode, decode, empty, encodePartial, decodePartial);
+        } else {
+            function encodePartial(dataView, serializer, data, masks) {
+                properties.forEach(function(property, idx) {
+                    property.encodePartial(
+                        dataView, serializer, data[idx], masks);
+                });
+            }
+            function decodePartial(dataView, serializer, original) {
+                var data = [];
+                properties.forEach(function(property, idx) {
+                    data.push(property.decodePartial(
+                        dataView, serializer, original[idx]));
+                });
+                return data;
+            }
+            handler = new Handler(
+                encode, decode, empty, encodePartial, decodePartial);
+        }
+        handler.children = properties;
         return handler;
     }
 

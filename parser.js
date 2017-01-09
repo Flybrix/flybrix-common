@@ -104,24 +104,9 @@
 
         var stateHandler = (function() {
             var e = encodable;
-            var pidHandlerHelper = e.map([
-                {key: 'time', element: e.Uint32},
-                {key: 'values', element: e.array(5, e.Float32)},
+            var pidHandler = e.polyarray([
+                e.Uint32, e.Float32, e.Float32, e.Float32, e.Float32, e.Float32
             ]);
-            var pidHandler = new e.Handler(
-                function(dataView, serializer, data) {
-                    pidHandlerHelper.encode(dataView, serializer, {
-                        time: data[0],
-                        values: data.slice(1),
-                    });
-                },
-                function(dataView, serializer) {
-                    var v = pidHandlerHelper.decode(dataView, serializer);
-                    return [v.time].concat(v.values);
-                },
-                function() {
-                    return [0, 0, 0, 0, 0, 0];
-                });
             return e.map([
                 {key: 'timestamp_us', element: e.Uint32},
                 {key: 'status', element: e.Uint16},
