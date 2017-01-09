@@ -29,7 +29,10 @@
                 serializer.add(byteCount);
                 return data;
             }
-            encodable[key] = new Handler(encode, decode, numberZero);
+            function bytecount() {
+                return byteCount;
+            }
+            encodable[key] = new Handler(bytecount, encode, decode, numberZero);
         });
     });
     [4, 8].forEach(function(byteCount) {
@@ -43,7 +46,10 @@
             serializer.add(byteCount);
             return data;
         }
-        encodable[key] = new Handler(encode, decode, numberZero);
+        function bytecount() {
+            return byteCount;
+        }
+        encodable[key] = new Handler(bytecount, encode, decode, numberZero);
     });
 
     function compileNumber(type) {
@@ -59,6 +65,9 @@
     // Handling bools
 
     encodable.bool = new Handler(
+        function() {
+            return 1;
+        },
         function(dataView, serializer, data) {
             encodable.Uint8.encode(dataView, serializer, data ? 1 : 0)
         },
@@ -82,7 +91,10 @@
         function empty() {
             return '';
         }
-        return new Handler(encode, decode, empty);
+        function bytecount() {
+            return length;
+        }
+        return new Handler(bytecount, encode, decode, empty);
     }
 
     function asciiEncode(name, length) {
@@ -160,8 +172,23 @@
                 }
                 return data;
             }
+            function bytecount(masks) {
+                var mask;
+                var nomask = true;
+                if (masks !== undefined) {
+                    mask = masks.pop();
+                    nomask = false;
+                }
+                var accum = nomask ? 0 : splitBits / 8;
+                for (var i = 0; i < length; ++i) {
+                    if (nomask || (mask & (1 << i))) {
+                        accum += element.bytecount(masks);
+                    }
+                }
+                return accum;
+            }
             handler = new Handler(
-                encode, decode, empty, encodePartial, decodePartial);
+                bytecount, encode, decode, empty, encodePartial, decodePartial);
         } else {
             function encodePartial(dataView, serializer, data, masks) {
                 for (var i = 0; i < length; ++i) {
@@ -176,8 +203,15 @@
                 }
                 return data;
             }
+            function bytecount(masks) {
+                var accum = 0;
+                for (var i = 0; i < length; ++i) {
+                    accum += element.bytecount(masks);
+                }
+                return accum;
+            }
             handler = new Handler(
-                encode, decode, empty, encodePartial, decodePartial);
+                bytecount, encode, decode, empty, encodePartial, decodePartial);
         }
         handler.children = {
             element: element,
@@ -220,6 +254,9 @@
             return data;
         }
         var handler;
+        var byteCount = properties.reduce(function(accum, v) {
+            return accum + v.bytecount;
+        }, 0);
         if (splitBits !== undefined) {
             var numberEncoder = compileNumber(splitBits);
             function encodePartial(dataView, serializer, data, masks) {
@@ -245,8 +282,22 @@
                 });
                 return data;
             }
+            function bytecount(masks) {
+                var mask;
+                var nomask = true;
+                if (masks !== undefined) {
+                    mask = masks.pop();
+                    nomask = false;
+                }
+                return properties.reduce(function(accum, v, idx) {
+                    if (!nomask && (!(mask & (1 << idx)))) {
+                        return accum;
+                    }
+                    return accum + v.bytecount(masks);
+                }, nomask ? 0 : splitBits / 8);
+            }
             handler = new Handler(
-                encode, decode, empty, encodePartial, decodePartial);
+                bytecount, encode, decode, empty, encodePartial, decodePartial);
         } else {
             function encodePartial(dataView, serializer, data, masks) {
                 properties.forEach(function(property, idx) {
@@ -262,8 +313,13 @@
                 });
                 return data;
             }
+            function bytecount(masks) {
+                return properties.reduce(function(accum, v) {
+                    return accum + v.bytecount(masks);
+                }, 0);
+            }
             handler = new Handler(
-                encode, decode, empty, encodePartial, decodePartial);
+                bytecount, encode, decode, empty, encodePartial, decodePartial);
         }
         handler.children = properties;
         return handler;
@@ -331,8 +387,22 @@
                 });
                 return data;
             }
+            function bytecount(masks) {
+                var mask;
+                var nomask = true;
+                if (masks !== undefined) {
+                    mask = masks.pop();
+                    nomask = false;
+                }
+                return properties.reduce(function(accum, v) {
+                    if (!nomask && (!(mask & (1 << v.part)))) {
+                        return accum;
+                    }
+                    return accum + v.element.bytecount(masks);
+                }, nomask ? 0 : splitBits / 8);
+            }
             handler = new Handler(
-                encode, decode, empty, encodePartial, decodePartial);
+                bytecount, encode, decode, empty, encodePartial, decodePartial);
         } else {
             function encodePartial(dataView, serializer, data, masks) {
                 properties.forEach(function(property) {
@@ -348,16 +418,23 @@
                 });
                 return data;
             }
+            function bytecount(masks) {
+                return properties.reduce(function(accum, v) {
+                    return accum + v.element.bytecount(masks);
+                }, 0);
+            }
             handler = new Handler(
-                encode, decode, empty, encodePartial, decodePartial);
+                bytecount, encode, decode, empty, encodePartial, decodePartial);
         }
         handler.children = properties;
         return handler;
     }
 
-    function Handler(encode, decode, empty, encodePartial, decodePartial) {
+    function Handler(
+        bytecount, encode, decode, empty, encodePartial, decodePartial) {
         encodePartial = encodePartial || encode;
         decodePartial = decodePartial || decode;
+        this.bytecount = bytecount;
         this.encode = encode;
         this.decode = decode;
         this.encodePartial = encodePartial;

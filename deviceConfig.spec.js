@@ -228,7 +228,7 @@ describe('Device configuration service', function() {
                         parser.CommandFields.COM_REQ_RESPONSE);
                     expect(new Uint8Array(data))
                         .toEqual(new Uint8Array(
-                            Array.apply(null, Array(652)).map(function() {
+                            Array.apply(null, Array(644)).map(function() {
                                 return 0;
                             })));
                     done();
@@ -247,7 +247,7 @@ describe('Device configuration service', function() {
                         parser.CommandFields.COM_SET_EEPROM_DATA |
                         parser.CommandFields.COM_REQ_RESPONSE);
                     var expected_data = new Uint8Array(
-                        Array.apply(null, Array(652)).map(function() {
+                        Array.apply(null, Array(644)).map(function() {
                             return 0;
                         }));
                     expected_data[0] = 1;
@@ -276,7 +276,7 @@ describe('Device configuration service', function() {
                             parser.CommandFields.COM_REQ_RESPONSE);
                         expect(new Uint8Array(data))
                             .toEqual(new Uint8Array(
-                                Array.apply(null, Array(652)).map(function() {
+                                Array.apply(null, Array(644)).map(function() {
                                     return 0;
                                 })));
                         backend.onRead(new Uint8Array(

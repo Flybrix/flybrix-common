@@ -8,8 +8,6 @@
 
     function deviceConfig(
         serial, commandLog, serializer, encodable, firmwareVersion) {
-        var eepromConfigSize = 379 + 273;
-
         var config;
 
         var configCallback = function() {
@@ -82,10 +80,7 @@
             if (newConfig === undefined)
                 newConfig = config;
             commandLog('Sending new configuration data...');
-            var eepromConfigBytes = new ArrayBuffer(eepromConfigSize);
-            var view = new DataView(eepromConfigBytes, 0);
-            setConfig(view, newConfig);
-            var data = new Uint8Array(eepromConfigBytes);
+            var data = setConfig(newConfig);
             serial.send(serial.field.COM_SET_EEPROM_DATA, data, false)
                 .then(function() {
                     request();
@@ -107,10 +102,7 @@
                 serial.field.COM_SET_PARTIAL_TEMPORARY_CONFIG :
                 serial.field.COM_SET_PARTIAL_EEPROM_DATA;
 
-            var eepromConfigBytes = new ArrayBuffer(eepromConfigSize);
-            var view = new DataView(eepromConfigBytes, 0);
-            var endpoint = setConfigPartial(view, newConfig, mask, led_mask);
-            var data = new Uint8Array(eepromConfigBytes.slice(0, endpoint));
+            var data = setConfigPartial(newConfig, mask, led_mask);
             serial.send(target, data, false).then(function() {
                 if (request_update) {
                     request();
@@ -124,16 +116,21 @@
             });
         }
 
-        function setConfig(dataView, structure) {
-            firmwareVersion.configHandler().encode(
-                dataView, new serializer(), structure);
+        function setConfig(structure) {
+            var handler = firmwareVersion.configHandler();
+            var data = new Uint8Array(handler.bytecount());
+            var dataView = new DataView(data.buffer, 0);
+            handler.encode(dataView, new serializer(), structure);
+            return data;
         }
 
-        function setConfigPartial(dataView, structure, mask, led_mask) {
+        function setConfigPartial(structure, mask, led_mask) {
+            var handler = firmwareVersion.configHandler();
+            var data = new Uint8Array(handler.bytecount([led_mask, mask]))
+                var dataView = new DataView(data.buffer, 0);
             var b = new serializer();
-            firmwareVersion.configHandler().encodePartial(
-                dataView, b, structure, [led_mask, mask]);
-            return b.index;
+            handler.encodePartial(dataView, b, structure, [led_mask, mask]);
+            return data;
         }
 
         function comSetEepromData(message_buffer) {

@@ -66,7 +66,12 @@ describe('Encodable service', function() {
         });
     });
 
-    describe('string decoder', function() {
+    describe('boolean decoder', function() {
+        it('has right amount of bytes', function() {
+            var encoder = encodable.bool;
+            expect(encoder.bytecount()).toBe(1);
+        });
+
         it('decodes true', function() {
             var data = new Uint8Array([5]);
             var view = new DataView(data.buffer, 0);
@@ -160,6 +165,17 @@ describe('Encodable service', function() {
     });
 
     describe('number decoder', function() {
+        it('has right amount of bytes', function() {
+            expect(encodable.Uint8.bytecount()).toBe(1);
+            expect(encodable.Uint16.bytecount()).toBe(2);
+            expect(encodable.Uint32.bytecount()).toBe(4);
+            expect(encodable.Int8.bytecount()).toBe(1);
+            expect(encodable.Int16.bytecount()).toBe(2);
+            expect(encodable.Int32.bytecount()).toBe(4);
+            expect(encodable.Float32.bytecount()).toBe(4);
+            expect(encodable.Float64.bytecount()).toBe(8);
+        });
+
         it('decodes Uint8', function() {
             var data = new Uint8Array([180]);
             var view = new DataView(data.buffer, 0);
@@ -248,6 +264,11 @@ describe('Encodable service', function() {
     });
 
     describe('string decoder', function() {
+        it('has right amount of bytes', function() {
+            var encoder = encodable.string(9);
+            expect(encoder.bytecount()).toBe(9);
+        });
+
         it('decodes short string', function() {
             var data = new Uint8Array([65, 98, 99, 100, 0, 0, 0, 48, 49]);
             var view = new DataView(data.buffer, 0);
@@ -303,6 +324,11 @@ describe('Encodable service', function() {
     });
 
     describe('array decoder', function() {
+        it('has right amount of bytes', function() {
+            var encoder = encodable.array(4, encodable.string(8));
+            expect(encoder.bytecount()).toBe(32);
+        });
+
         it('decodes string array', function() {
             var data = new Uint8Array([
                 65, 98, 99, 100, 0, 0, 0, 22, 49, 50, 51, 0,   11, 0,  0,  0,
@@ -366,6 +392,13 @@ describe('Encodable service', function() {
     });
 
     describe('map decoder', function() {
+        it('has right amount of bytes', function() {
+            var encoder = encodable.map([
+                {key: 'name', element: encodable.string(9)},
+                {key: 'price', element: encodable.Uint32},
+            ]);
+            expect(encoder.bytecount()).toBe(13);
+        });
         it('decodes any data', function() {
             var data = new Uint8Array(
                 [65, 98, 99, 100, 0, 0, 0, 0, 0, 0xCC, 0xBB, 0xAA, 0xEE]);
@@ -432,6 +465,16 @@ describe('Encodable service', function() {
     });
 
     describe('polyarray decoder', function() {
+        it('has right amount of bytes', function() {
+            var encoder = encodable.polyarray([
+                encodable.string(9),
+                encodable.Uint32,
+                encodable.Uint32,
+                encodable.Uint8,
+            ]);
+            expect(encoder.bytecount()).toBe(18);
+        });
+
         it('decodes any data', function() {
             var data = new Uint8Array([
                 65, 98, 99, 100, 0, 0, 0, 0, 0, 0xCC, 0xBB, 0xAA, 0xEE, 0x12,
