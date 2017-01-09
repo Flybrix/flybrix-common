@@ -809,8 +809,7 @@ describe('Device configuration service', function() {
             recalcChecksum(full_config_data);
             commandLog.onMessage(function(messages) {
                 messages.forEach(function(val) {
-                    if (val.indexOf(
-                            'Configuration MAJOR or MINOR version mismatch!') !==
+                    if (val.indexOf('Configuration version unsupported!') !==
                         -1) {
                         done();
                     }

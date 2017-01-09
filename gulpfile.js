@@ -6,6 +6,8 @@ gulp.task('min', function() {
     var files = [
         'module.js',
         'encodable.js',
+        'configHandler.js',
+        'firmwareVersion.js',
         'cobs.js',
         'commandLog.js',
         'serializer.js',

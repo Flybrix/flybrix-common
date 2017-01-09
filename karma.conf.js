@@ -22,6 +22,9 @@ module.exports = function(config) {
             './cobs.spec.js',
             './commandLog.js',
             './commandLog.spec.js',
+            './configHandler.js',
+            './configHandler.spec.js',
+            './firmwareVersion.js',
             './deviceConfig.js',
             './deviceConfig.spec.js',
             './encodable.js',
@@ -49,6 +52,8 @@ module.exports = function(config) {
         preprocessors: {
             './cobs.js': ['coverage'],
             './commandLog.js': ['coverage'],
+            './configHandler.js': ['coverage'],
+            './firmwareVersion.js': ['coverage'],
             './deviceConfig.js': ['coverage'],
             './encodable.js': ['coverage'],
             './led.js': ['coverage'],

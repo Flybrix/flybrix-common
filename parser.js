@@ -3,9 +3,10 @@
 
     angular.module('flybrixCommon').factory('parser', parser);
 
-    parser.$inject = ['commandLog', 'serializer', 'encodable'];
+    parser.$inject =
+        ['commandLog', 'serializer', 'encodable', 'firmwareVersion'];
 
-    function parser(commandLog, serializer, encodable) {
+    function parser(commandLog, serializer, encodable, firmwareVersion) {
         var MessageType = {
             State: 0,
             Command: 1,
@@ -191,6 +192,8 @@
             var data = new DataView(message_buffer, 0);
             var b = new serializer();
             var serial_update_rate_Hz = 0;
+
+            mask &= firmwareVersion.stateMask();
 
             stateHandler.children.forEach(function(child, idx) {
                 var submask = (1 << idx);

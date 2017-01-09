@@ -3,14 +3,14 @@
 
     angular.module('flybrixCommon').factory('deviceConfig', deviceConfig);
 
-    deviceConfig.$inject = ['serial', 'commandLog', 'serializer', 'encodable'];
+    deviceConfig.$inject =
+        ['serial', 'commandLog', 'serializer', 'encodable', 'firmwareVersion'];
 
-    function deviceConfig(serial, commandLog, serializer, encodable) {
+    function deviceConfig(
+        serial, commandLog, serializer, encodable, firmwareVersion) {
         var eepromConfigSize = 379 + 273;
 
         var config;
-
-        var desiredVersion = [1, 5, 0];  // checked at startup!
 
         var configCallback = function() {
             commandLog('No callback defined for receiving configurations!');
@@ -56,7 +56,7 @@
         });
 
         function getDesiredVersion() {
-            return desiredVersion;
+            return firmwareVersion.desired();
         }
 
 
@@ -118,77 +118,6 @@
             });
         }
 
-        var configHandler = (function() {
-            var e = encodable;
-            var ledColor = e.map([
-                {key: 'red', element: e.Uint8},
-                {key: 'green', element: e.Uint8},
-                {key: 'blue', element: e.Uint8},
-            ]);
-
-            var ledState = e.map([
-                {key: 'status', element: e.Uint16},
-                {key: 'pattern', element: e.Uint8},
-                {
-                  key: 'colors',
-                  element: e.map([
-                      {key: 'right_front', element: ledColor},
-                      {key: 'right_back', element: ledColor},
-                      {key: 'left_front', element: ledColor},
-                      {key: 'left_back', element: ledColor},
-                  ])
-                },
-                {key: 'indicator_red', element: e.bool},
-                {key: 'indicator_green', element: e.bool},
-            ]);
-
-            var coord3d = e.array(3, e.Float32);
-
-            var version = e.array(3, e.Uint8);
-            var channelMapping = e.array(6, e.Uint8);
-            var channelMark = e.array(6, e.Uint16);
-            var pid = e.array(7, e.Float32);
-            var stParam = e.array(2, e.Float32);
-
-            var ledStates = e.array(16, ledState, 16);
-
-            var name = e.string(9);
-            return e.map(
-                [
-                  {part: 0, key: 'version', element: e.array(3, e.Uint8)},
-                  {part: 1, key: 'id', element: e.Uint32},
-                  {part: 2, key: 'pcbOrientation', element: coord3d},
-                  {part: 2, key: 'pcbTranslation', element: coord3d},
-                  {part: 3, key: 'mixTableFz', element: e.array(8, e.Uint8)},
-                  {part: 3, key: 'mixTableTx', element: e.array(8, e.Uint8)},
-                  {part: 3, key: 'mixTableTy', element: e.array(8, e.Uint8)},
-                  {part: 3, key: 'mixTableTz', element: e.array(8, e.Uint8)},
-                  {part: 4, key: 'magBias', element: coord3d},
-                  {part: 5, key: 'assignedChannel', element: channelMapping},
-                  {part: 5, key: 'commandInversion', element: e.Uint8},
-                  {part: 5, key: 'channelMidpoint', element: channelMark},
-                  {part: 5, key: 'channelDeadzone', element: channelMark},
-                  {part: 6, key: 'thrustMasterPIDParameters', element: pid},
-                  {part: 6, key: 'pitchMasterPIDParameters', element: pid},
-                  {part: 6, key: 'rollMasterPIDParameters', element: pid},
-                  {part: 6, key: 'yawMasterPIDParameters', element: pid},
-                  {part: 6, key: 'thrustSlavePIDParameters', element: pid},
-                  {part: 6, key: 'pitchSlavePIDParameters', element: pid},
-                  {part: 6, key: 'rollSlavePIDParameters', element: pid},
-                  {part: 6, key: 'yawSlavePIDParameters', element: pid},
-                  {part: 6, key: 'thrustGain', element: e.Float32},
-                  {part: 6, key: 'pitchGain', element: e.Float32},
-                  {part: 6, key: 'rollGain', element: e.Float32},
-                  {part: 6, key: 'yawGain', element: e.Float32},
-                  {part: 6, key: 'pidBypass', element: e.Uint8},
-                  {part: 7, key: 'stateEstimationParameters', element: stParam},
-                  {part: 7, key: 'enableParameters', element: stParam},
-                  {part: 8, key: 'ledStates', element: ledStates},
-                  {part: 9, key: 'name', element: e.string(9)},
-                ],
-                16);
-        }());
-
         function applyPropertiesTo(source, destination) {
             Object.keys(source).forEach(function(key) {
                 destination[key] = source[key];
@@ -196,42 +125,42 @@
         }
 
         function setConfig(dataView, structure) {
-            configHandler.encode(dataView, new serializer(), structure);
+            firmwareVersion.configHandler().encode(
+                dataView, new serializer(), structure);
         }
 
         function setConfigPartial(dataView, structure, mask, led_mask) {
             var b = new serializer();
-            configHandler.encodePartial(
+            firmwareVersion.configHandler().encodePartial(
                 dataView, b, structure, [led_mask, mask]);
             return b.index;
         }
 
         function comSetEepromData(message_buffer) {
             commandLog('Received config!');
-            config = configHandler.decode(
+            config = firmwareVersion.configHandler().decode(
                 new DataView(message_buffer, 0), new serializer());
             respondToSetEeprom();
         }
 
         function comSetPartialEepromData(message_buffer) {
             commandLog('Received partial config!');
-            config = configHandler.decodePartial(
+            config = firmwareVersion.configHandler().decodePartial(
                 new DataView(message_buffer, 0), new serializer(),
                 angular.copy(config)),
             respondToSetEeprom();
         }
 
         function respondToSetEeprom() {
-            if ((desiredVersion[0] !== config.version[0]) ||
-                (desiredVersion[1] !== config.version[1])) {
+            firmwareVersion.set(config.version);
+            if (!firmwareVersion.supported()) {
                 commandLog(
-                    '<span style="color: red">WARNING: Configuration MAJOR or MINOR version mismatch!</span>');
+                    '<span style="color: red">WARNING: Configuration version unsupported!</span>');
                 commandLog(
                     'eeprom version: <strong>' + config.version[0] + '.' +
                     config.version[1] + '.' + config.version[2] + '</strong>' +
-                    ' - app expected version: <strong>' + desiredVersion[0] +
-                    '.' + desiredVersion[1] + '.' + desiredVersion[2] +
-                    '</strong>');
+                    ' - newest firmware version: <strong>' +
+                    firmwareVersion.desiredKey() + '</strong>');
             } else {
                 commandLog(
                     'Recieved configuration version: <span style="color: green">' +
@@ -253,7 +182,7 @@
             return config;
         }
 
-        config = configHandler.empty();
+        config = firmwareVersion.configHandler().empty();
 
         return {
             request: request,
