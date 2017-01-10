@@ -149,7 +149,7 @@
         var handler;
         if (splitBits !== undefined) {
             var numberEncoder = compileNumber(splitBits);
-            function encodePartial(dataView, serializer, data, masks) {
+            function encodePartialSplit(dataView, serializer, data, masks) {
                 var mask = masks.pop();
                 numberEncoder.encode(dataView, serializer, mask);
                 for (var i = 0; i < length; ++i) {
@@ -159,7 +159,7 @@
                     }
                 }
             }
-            function decodePartial(dataView, serializer, original) {
+            function decodePartialSplit(dataView, serializer, original) {
                 var mask = numberEncoder.decode(dataView, serializer);
                 var data = [];
                 for (var i = 0; i < length; ++i) {
@@ -172,7 +172,7 @@
                 }
                 return data;
             }
-            function bytecount(masks) {
+            function bytecountSplit(masks) {
                 var mask;
                 var nomask = true;
                 if (masks !== undefined) {
@@ -188,7 +188,8 @@
                 return accum;
             }
             handler = new Handler(
-                bytecount, encode, decode, empty, encodePartial, decodePartial);
+                bytecountSplit, encode, decode, empty, encodePartialSplit,
+                decodePartialSplit);
         } else {
             function encodePartial(dataView, serializer, data, masks) {
                 for (var i = 0; i < length; ++i) {
@@ -259,7 +260,7 @@
         }, 0);
         if (splitBits !== undefined) {
             var numberEncoder = compileNumber(splitBits);
-            function encodePartial(dataView, serializer, data, masks) {
+            function encodePartialSplit(dataView, serializer, data, masks) {
                 var mask = masks.pop();
                 numberEncoder.encode(dataView, serializer, mask);
                 properties.forEach(function(property, idx) {
@@ -269,7 +270,7 @@
                     }
                 });
             }
-            function decodePartial(dataView, serializer, original) {
+            function decodePartialSplit(dataView, serializer, original) {
                 var mask = numberEncoder.decode(dataView, serializer);
                 var data = [];
                 properties.forEach(function(property, idx) {
@@ -282,7 +283,7 @@
                 });
                 return data;
             }
-            function bytecount(masks) {
+            function bytecountSplit(masks) {
                 var mask;
                 var nomask = true;
                 if (masks !== undefined) {
@@ -297,7 +298,8 @@
                 }, nomask ? 0 : splitBits / 8);
             }
             handler = new Handler(
-                bytecount, encode, decode, empty, encodePartial, decodePartial);
+                bytecountSplit, encode, decode, empty, encodePartialSplit,
+                decodePartialSplit);
         } else {
             function encodePartial(dataView, serializer, data, masks) {
                 properties.forEach(function(property, idx) {
@@ -364,7 +366,7 @@
         var handler;
         if (splitBits !== undefined) {
             var numberEncoder = compileNumber(splitBits);
-            function encodePartial(dataView, serializer, data, masks) {
+            function encodePartialSplit(dataView, serializer, data, masks) {
                 var mask = masks.pop();
                 numberEncoder.encode(dataView, serializer, mask);
                 properties.forEach(function(property) {
@@ -374,7 +376,7 @@
                     }
                 });
             }
-            function decodePartial(dataView, serializer, original) {
+            function decodePartialSplit(dataView, serializer, original) {
                 var mask = numberEncoder.decode(dataView, serializer);
                 var data = {};
                 properties.forEach(function(property) {
@@ -387,7 +389,7 @@
                 });
                 return data;
             }
-            function bytecount(masks) {
+            function bytecountSplit(masks) {
                 var mask;
                 var nomask = true;
                 if (masks !== undefined) {
@@ -402,7 +404,8 @@
                 }, nomask ? 0 : splitBits / 8);
             }
             handler = new Handler(
-                bytecount, encode, decode, empty, encodePartial, decodePartial);
+                bytecountSplit, encode, decode, empty, encodePartialSplit,
+                decodePartialSplit);
         } else {
             function encodePartial(dataView, serializer, data, masks) {
                 properties.forEach(function(property) {
