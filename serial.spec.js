@@ -179,9 +179,8 @@ describe('Serial service', function() {
                 done();
             });
             commandLog.onMessage(onFail);
-            backend.onRead(
-                new Uint8Array(
-                    [2, 1, 2, 1, 1, 10, 8, 1, 2, 3, 4, 5, 6, 7, 8, 0]));
+            backend.onRead(new Uint8Array(
+                [2, 1, 2, 1, 1, 10, 8, 1, 2, 3, 4, 5, 6, 7, 8, 0]));
             $rootScope.$digest();
         });
 
@@ -259,9 +258,8 @@ describe('Serial service', function() {
                     .toEqual('No state listener defined for serial');
                 done();
             });
-            backend.onRead(
-                new Uint8Array(
-                    [2, 1, 2, 1, 1, 10, 8, 1, 2, 3, 4, 5, 6, 7, 8, 0]));
+            backend.onRead(new Uint8Array(
+                [2, 1, 2, 1, 1, 10, 8, 1, 2, 3, 4, 5, 6, 7, 8, 0]));
             $rootScope.$digest();
         });
 
@@ -269,9 +267,30 @@ describe('Serial service', function() {
             serial.setStateCallback(function(state, data_mask) {
                 done();
             });
-            backend.onRead(
-                new Uint8Array(
-                    [2, 1, 2, 1, 1, 10, 8, 1, 2, 3, 4, 5, 6, 7, 8, 0]));
+            backend.onRead(new Uint8Array(
+                [2, 1, 2, 1, 1, 10, 8, 1, 2, 3, 4, 5, 6, 7, 8, 0]));
+        });
+    });
+
+    describe('.handlePostConnect()', function() {
+        var backend;
+        beforeEach(function() {
+            backend = new serial.Backend();
+            serial.setBackend(backend);
+        });
+
+        it('exists', function() {
+            expect(serial.handlePostConnect).toBeDefined();
+        });
+
+        it('sends firmware version request', function(done) {
+            backend.send = function(data) {
+                expect(data).toEqual(
+                    new Uint8Array([4, 65, 1, 1, 2, 64, 2, 1, 1, 1, 1, 0]));
+                done();
+            };
+            serial.handlePostConnect();
+            $timeout.flush();
         });
     });
 

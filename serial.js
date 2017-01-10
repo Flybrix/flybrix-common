@@ -40,12 +40,22 @@
             setStateCallback: setStateCallback,
             setCommandCallback: setCommandCallback,
             setDataHandler: setDataHandler,
+            handlePostConnect: handlePostConnect,
             Backend: Backend,
         };
 
         function setBackend(v) {
             backend = v;
             backend.onRead = read;
+        }
+
+        function handlePostConnect() {
+            return requestFirmwareVersion();
+        }
+
+        function requestFirmwareVersion() {
+            return send(
+                parser.CommandFields.COM_REQ_PARTIAL_EEPROM_DATA, [1, 0, 0, 0]);
         }
 
         function send(mask, data, log_send) {
