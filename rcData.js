@@ -3,9 +3,9 @@
 
     angular.module('flybrixCommon').factory('rcData', rcData);
 
-    rcData.$inject = ['serial', 'serializer', 'encodable'];
+    rcData.$inject = ['serial', 'encodable'];
 
-    function rcData(serial, serializer, encodable) {
+    function rcData(serial, encodable) {
         var AUX = {
             LOW: 0,
             MID: 1,
@@ -88,7 +88,8 @@
 
             var data = new Uint8Array(10);
             rcHandler.encode(
-                new DataView(data.buffer), new serializer(), response);
+                new DataView(data.buffer), new encodable.Serializer(),
+                response);
             return serial.send(serial.field.COM_SET_SERIAL_RC, data, false);
         }
 

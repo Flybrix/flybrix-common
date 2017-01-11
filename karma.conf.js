@@ -35,8 +35,6 @@ module.exports = function(config) {
             './parser.spec.js',
             './serial.js',
             './serial.spec.js',
-            './serializer.js',
-            './serializer.spec.js',
             './rcData.js',
             './rcData.spec.js',
         ],
@@ -59,7 +57,6 @@ module.exports = function(config) {
             './led.js': ['coverage'],
             './parser.js': ['coverage'],
             './serial.js': ['coverage'],
-            './serializer.js': ['coverage'],
             './rcData.js': ['coverage'],
         },
 

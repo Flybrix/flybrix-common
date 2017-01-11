@@ -10,6 +10,15 @@
         map: compileMap,
         array: compileArray,
         polyarray: compilePolyarray,
+        Serializer: Serializer,
+    };
+
+    function Serializer() {
+        this.index = 0;
+    }
+
+    Serializer.prototype.add = function(increment) {
+        this.index += increment;
     };
 
     // Handling numbers
@@ -17,6 +26,7 @@
     function numberZero() {
         return 0;
     }
+
     ['Uint', 'Int'].forEach(function(keyPrefix) {
         [1, 2, 4].forEach(function(byteCount) {
             var key = keyPrefix + (byteCount * 8);

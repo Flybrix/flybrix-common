@@ -4,10 +4,9 @@
     angular.module('flybrixCommon').factory('deviceConfig', deviceConfig);
 
     deviceConfig.$inject =
-        ['serial', 'commandLog', 'serializer', 'encodable', 'firmwareVersion'];
+        ['serial', 'commandLog', 'encodable', 'firmwareVersion'];
 
-    function deviceConfig(
-        serial, commandLog, serializer, encodable, firmwareVersion) {
+    function deviceConfig(serial, commandLog, encodable, firmwareVersion) {
         var config;
 
         var configCallback = function() {
@@ -120,7 +119,7 @@
             var handler = firmwareVersion.configHandler();
             var data = new Uint8Array(handler.bytecount());
             var dataView = new DataView(data.buffer, 0);
-            handler.encode(dataView, new serializer(), structure);
+            handler.encode(dataView, new encodable.Serializer(), structure);
             return data;
         }
 
@@ -128,7 +127,7 @@
             var handler = firmwareVersion.configHandler();
             var data = new Uint8Array(handler.bytecount([led_mask, mask]))
                 var dataView = new DataView(data.buffer, 0);
-            var b = new serializer();
+            var b = new encodable.Serializer();
             handler.encodePartial(dataView, b, structure, [led_mask, mask]);
             return data;
         }
@@ -136,14 +135,14 @@
         function comSetEepromData(message_buffer) {
             commandLog('Received config!');
             config = firmwareVersion.configHandler().decode(
-                new DataView(message_buffer, 0), new serializer());
+                new DataView(message_buffer, 0), new encodable.Serializer());
             respondToSetEeprom();
         }
 
         function comSetPartialEepromData(message_buffer) {
             commandLog('Received partial config!');
             config = firmwareVersion.configHandler().decodePartial(
-                new DataView(message_buffer, 0), new serializer(),
+                new DataView(message_buffer, 0), new encodable.Serializer(),
                 angular.copy(config)),
             respondToSetEeprom();
         }

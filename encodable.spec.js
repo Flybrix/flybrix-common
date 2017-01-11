@@ -1,16 +1,61 @@
 describe('Encodable service', function() {
     var encodable;
-    var serializer;
 
     beforeEach(angular.mock.module('flybrixCommon'));
 
-    beforeEach(inject(function(_encodable_, _serializer_) {
+    beforeEach(inject(function(_encodable_) {
         encodable = _encodable_;
-        serializer = _serializer_;
     }));
 
     it('exists', function() {
         expect(encodable).toBeDefined();
+    });
+
+    describe('Serializer', function() {
+        it('exists', function() {
+            expect(encodable.Serializer).toBeDefined();
+        });
+
+        it('is constructor', function() {
+            expect(new encodable.Serializer()).toBeDefined();
+        });
+
+        describe('.index', function() {
+            it('exists', function() {
+                expect(new encodable.Serializer().index).toBeDefined();
+            });
+
+            it('starts at zero', function() {
+                expect(new encodable.Serializer().index).toEqual(0);
+            });
+
+        });
+
+        describe('.add()', function() {
+            it('exists', function() {
+                expect(new encodable.Serializer().add).toBeDefined();
+            });
+
+            it('increments index', function() {
+                var ser = new encodable.Serializer();
+                expect(ser.index).toEqual(0);
+                ser.add(7);
+                expect(ser.index).toEqual(7);
+            });
+
+            it('accumulates index increments', function() {
+                var ser = new encodable.Serializer();
+                expect(ser.index).toEqual(0);
+                ser.add(7);
+                expect(ser.index).toEqual(7);
+                ser.add(2);
+                expect(ser.index).toEqual(9);
+                ser.add(12);
+                expect(ser.index).toEqual(21);
+                ser.add(4);
+                expect(ser.index).toEqual(25);
+            });
+        });
     });
 
     describe('empty value', function() {
@@ -50,7 +95,7 @@ describe('Encodable service', function() {
         it('encodes true', function() {
             var data = new Uint8Array(1);
             var view = new DataView(data.buffer, 0);
-            var b = new serializer();
+            var b = new encodable.Serializer();
             var encoder = encodable.bool;
             encoder.encode(view, b, true);
             expect(data).toEqual(new Uint8Array([1]));
@@ -59,7 +104,7 @@ describe('Encodable service', function() {
         it('encodes false', function() {
             var data = new Uint8Array(1);
             var view = new DataView(data.buffer, 0);
-            var b = new serializer();
+            var b = new encodable.Serializer();
             var encoder = encodable.bool;
             encoder.encode(view, b, false);
             expect(data).toEqual(new Uint8Array([0]));
@@ -68,7 +113,7 @@ describe('Encodable service', function() {
         it('partial encodes true', function() {
             var data = new Uint8Array(1);
             var view = new DataView(data.buffer, 0);
-            var b = new serializer();
+            var b = new encodable.Serializer();
             var encoder = encodable.bool;
             encoder.encodePartial(view, b, true);
             expect(data).toEqual(new Uint8Array([1]));
@@ -77,7 +122,7 @@ describe('Encodable service', function() {
         it('partial encodes false', function() {
             var data = new Uint8Array(1);
             var view = new DataView(data.buffer, 0);
-            var b = new serializer();
+            var b = new encodable.Serializer();
             var encoder = encodable.bool;
             encoder.encodePartial(view, b, false);
             expect(data).toEqual(new Uint8Array([0]));
@@ -92,7 +137,7 @@ describe('Encodable service', function() {
         it('decodes true', function() {
             var data = new Uint8Array([5]);
             var view = new DataView(data.buffer, 0);
-            var b = new serializer();
+            var b = new encodable.Serializer();
             var encoder = encodable.bool;
             expect(encoder.decode(view, b)).toEqual(true);
         });
@@ -100,7 +145,7 @@ describe('Encodable service', function() {
         it('decodes false', function() {
             var data = new Uint8Array([0]);
             var view = new DataView(data.buffer, 0);
-            var b = new serializer();
+            var b = new encodable.Serializer();
             var encoder = encodable.bool;
             expect(encoder.decode(view, b)).toEqual(false);
         });
@@ -108,7 +153,7 @@ describe('Encodable service', function() {
         it('decodes partial true', function() {
             var data = new Uint8Array([5]);
             var view = new DataView(data.buffer, 0);
-            var b = new serializer();
+            var b = new encodable.Serializer();
             var encoder = encodable.bool;
             expect(encoder.decodePartial(view, b)).toEqual(true);
         });
@@ -116,7 +161,7 @@ describe('Encodable service', function() {
         it('decodes partial false', function() {
             var data = new Uint8Array([0]);
             var view = new DataView(data.buffer, 0);
-            var b = new serializer();
+            var b = new encodable.Serializer();
             var encoder = encodable.bool;
             expect(encoder.decodePartial(view, b)).toEqual(false);
         });
@@ -126,7 +171,7 @@ describe('Encodable service', function() {
         it('encodes Uint8', function() {
             var data = new Uint8Array(1);
             var view = new DataView(data.buffer, 0);
-            var b = new serializer();
+            var b = new encodable.Serializer();
             var encoder = encodable.Uint8;
             encoder.encode(view, b, 180);
             expect(data).toEqual(new Uint8Array([180]));
@@ -135,7 +180,7 @@ describe('Encodable service', function() {
         it('encodes Uint16', function() {
             var data = new Uint8Array(2);
             var view = new DataView(data.buffer, 0);
-            var b = new serializer();
+            var b = new encodable.Serializer();
             var encoder = encodable.Uint16;
             encoder.encode(view, b, 0xF00D);
             expect(data).toEqual(new Uint8Array([0x0D, 0xF0]));
@@ -144,7 +189,7 @@ describe('Encodable service', function() {
         it('encodes Uint32', function() {
             var data = new Uint8Array(4);
             var view = new DataView(data.buffer, 0);
-            var b = new serializer();
+            var b = new encodable.Serializer();
             var encoder = encodable.Uint32;
             encoder.encode(view, b, 0xF00DD33D);
             expect(data).toEqual(new Uint8Array([0x3D, 0xD3, 0x0D, 0xF0]));
@@ -153,7 +198,7 @@ describe('Encodable service', function() {
         it('encodes Int8', function() {
             var data = new Uint8Array(1);
             var view = new DataView(data.buffer, 0);
-            var b = new serializer();
+            var b = new encodable.Serializer();
             var encoder = encodable.Int8;
             encoder.encode(view, b, -100);
             expect(data).toEqual(new Uint8Array([156]));
@@ -162,7 +207,7 @@ describe('Encodable service', function() {
         it('encodes Int16', function() {
             var data = new Uint8Array(2);
             var view = new DataView(data.buffer, 0);
-            var b = new serializer();
+            var b = new encodable.Serializer();
             var encoder = encodable.Int16;
             encoder.encode(view, b, -10000);
             expect(data).toEqual(new Uint8Array([240, 216]));
@@ -171,7 +216,7 @@ describe('Encodable service', function() {
         it('encodes Int32', function() {
             var data = new Uint8Array(4);
             var view = new DataView(data.buffer, 0);
-            var b = new serializer();
+            var b = new encodable.Serializer();
             var encoder = encodable.Int32;
             encoder.encode(view, b, -1000000000);
             expect(data).toEqual(new Uint8Array([0x00, 0x36, 0x65, 0xC4]));
@@ -180,7 +225,7 @@ describe('Encodable service', function() {
         it('encodes Float32', function() {
             var data = new Uint8Array(4);
             var view = new DataView(data.buffer, 0);
-            var b = new serializer();
+            var b = new encodable.Serializer();
             var encoder = encodable.Float32;
             encoder.encode(view, b, 1005.75);
             expect(data).toEqual(new Uint8Array([0x00, 0x70, 0x7b, 0x44]));
@@ -189,7 +234,7 @@ describe('Encodable service', function() {
         it('encodes Float64', function() {
             var data = new Uint8Array(8);
             var view = new DataView(data.buffer, 0);
-            var b = new serializer();
+            var b = new encodable.Serializer();
             var encoder = encodable.Float64;
             encoder.encode(view, b, 1005.75);
             expect(data).toEqual(new Uint8Array(
@@ -199,7 +244,7 @@ describe('Encodable service', function() {
         it('encodes partial Uint8', function() {
             var data = new Uint8Array(1);
             var view = new DataView(data.buffer, 0);
-            var b = new serializer();
+            var b = new encodable.Serializer();
             var encoder = encodable.Uint8;
             encoder.encodePartial(view, b, 180);
             expect(data).toEqual(new Uint8Array([180]));
@@ -208,7 +253,7 @@ describe('Encodable service', function() {
         it('encodes partial Uint16', function() {
             var data = new Uint8Array(2);
             var view = new DataView(data.buffer, 0);
-            var b = new serializer();
+            var b = new encodable.Serializer();
             var encoder = encodable.Uint16;
             encoder.encodePartial(view, b, 0xF00D);
             expect(data).toEqual(new Uint8Array([0x0D, 0xF0]));
@@ -217,7 +262,7 @@ describe('Encodable service', function() {
         it('encodes partial Uint32', function() {
             var data = new Uint8Array(4);
             var view = new DataView(data.buffer, 0);
-            var b = new serializer();
+            var b = new encodable.Serializer();
             var encoder = encodable.Uint32;
             encoder.encodePartial(view, b, 0xF00DD33D);
             expect(data).toEqual(new Uint8Array([0x3D, 0xD3, 0x0D, 0xF0]));
@@ -226,7 +271,7 @@ describe('Encodable service', function() {
         it('encodes partial Int8', function() {
             var data = new Uint8Array(1);
             var view = new DataView(data.buffer, 0);
-            var b = new serializer();
+            var b = new encodable.Serializer();
             var encoder = encodable.Int8;
             encoder.encodePartial(view, b, -100);
             expect(data).toEqual(new Uint8Array([156]));
@@ -235,7 +280,7 @@ describe('Encodable service', function() {
         it('encodes partial Int16', function() {
             var data = new Uint8Array(2);
             var view = new DataView(data.buffer, 0);
-            var b = new serializer();
+            var b = new encodable.Serializer();
             var encoder = encodable.Int16;
             encoder.encodePartial(view, b, -10000);
             expect(data).toEqual(new Uint8Array([240, 216]));
@@ -244,7 +289,7 @@ describe('Encodable service', function() {
         it('encodes partial Int32', function() {
             var data = new Uint8Array(4);
             var view = new DataView(data.buffer, 0);
-            var b = new serializer();
+            var b = new encodable.Serializer();
             var encoder = encodable.Int32;
             encoder.encodePartial(view, b, -1000000000);
             expect(data).toEqual(new Uint8Array([0x00, 0x36, 0x65, 0xC4]));
@@ -253,7 +298,7 @@ describe('Encodable service', function() {
         it('encodes partial Float32', function() {
             var data = new Uint8Array(4);
             var view = new DataView(data.buffer, 0);
-            var b = new serializer();
+            var b = new encodable.Serializer();
             var encoder = encodable.Float32;
             encoder.encodePartial(view, b, 1005.75);
             expect(data).toEqual(new Uint8Array([0x00, 0x70, 0x7b, 0x44]));
@@ -262,7 +307,7 @@ describe('Encodable service', function() {
         it('encodes partial Float64', function() {
             var data = new Uint8Array(8);
             var view = new DataView(data.buffer, 0);
-            var b = new serializer();
+            var b = new encodable.Serializer();
             var encoder = encodable.Float64;
             encoder.encodePartial(view, b, 1005.75);
             expect(data).toEqual(new Uint8Array(
@@ -291,7 +336,7 @@ describe('Encodable service', function() {
         it('decodes Uint8', function() {
             var data = new Uint8Array([180]);
             var view = new DataView(data.buffer, 0);
-            var b = new serializer();
+            var b = new encodable.Serializer();
             var encoder = encodable.Uint8;
             expect(encoder.decode(view, b)).toEqual(180);
         });
@@ -299,7 +344,7 @@ describe('Encodable service', function() {
         it('decodes Uint16', function() {
             var data = new Uint8Array([0x0D, 0xF0]);
             var view = new DataView(data.buffer, 0);
-            var b = new serializer();
+            var b = new encodable.Serializer();
             var encoder = encodable.Uint16;
             expect(encoder.decode(view, b)).toEqual(0xF00D);
         });
@@ -307,7 +352,7 @@ describe('Encodable service', function() {
         it('decodes Uint32', function() {
             var data = new Uint8Array([0x3D, 0xD3, 0x0D, 0xF0]);
             var view = new DataView(data.buffer, 0);
-            var b = new serializer();
+            var b = new encodable.Serializer();
             var encoder = encodable.Uint32;
             expect(encoder.decode(view, b)).toEqual(0xF00DD33D);
         });
@@ -315,7 +360,7 @@ describe('Encodable service', function() {
         it('decodes Int8', function() {
             var data = new Uint8Array([156]);
             var view = new DataView(data.buffer, 0);
-            var b = new serializer();
+            var b = new encodable.Serializer();
             var encoder = encodable.Int8;
             expect(encoder.decode(view, b)).toEqual(-100);
         });
@@ -323,7 +368,7 @@ describe('Encodable service', function() {
         it('decodes Int16', function() {
             var data = new Uint8Array([240, 216]);
             var view = new DataView(data.buffer, 0);
-            var b = new serializer();
+            var b = new encodable.Serializer();
             var encoder = encodable.Int16;
             expect(encoder.decode(view, b)).toEqual(-10000);
         });
@@ -331,7 +376,7 @@ describe('Encodable service', function() {
         it('decodes Int32', function() {
             var data = new Uint8Array([0x00, 0x36, 0x65, 0xC4]);
             var view = new DataView(data.buffer, 0);
-            var b = new serializer();
+            var b = new encodable.Serializer();
             var encoder = encodable.Int32;
             expect(encoder.decode(view, b)).toEqual(-1000000000);
         });
@@ -339,7 +384,7 @@ describe('Encodable service', function() {
         it('decodes Float32', function() {
             var data = new Uint8Array([0x00, 0x70, 0x7b, 0x44]);
             var view = new DataView(data.buffer, 0);
-            var b = new serializer();
+            var b = new encodable.Serializer();
             var encoder = encodable.Float32;
             expect(encoder.decode(view, b)).toEqual(1005.75);
         });
@@ -348,7 +393,7 @@ describe('Encodable service', function() {
             var data = new Uint8Array(
                 [0x00, 0x00, 0x00, 0x00, 0x00, 0x6e, 0x8f, 0x40]);
             var view = new DataView(data.buffer, 0);
-            var b = new serializer();
+            var b = new encodable.Serializer();
             var encoder = encodable.Float64;
             expect(encoder.decode(view, b)).toEqual(1005.75);
         });
@@ -356,7 +401,7 @@ describe('Encodable service', function() {
         it('decodes partial Uint8', function() {
             var data = new Uint8Array([180]);
             var view = new DataView(data.buffer, 0);
-            var b = new serializer();
+            var b = new encodable.Serializer();
             var encoder = encodable.Uint8;
             expect(encoder.decodePartial(view, b)).toEqual(180);
         });
@@ -364,7 +409,7 @@ describe('Encodable service', function() {
         it('decodes partial Uint16', function() {
             var data = new Uint8Array([0x0D, 0xF0]);
             var view = new DataView(data.buffer, 0);
-            var b = new serializer();
+            var b = new encodable.Serializer();
             var encoder = encodable.Uint16;
             expect(encoder.decodePartial(view, b)).toEqual(0xF00D);
         });
@@ -372,7 +417,7 @@ describe('Encodable service', function() {
         it('decodes partial Uint32', function() {
             var data = new Uint8Array([0x3D, 0xD3, 0x0D, 0xF0]);
             var view = new DataView(data.buffer, 0);
-            var b = new serializer();
+            var b = new encodable.Serializer();
             var encoder = encodable.Uint32;
             expect(encoder.decodePartial(view, b)).toEqual(0xF00DD33D);
         });
@@ -380,7 +425,7 @@ describe('Encodable service', function() {
         it('decodes partial Int8', function() {
             var data = new Uint8Array([156]);
             var view = new DataView(data.buffer, 0);
-            var b = new serializer();
+            var b = new encodable.Serializer();
             var encoder = encodable.Int8;
             expect(encoder.decodePartial(view, b)).toEqual(-100);
         });
@@ -388,7 +433,7 @@ describe('Encodable service', function() {
         it('decodes partial Int16', function() {
             var data = new Uint8Array([240, 216]);
             var view = new DataView(data.buffer, 0);
-            var b = new serializer();
+            var b = new encodable.Serializer();
             var encoder = encodable.Int16;
             expect(encoder.decodePartial(view, b)).toEqual(-10000);
         });
@@ -396,7 +441,7 @@ describe('Encodable service', function() {
         it('decodes partial Int32', function() {
             var data = new Uint8Array([0x00, 0x36, 0x65, 0xC4]);
             var view = new DataView(data.buffer, 0);
-            var b = new serializer();
+            var b = new encodable.Serializer();
             var encoder = encodable.Int32;
             expect(encoder.decodePartial(view, b)).toEqual(-1000000000);
         });
@@ -404,7 +449,7 @@ describe('Encodable service', function() {
         it('decodes partial Float32', function() {
             var data = new Uint8Array([0x00, 0x70, 0x7b, 0x44]);
             var view = new DataView(data.buffer, 0);
-            var b = new serializer();
+            var b = new encodable.Serializer();
             var encoder = encodable.Float32;
             expect(encoder.decodePartial(view, b)).toEqual(1005.75);
         });
@@ -413,7 +458,7 @@ describe('Encodable service', function() {
             var data = new Uint8Array(
                 [0x00, 0x00, 0x00, 0x00, 0x00, 0x6e, 0x8f, 0x40]);
             var view = new DataView(data.buffer, 0);
-            var b = new serializer();
+            var b = new encodable.Serializer();
             var encoder = encodable.Float64;
             expect(encoder.decodePartial(view, b)).toEqual(1005.75);
         });
@@ -423,7 +468,7 @@ describe('Encodable service', function() {
         it('encodes short string', function() {
             var data = new Uint8Array(9);
             var view = new DataView(data.buffer, 0);
-            var b = new serializer();
+            var b = new encodable.Serializer();
             var encoder = encodable.string(9);
             encoder.encode(view, b, 'Abcd');
             expect(data).toEqual(
@@ -433,7 +478,7 @@ describe('Encodable service', function() {
         it('encodes overflowed string with null terminator', function() {
             var data = new Uint8Array(6);
             var view = new DataView(data.buffer, 0);
-            var b = new serializer();
+            var b = new encodable.Serializer();
             var encoder = encodable.string(6);
             encoder.encode(view, b, 'Abc0123456');
             expect(data).toEqual(new Uint8Array([65, 98, 99, 48, 49, 0]));
@@ -442,7 +487,7 @@ describe('Encodable service', function() {
         it('encodes partial string', function() {
             var data = new Uint8Array(9);
             var view = new DataView(data.buffer, 0);
-            var b = new serializer();
+            var b = new encodable.Serializer();
             var encoder = encodable.string(9);
             encoder.encodePartial(view, b, 'Abcd');
             expect(data).toEqual(
@@ -458,7 +503,7 @@ describe('Encodable service', function() {
         it('decodes short string', function() {
             var data = new Uint8Array([65, 98, 99, 100, 0, 0, 0, 48, 49]);
             var view = new DataView(data.buffer, 0);
-            var b = new serializer();
+            var b = new encodable.Serializer();
             var encoder = encodable.string(9);
             expect(encoder.decode(view, b)).toEqual('Abcd');
         });
@@ -466,7 +511,7 @@ describe('Encodable service', function() {
         it('decodes unterminated string by trimming the end', function() {
             var data = new Uint8Array([65, 98, 99, 48, 49, 50]);
             var view = new DataView(data.buffer, 0);
-            var b = new serializer();
+            var b = new encodable.Serializer();
             var encoder = encodable.string(6);
             expect(encoder.decode(view, b)).toEqual('Abc01');
         });
@@ -474,7 +519,7 @@ describe('Encodable service', function() {
         it('decodes partial string', function() {
             var data = new Uint8Array([65, 98, 99, 100, 0, 0, 0, 48, 49]);
             var view = new DataView(data.buffer, 0);
-            var b = new serializer();
+            var b = new encodable.Serializer();
             var encoder = encodable.string(9);
             expect(encoder.decodePartial(view, b)).toEqual('Abcd');
         });
@@ -505,7 +550,7 @@ describe('Encodable service', function() {
         it('encodes string array', function() {
             var data = new Uint8Array(45);
             var view = new DataView(data.buffer, 0);
-            var b = new serializer();
+            var b = new encodable.Serializer();
             var encoder = encodable.array(5, encodable.string(9));
             encoder.encode(
                 view, b, ['Abcd', '123', '0Aa1', '00', 'abcdabcdabcd']);
@@ -519,7 +564,7 @@ describe('Encodable service', function() {
         it('encodes partial string array - no split bits', function() {
             var data = new Uint8Array(45);
             var view = new DataView(data.buffer, 0);
-            var b = new serializer();
+            var b = new encodable.Serializer();
             var encoder = encodable.array(5, encodable.string(9));
             encoder.encodePartial(
                 view, b, ['Abcd', '123', '0Aa1', '00', 'abcdabcdabcd']);
@@ -533,7 +578,7 @@ describe('Encodable service', function() {
         it('encodes partial string array - with split bits', function() {
             var data = new Uint8Array(20);
             var view = new DataView(data.buffer, 0);
-            var b = new serializer();
+            var b = new encodable.Serializer();
             var encoder = encodable.array(5, encodable.string(9), 16);
             encoder.encodePartial(
                 view, b, ['Abcd', '123', '0Aa1', '00', 'abcdabcdabcd'], [6]);
@@ -546,7 +591,7 @@ describe('Encodable service', function() {
         it('encodes partial array array - no split bits', function() {
             var data = new Uint8Array(10);
             var view = new DataView(data.buffer, 0);
-            var b = new serializer();
+            var b = new encodable.Serializer();
             var encoder =
                 encodable.array(5, encodable.array(4, encodable.Uint8, 8));
             encoder.encodePartial(
@@ -566,7 +611,7 @@ describe('Encodable service', function() {
         it('encodes partial array array - with split bits', function() {
             var data = new Uint8Array(9);
             var view = new DataView(data.buffer, 0);
-            var b = new serializer();
+            var b = new encodable.Serializer();
             var encoder =
                 encodable.array(5, encodable.array(4, encodable.Uint8, 8), 16);
             encoder.encodePartial(
@@ -603,7 +648,7 @@ describe('Encodable service', function() {
                 48, 65, 97, 49,  0, 0, 0, 33, 97, 98, 99, 100, 97, 98, 99, 100,
             ]);
             var view = new DataView(data.buffer, 0);
-            var b = new serializer();
+            var b = new encodable.Serializer();
             var encoder = encodable.array(4, encodable.string(8));
             expect(encoder.decode(view, b)).toEqual([
                 'Abcd', '123', '0Aa1', 'abcdabc'
@@ -617,7 +662,7 @@ describe('Encodable service', function() {
                 0,  0,  0,  0,   0,  0,  97, 98, 99, 100, 97, 98, 99, 100, 0,
             ]);
             var view = new DataView(data.buffer, 0);
-            var b = new serializer();
+            var b = new encodable.Serializer();
             var encoder = encodable.array(5, encodable.string(9));
             data = encoder.decodePartial(view, b, []);
             expect(data).toEqual(['Abcd', '123', '0Aa1', '00', 'abcdabcd']);
@@ -629,7 +674,7 @@ describe('Encodable service', function() {
                 0, 48, 65, 97, 49, 0, 0, 0, 0, 0,
             ]);
             var view = new DataView(data.buffer, 0);
-            var b = new serializer();
+            var b = new encodable.Serializer();
             var encoder = encodable.array(5, encodable.string(9), 16);
             data = encoder.decodePartial(view, b, ['1', '2', '3', '4', '5']);
             expect(data).toEqual(['1', '123', '0Aa1', '4', '5']);
@@ -638,7 +683,7 @@ describe('Encodable service', function() {
         it('decodes partial array array - no split bits', function() {
             var data = new Uint8Array([4, 2, 3, 5, 6, 2, 11, 1, 15, 0]);
             var view = new DataView(data.buffer, 0);
-            var b = new serializer();
+            var b = new encodable.Serializer();
             var encoder =
                 encodable.array(5, encodable.array(4, encodable.Uint8, 8));
             data = encoder.decodePartial(view, b, [
@@ -660,7 +705,7 @@ describe('Encodable service', function() {
         it('decodes partial array array - with split bits', function() {
             var data = new Uint8Array([26, 0, 4, 7, 3, 15, 16, 2, 21]);
             var view = new DataView(data.buffer, 0);
-            var b = new serializer();
+            var b = new encodable.Serializer();
             var encoder =
                 encodable.array(5, encodable.array(4, encodable.Uint8, 8), 16);
             data = encoder.decodePartial(view, b, [
@@ -728,7 +773,7 @@ describe('Encodable service', function() {
         it('encodes any data', function() {
             var data = new Uint8Array(13);
             var view = new DataView(data.buffer, 0);
-            var b = new serializer();
+            var b = new encodable.Serializer();
             var encoder = encodable.map([
                 {key: 'name', element: encodable.string(9)},
                 {key: 'price', element: encodable.Uint32},
@@ -744,7 +789,7 @@ describe('Encodable service', function() {
         it('encodes partial - no split bits', function() {
             var data = new Uint8Array(12);
             var view = new DataView(data.buffer, 0);
-            var b = new serializer();
+            var b = new encodable.Serializer();
             var encoder = encodable.map([
                 {
                   key: 'a',
@@ -772,7 +817,7 @@ describe('Encodable service', function() {
         it('encodes partial - with split bits', function() {
             var data = new Uint8Array(8);
             var view = new DataView(data.buffer, 0);
-            var b = new serializer();
+            var b = new encodable.Serializer();
             var encoder = encodable.map(
                 [
                   {
@@ -830,7 +875,7 @@ describe('Encodable service', function() {
             var data = new Uint8Array(
                 [65, 98, 99, 100, 0, 0, 0, 0, 0, 0xCC, 0xBB, 0xAA, 0xEE]);
             var view = new DataView(data.buffer, 0);
-            var b = new serializer();
+            var b = new encodable.Serializer();
             var encoder = encodable.map([
                 {key: 'name', element: encodable.string(9)},
                 {key: 'price', element: encodable.Uint32},
@@ -845,7 +890,7 @@ describe('Encodable service', function() {
             var data =
                 new Uint8Array([3, 0, 1, 97, 98, 99, 100, 0, 4, 5, 6, 7]);
             var view = new DataView(data.buffer, 0);
-            var b = new serializer();
+            var b = new encodable.Serializer();
             var encoder = encodable.map([
                 {key: 'a', element: encodable.array(4, encodable.Uint8, 8)},
                 {key: 'b', element: encodable.string(5)},
@@ -866,7 +911,7 @@ describe('Encodable service', function() {
         it('decodes partial - with split bits', function() {
             var data = new Uint8Array([7, 2, 1, 97, 98, 99, 100, 0]);
             var view = new DataView(data.buffer, 0);
-            var b = new serializer();
+            var b = new encodable.Serializer();
             var encoder = encodable.map(
                 [
                   {
@@ -933,7 +978,7 @@ describe('Encodable service', function() {
         it('encodes any data', function() {
             var data = new Uint8Array(18);
             var view = new DataView(data.buffer, 0);
-            var b = new serializer();
+            var b = new encodable.Serializer();
             var encoder = encodable.polyarray([
                 encodable.string(9),
                 encodable.Uint32,
@@ -950,7 +995,7 @@ describe('Encodable service', function() {
         it('encodes partial - no split bits', function() {
             var data = new Uint8Array(12);
             var view = new DataView(data.buffer, 0);
-            var b = new serializer();
+            var b = new encodable.Serializer();
             var encoder = encodable.polyarray([
                 encodable.array(4, encodable.Uint8, 8),
                 encodable.string(5),
@@ -971,7 +1016,7 @@ describe('Encodable service', function() {
         it('encodes partial - with split bits', function() {
             var data = new Uint8Array(8);
             var view = new DataView(data.buffer, 0);
-            var b = new serializer();
+            var b = new encodable.Serializer();
             var encoder = encodable.polyarray(
                 [
                   encodable.array(4, encodable.Uint8, 8),
@@ -1022,7 +1067,7 @@ describe('Encodable service', function() {
                 0x34, 0x56, 0x78, 0xF1
             ]);
             var view = new DataView(data.buffer, 0);
-            var b = new serializer();
+            var b = new encodable.Serializer();
             var encoder = encodable.polyarray([
                 encodable.string(9),
                 encodable.Uint32,
@@ -1038,7 +1083,7 @@ describe('Encodable service', function() {
             var data =
                 new Uint8Array([3, 0, 1, 97, 98, 99, 100, 0, 4, 5, 6, 7]);
             var view = new DataView(data.buffer, 0);
-            var b = new serializer();
+            var b = new encodable.Serializer();
             var encoder = encodable.polyarray([
                 encodable.array(4, encodable.Uint8, 8),
                 encodable.string(5),
@@ -1059,7 +1104,7 @@ describe('Encodable service', function() {
         it('decodes partial - with split bits', function() {
             var data = new Uint8Array([3, 2, 1, 97, 98, 99, 100, 0]);
             var view = new DataView(data.buffer, 0);
-            var b = new serializer();
+            var b = new encodable.Serializer();
             var encoder = encodable.polyarray(
                 [
                   encodable.array(4, encodable.Uint8, 8),

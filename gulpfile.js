@@ -10,7 +10,6 @@ gulp.task('min', function() {
         'firmwareVersion.js',
         'cobs.js',
         'commandLog.js',
-        'serializer.js',
         'parser.js',
         'serial.js',
         'deviceConfig.js',
