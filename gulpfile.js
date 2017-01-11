@@ -11,6 +11,7 @@ gulp.task('min', function() {
         'cobs.js',
         'commandLog.js',
         'parser.js',
+        'presets.js',
         'serial.js',
         'deviceConfig.js',
         'led.js',
