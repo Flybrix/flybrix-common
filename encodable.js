@@ -333,15 +333,27 @@
         var length = properties.length;
         if (length === undefined) {
             throw new Error(
-                'Map type requires an array of {key: String, element: Handler} maps');
+                'Map type requires an array of ' +
+                '{key: String, element: Handler} maps');
         }
         properties.forEach(function(property) {
             if (property.key === undefined ||
                 !(property.element instanceof Handler)) {
                 throw new Error(
-                    'Map type requires an array of {key: String, element: Handler} maps');
+                    'Map type requires an array of ' +
+                    '{key: String, element: Handler} maps');
             }
         });
+        if (splitBits !== undefined) {
+            properties.forEach(function(property) {
+                if (property.part === undefined) {
+                    throw new Error(
+                        'Map type requires an array of ' +
+                        '{key: String, element: Handler, part: Number}' +
+                        ' maps when split bits are defined');
+                }
+            });
+        }
         function encode(dataView, serializer, data) {
             properties.forEach(function(property) {
                 property.element.encode(
