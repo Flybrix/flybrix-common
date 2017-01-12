@@ -80,10 +80,10 @@
                 newConfig = config;
             commandLog('Sending new configuration data...');
             var data = setConfig(newConfig);
-            serial.send(serial.field.COM_SET_EEPROM_DATA, data, false)
+            return serial.send(serial.field.COM_SET_EEPROM_DATA, data, false)
                 .then(function() {
                     request();
-                });
+                })
         }
 
         function sendPartial(
@@ -102,11 +102,11 @@
                 serial.field.COM_SET_PARTIAL_EEPROM_DATA;
 
             var data = setConfigPartial(newConfig, mask, led_mask);
-            serial.send(target, data, false).then(function() {
+            return serial.send(target, data, false).then(function() {
                 if (request_update) {
                     request();
                 }
-            });
+            })
         }
 
         function applyPropertiesTo(source, destination) {
