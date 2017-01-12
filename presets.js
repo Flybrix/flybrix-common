@@ -23,10 +23,20 @@
             Blue: 0x0000ff,
         };
 
+        function toRgb(color) {
+            return {
+                red: (color >> 16) & 0xff,
+                green: (color >> 8) & 0xff,
+                blue: color & 0xff,
+            };
+        }
+
         function makeLedCase(mask, pattern, color1, color2, red, green) {
             if (color2 === undefined) {
                 color2 = color1;
             }
+            color1 = toRgb(color1);
+            color2 = toRgb(color2);
             red = red || false;
             green = green || false;
             return {
