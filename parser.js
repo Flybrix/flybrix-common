@@ -90,13 +90,13 @@
 
             STATUS_FAIL_STABILITY: 0x0100,
             STATUS_FAIL_ANGLE: 0x0200,
+            STATUS_FAIL_OTHER: 0x4000,
 
             STATUS_ENABLED: 0x0400,
             STATUS_BATTERY_LOW: 0x0800,
 
             STATUS_TEMP_WARNING: 0x1000,
             STATUS_LOG_FULL: 0x2000,
-            STATUS_UNPAIRED: 0x4000,
             STATUS_OVERRIDE: 0x8000,
         };
 
