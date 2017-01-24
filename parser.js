@@ -224,6 +224,7 @@
             MessageType: MessageType,
             CommandFields: CommandFields,
             StatusCodes: StatusCodes,
+            StateFields: StateFields,
         };
     }
 }());
