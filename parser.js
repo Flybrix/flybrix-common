@@ -124,7 +124,6 @@
                 {key: 'command', element: e.array(4, e.Int16)},
                 // Fz, Tx, Ty, Tz
                 {key: 'control', element: e.array(4, e.Float32)},
-                {key: 'UNUSED', element: e.map([])},
                 // time, input, setpoint, p_term, i_term, d_term
                 {key: 'pid_master_Fz', element: pidHandler},
                 {key: 'pid_master_Tx', element: pidHandler},

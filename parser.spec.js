@@ -345,9 +345,9 @@ describe('Parser service', function() {
             expect(parser.MessageType.State).toEqual(0);
             commandLog.onMessage(cbFail);
             parser.processBinaryDatastream(
-                0, 1 << 15, pid_bytes, function(state, mask) {
+                0, 1 << 14, pid_bytes, function(state, mask) {
                     mask.forEach(function(val, idx) {
-                        expect(val).toEqual(idx === 15);
+                        expect(val).toEqual(idx === 14);
                     });
                     expect(state.pid_master_Fz).toEqual(pid_data);
                     done();
@@ -358,9 +358,9 @@ describe('Parser service', function() {
             expect(parser.MessageType.State).toEqual(0);
             commandLog.onMessage(cbFail);
             parser.processBinaryDatastream(
-                0, 1 << 16, pid_bytes, function(state, mask) {
+                0, 1 << 15, pid_bytes, function(state, mask) {
                     mask.forEach(function(val, idx) {
-                        expect(val).toEqual(idx === 16);
+                        expect(val).toEqual(idx === 15);
                     });
                     expect(state.pid_master_Tx).toEqual(pid_data);
                     done();
@@ -371,9 +371,9 @@ describe('Parser service', function() {
             expect(parser.MessageType.State).toEqual(0);
             commandLog.onMessage(cbFail);
             parser.processBinaryDatastream(
-                0, 1 << 17, pid_bytes, function(state, mask) {
+                0, 1 << 16, pid_bytes, function(state, mask) {
                     mask.forEach(function(val, idx) {
-                        expect(val).toEqual(idx === 17);
+                        expect(val).toEqual(idx === 16);
                     });
                     expect(state.pid_master_Ty).toEqual(pid_data);
                     done();
@@ -384,9 +384,9 @@ describe('Parser service', function() {
             expect(parser.MessageType.State).toEqual(0);
             commandLog.onMessage(cbFail);
             parser.processBinaryDatastream(
-                0, 1 << 18, pid_bytes, function(state, mask) {
+                0, 1 << 17, pid_bytes, function(state, mask) {
                     mask.forEach(function(val, idx) {
-                        expect(val).toEqual(idx === 18);
+                        expect(val).toEqual(idx === 17);
                     });
                     expect(state.pid_master_Tz).toEqual(pid_data);
                     done();
@@ -397,9 +397,9 @@ describe('Parser service', function() {
             expect(parser.MessageType.State).toEqual(0);
             commandLog.onMessage(cbFail);
             parser.processBinaryDatastream(
-                0, 1 << 19, pid_bytes, function(state, mask) {
+                0, 1 << 18, pid_bytes, function(state, mask) {
                     mask.forEach(function(val, idx) {
-                        expect(val).toEqual(idx === 19);
+                        expect(val).toEqual(idx === 18);
                     });
                     expect(state.pid_slave_Fz).toEqual(pid_data);
                     done();
@@ -410,9 +410,9 @@ describe('Parser service', function() {
             expect(parser.MessageType.State).toEqual(0);
             commandLog.onMessage(cbFail);
             parser.processBinaryDatastream(
-                0, 1 << 20, pid_bytes, function(state, mask) {
+                0, 1 << 19, pid_bytes, function(state, mask) {
                     mask.forEach(function(val, idx) {
-                        expect(val).toEqual(idx === 20);
+                        expect(val).toEqual(idx === 19);
                     });
                     expect(state.pid_slave_Tx).toEqual(pid_data);
                     done();
@@ -423,9 +423,9 @@ describe('Parser service', function() {
             expect(parser.MessageType.State).toEqual(0);
             commandLog.onMessage(cbFail);
             parser.processBinaryDatastream(
-                0, 1 << 21, pid_bytes, function(state, mask) {
+                0, 1 << 20, pid_bytes, function(state, mask) {
                     mask.forEach(function(val, idx) {
-                        expect(val).toEqual(idx === 21);
+                        expect(val).toEqual(idx === 20);
                     });
                     expect(state.pid_slave_Ty).toEqual(pid_data);
                     done();
@@ -436,9 +436,9 @@ describe('Parser service', function() {
             expect(parser.MessageType.State).toEqual(0);
             commandLog.onMessage(cbFail);
             parser.processBinaryDatastream(
-                0, 1 << 22, pid_bytes, function(state, mask) {
+                0, 1 << 21, pid_bytes, function(state, mask) {
                     mask.forEach(function(val, idx) {
-                        expect(val).toEqual(idx === 22);
+                        expect(val).toEqual(idx === 21);
                     });
                     expect(state.pid_slave_Tz).toEqual(pid_data);
                     done();
@@ -449,13 +449,13 @@ describe('Parser service', function() {
             expect(parser.MessageType.State).toEqual(0);
             commandLog.onMessage(cbFail);
             parser.processBinaryDatastream(
-                0, 1 << 23,
+                0, 1 << 22,
                 new Uint8Array(
                     [1, 5, 2, 250, 3, 5, 4, 250, 5, 5, 6, 250, 7, 5, 8, 250])
                     .buffer,
                 function(state, mask) {
                     mask.forEach(function(val, idx) {
-                        expect(val).toEqual(idx === 23);
+                        expect(val).toEqual(idx === 22);
                     });
                     expect(state.MotorOut)
                         .toEqual([
@@ -477,13 +477,13 @@ describe('Parser service', function() {
             expect(parser.MessageType.State).toEqual(0);
             commandLog.onMessage(cbFail);
             parser.processBinaryDatastream(
-                0, 1 << 24,
+                0, 1 << 23,
                 new Uint8Array(
                     [0, 0, 0x98, 0x40, 0, 0, 0x40, 0x41, 0, 0x10, 0xA5, 0x43])
                     .buffer,
                 function(state, mask) {
                     mask.forEach(function(val, idx) {
-                        expect(val).toEqual(idx === 24);
+                        expect(val).toEqual(idx === 23);
                     });
                     expect(state.kinematicsAngle).toEqual([4.75, 12, 330.125]);
                     done();
@@ -495,13 +495,13 @@ describe('Parser service', function() {
             expect(parser.MessageType.State).toEqual(0);
             commandLog.onMessage(cbFail);
             parser.processBinaryDatastream(
-                0, 1 << 25,
+                0, 1 << 24,
                 new Uint8Array(
                     [0, 0, 0x98, 0x40, 0, 0, 0x40, 0x41, 0, 0x10, 0xA5, 0x43])
                     .buffer,
                 function(state, mask) {
                     mask.forEach(function(val, idx) {
-                        expect(val).toEqual(idx === 25);
+                        expect(val).toEqual(idx === 24);
                     });
                     expect(state.kinematicsRate).toEqual([4.75, 12, 330.125]);
                     done();
@@ -513,10 +513,10 @@ describe('Parser service', function() {
             expect(parser.MessageType.State).toEqual(0);
             commandLog.onMessage(cbFail);
             parser.processBinaryDatastream(
-                0, 1 << 26, new Uint8Array([0, 0x10, 0xA5, 0x43]).buffer,
+                0, 1 << 25, new Uint8Array([0, 0x10, 0xA5, 0x43]).buffer,
                 function(state, mask) {
                     mask.forEach(function(val, idx) {
-                        expect(val).toEqual(idx === 26);
+                        expect(val).toEqual(idx === 25);
                     });
                     expect(state.kinematicsAltitude).toEqual(330.125);
                     done();
@@ -528,10 +528,10 @@ describe('Parser service', function() {
             expect(parser.MessageType.State).toEqual(0);
             commandLog.onMessage(cbFail);
             parser.processBinaryDatastream(
-                0, 1 << 27,
+                0, 1 << 26,
                 new Uint8Array([3, 2, 7, 4]).buffer, function(state, mask) {
                     mask.forEach(function(val, idx) {
-                        expect(val).toEqual(idx === 27);
+                        expect(val).toEqual(idx === 26);
                     });
                     expect(state.loopCount).toEqual(0x04070203);
                     done();
@@ -542,12 +542,12 @@ describe('Parser service', function() {
             expect(parser.MessageType.State).toEqual(0);
             commandLog.onMessage(cbFail);
             parser.processBinaryDatastream(
-                0, 134217759,
+                0, 67108895,
                 new Uint8Array([3, 2, 7, 4, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 7, 4])
                     .buffer,
                 function(state, mask) {
                     mask.forEach(function(val, idx) {
-                        expect(val).toEqual(idx < 5 || idx === 27);
+                        expect(val).toEqual(idx < 5 || idx === 26);
                     });
                     expect(state.timestamp_us).toEqual(0x04070203);
                     expect(state.status).toEqual(0x0203);

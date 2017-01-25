@@ -172,7 +172,7 @@ describe('Serial service', function() {
         it('reads states', function(done) {
             serial.setStateCallback(function(state, data_mask) {
                 data_mask.forEach(function(val, idx) {
-                    expect(val).toEqual(idx === 0 || idx === 27);
+                    expect(val).toEqual(idx === 0 || idx === 26);
                 });
                 expect(state.timestamp_us).toEqual(0x04030201);
                 expect(state.loopCount).toEqual(0x08070605);
@@ -180,7 +180,7 @@ describe('Serial service', function() {
             });
             commandLog.onMessage(onFail);
             backend.onRead(new Uint8Array(
-                [2, 1, 2, 1, 1, 10, 8, 1, 2, 3, 4, 5, 6, 7, 8, 0]));
+                [2, 13, 2, 1, 1, 10, 4, 1, 2, 3, 4, 5, 6, 7, 8, 0]));
             $rootScope.$digest();
         });
 
