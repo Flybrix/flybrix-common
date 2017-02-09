@@ -5,12 +5,16 @@ var concat = require('gulp-concat');
 gulp.task('min', function() {
     var files = [
         'module.js',
+        'encodable.js',
+        'configHandler.js',
+        'firmwareVersion.js',
         'cobs.js',
         'commandLog.js',
-        'serializer.js',
         'parser.js',
+        'presets.js',
         'serial.js',
         'deviceConfig.js',
+        'led.js',
         'rcData.js',
     ];
     gulp.src(files)
