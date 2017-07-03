@@ -42,6 +42,8 @@
             COM_REQ_PARTIAL_EEPROM_DATA: 1 << 22,
             COM_REQ_CARD_RECORDING_STATE: 1 << 23,
             COM_SET_PARTIAL_TEMPORARY_CONFIG: 1 << 24,
+            COM_SET_COMMAND_SOURCES: 1 << 25,
+            COM_SET_CALIBRATION: 1 << 26,
         };
 
         var StateFields = {
