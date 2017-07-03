@@ -18,6 +18,8 @@ module.exports = function(config) {
             './bower_components/angular/angular.js',
             './node_modules/angular-mocks/angular-mocks.js',
             './module.js',
+            './calibration.js',
+            './calibration.spec.js',
             './cobs.js',
             './cobs.spec.js',
             './commandLog.js',
@@ -50,6 +52,7 @@ module.exports = function(config) {
         // available preprocessors:
         // https://npmjs.org/browse/keyword/karma-preprocessor
         preprocessors: {
+            './calibration.js': ['coverage'],
             './cobs.js': ['coverage'],
             './commandLog.js': ['coverage'],
             './configHandler.js': ['coverage'],

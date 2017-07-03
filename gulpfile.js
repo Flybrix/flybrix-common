@@ -8,6 +8,7 @@ gulp.task('min', function() {
         'encodable.js',
         'configHandler.js',
         'firmwareVersion.js',
+        'calibration.js',
         'cobs.js',
         'commandLog.js',
         'parser.js',
