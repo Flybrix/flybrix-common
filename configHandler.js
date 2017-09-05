@@ -86,6 +86,17 @@
 
         handlers['1.5.0'] = e.map(handlerArray.slice(), 16);
 
+        var velocityPidHandlers = [
+            {part: 10, key: 'vxPIDParameters', element: pid},
+            {part: 10, key: 'vyPIDParameters', element: pid},
+            {part: 10, key: 'vzPIDParameters', element: pid},
+            {part: 10, key: 'velocityPidBypass', element: e.bool},
+        ];
+
+        handlerArray = handlerArray.concat(velocityPidHandlers);
+
+        handlers['1.6.0'] = e.map(handlerArray.slice(), 16);
+
         return handlers;
     }
 

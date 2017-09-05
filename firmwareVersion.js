@@ -11,10 +11,11 @@
         var supported = {
             '1.4.0': true,
             '1.5.0': true,
+            '1.6.0': true,
         };
 
-        var desired = [1, 5, 0];
-        var desiredKey = '1.5.0';
+        var desired = [1, 6, 0];
+        var desiredKey = '1.6.0';
 
         var defaultConfigHandler = configHandler[desiredKey];
         var currentConfigHandler = defaultConfigHandler;
@@ -22,6 +23,7 @@
         var fieldVersionMasks = {
             '1.4.0': 0x7FFFFFF,
             '1.5.0': 0x7FFFFFF,
+            '1.6.0': 0x7FFFFFF,
         };
         var stateMask = 0xFFFFFFFF;
 

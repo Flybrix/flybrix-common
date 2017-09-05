@@ -133,6 +133,10 @@
             enableParameters: [0.001, 30],
             ledStates: ledStates,
             name: 'FLYBRIX',
+            vxPIDParameters: [10, 4, 0, 30, 0.001, 0.001, 30],
+            vyPIDParameters: [10, 4, 0, 30, 0.001, 0.001, 30],
+            vzPIDParameters: [30, 5, 0, 20, 0.001, 0.001, 240],
+            velocityPidBypass: true,
         };
 
         return {
