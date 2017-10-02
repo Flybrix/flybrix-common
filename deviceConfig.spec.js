@@ -113,16 +113,25 @@ describe('Device configuration service', function() {
                 state.indicator_green = false;
             }
             expect(config.name).toEqual('');
-            expect(config.vxPIDParameters).toEqual([
+            expect(config.forwardMasterPIDParameters).toEqual([
                 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
             ]);
-            expect(config.vyPIDParameters).toEqual([
+            expect(config.rightMasterPIDParameters).toEqual([
                 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
             ]);
-            expect(config.vzPIDParameters).toEqual([
+            expect(config.upMasterPIDParameters).toEqual([
                 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
             ]);
-            expect(config.velocityPidBypass).toEqual(false);
+            expect(config.forwardSlavePIDParameters).toEqual([
+                0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+            ]);
+            expect(config.rightSlavePIDParameters).toEqual([
+                0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+            ]);
+            expect(config.upSlavePIDParameters).toEqual([
+                0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+            ]);
+            expect(config.velocityPidBypass).toEqual(0);
         });
     });
 
@@ -238,7 +247,7 @@ describe('Device configuration service', function() {
                         parser.CommandFields.COM_REQ_RESPONSE);
                     expect(new Uint8Array(data))
                         .toEqual(new Uint8Array(
-                            Array.apply(null, Array(729)).map(function() {
+                            Array.apply(null, Array(813)).map(function() {
                                 return 0;
                             })));
                     done();
@@ -257,7 +266,7 @@ describe('Device configuration service', function() {
                         parser.CommandFields.COM_SET_EEPROM_DATA |
                         parser.CommandFields.COM_REQ_RESPONSE);
                     var expected_data = new Uint8Array(
-                        Array.apply(null, Array(729)).map(function() {
+                        Array.apply(null, Array(813)).map(function() {
                             return 0;
                         }));
                     expected_data[0] = 1;
@@ -286,7 +295,7 @@ describe('Device configuration service', function() {
                             parser.CommandFields.COM_REQ_RESPONSE);
                         expect(new Uint8Array(data))
                             .toEqual(new Uint8Array(
-                                Array.apply(null, Array(729)).map(function() {
+                                Array.apply(null, Array(813)).map(function() {
                                     return 0;
                                 })));
                         backend.onRead(new Uint8Array(
@@ -350,6 +359,16 @@ describe('Device configuration service', function() {
                 enableParameters: [7.125, 323232.5],
                 ledStates: [],
                 name: 'AbcD',
+                forwardMasterPIDParameters:
+                    [0.125, 0.125, 0.125, 0.125, 0.125, 0.125, 0.125],
+                rightMasterPIDParameters: [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5],
+                upMasterPIDParameters: [2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0],
+                forwardSlavePIDParameters: [8.0, 8.0, 8.0, 8.0, 8.0, 8.0, 8.0],
+                rightSlavePIDParameters:
+                    [32.0, 32.0, 32.0, 32.0, 32.0, 32.0, 32.0],
+                upSlavePIDParameters:
+                    [128.0, 128.0, 128.0, 128.0, 128.0, 128.0, 128.0],
+                velocityPidBypass: 4,
             };
             for (var i = 0; i < 16; ++i) {
                 var v = {
@@ -778,7 +797,7 @@ describe('Device configuration service', function() {
         }
         beforeEach(function() {
             full_config_data =
-                new Uint8Array(Array.apply(null, Array(750)).map(function() {
+                new Uint8Array(Array.apply(null, Array(834)).map(function() {
                     return 0;
                 }));
             full_config_data[1] = parser.MessageType.Command;
@@ -971,16 +990,25 @@ describe('Device configuration service', function() {
                         expect(state.indicator_green).toEqual(false);
                     }
                     expect(config.name).toEqual('');
-                    expect(config.vxPIDParameters).toEqual([
+                    expect(config.forwardMasterPIDParameters).toEqual([
                         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
                     ]);
-                    expect(config.vyPIDParameters).toEqual([
+                    expect(config.rightMasterPIDParameters).toEqual([
                         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
                     ]);
-                    expect(config.vzPIDParameters).toEqual([
+                    expect(config.upMasterPIDParameters).toEqual([
                         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
                     ]);
-                    expect(config.velocityPidBypass).toEqual(false);
+                    expect(config.forwardSlavePIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.rightSlavePIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.upSlavePIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.velocityPidBypass).toEqual(0);
                     done();
                 });
                 var mask = deviceConfig.field.ID;
@@ -1068,16 +1096,25 @@ describe('Device configuration service', function() {
                         expect(state.indicator_green).toEqual(false);
                     }
                     expect(config.name).toEqual('');
-                    expect(config.vxPIDParameters).toEqual([
+                    expect(config.forwardMasterPIDParameters).toEqual([
                         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
                     ]);
-                    expect(config.vyPIDParameters).toEqual([
+                    expect(config.rightMasterPIDParameters).toEqual([
                         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
                     ]);
-                    expect(config.vzPIDParameters).toEqual([
+                    expect(config.upMasterPIDParameters).toEqual([
                         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
                     ]);
-                    expect(config.velocityPidBypass).toEqual(false);
+                    expect(config.forwardSlavePIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.rightSlavePIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.upSlavePIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.velocityPidBypass).toEqual(0);
                     done();
                 });
                 var mask = deviceConfig.field.PCB;
@@ -1169,16 +1206,25 @@ describe('Device configuration service', function() {
                         expect(state.indicator_green).toEqual(false);
                     }
                     expect(config.name).toEqual('');
-                    expect(config.vxPIDParameters).toEqual([
+                    expect(config.forwardMasterPIDParameters).toEqual([
                         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
                     ]);
-                    expect(config.vyPIDParameters).toEqual([
+                    expect(config.rightMasterPIDParameters).toEqual([
                         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
                     ]);
-                    expect(config.vzPIDParameters).toEqual([
+                    expect(config.upMasterPIDParameters).toEqual([
                         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
                     ]);
-                    expect(config.velocityPidBypass).toEqual(false);
+                    expect(config.forwardSlavePIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.rightSlavePIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.upSlavePIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.velocityPidBypass).toEqual(0);
                     done();
                 });
                 var mask = deviceConfig.field.MIX_TABLE;
@@ -1266,16 +1312,25 @@ describe('Device configuration service', function() {
                         expect(state.indicator_green).toEqual(false);
                     }
                     expect(config.name).toEqual('');
-                    expect(config.vxPIDParameters).toEqual([
+                    expect(config.forwardMasterPIDParameters).toEqual([
                         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
                     ]);
-                    expect(config.vyPIDParameters).toEqual([
+                    expect(config.rightMasterPIDParameters).toEqual([
                         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
                     ]);
-                    expect(config.vzPIDParameters).toEqual([
+                    expect(config.upMasterPIDParameters).toEqual([
                         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
                     ]);
-                    expect(config.velocityPidBypass).toEqual(false);
+                    expect(config.forwardSlavePIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.rightSlavePIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.upSlavePIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.velocityPidBypass).toEqual(0);
                     done();
                 });
                 var mask = deviceConfig.field.MAG_BIAS;
@@ -1364,16 +1419,25 @@ describe('Device configuration service', function() {
                         expect(state.indicator_green).toEqual(false);
                     }
                     expect(config.name).toEqual('');
-                    expect(config.vxPIDParameters).toEqual([
+                    expect(config.forwardMasterPIDParameters).toEqual([
                         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
                     ]);
-                    expect(config.vyPIDParameters).toEqual([
+                    expect(config.rightMasterPIDParameters).toEqual([
                         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
                     ]);
-                    expect(config.vzPIDParameters).toEqual([
+                    expect(config.upMasterPIDParameters).toEqual([
                         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
                     ]);
-                    expect(config.velocityPidBypass).toEqual(false);
+                    expect(config.forwardSlavePIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.rightSlavePIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.upSlavePIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.velocityPidBypass).toEqual(0);
                     done();
                 });
                 var mask = deviceConfig.field.CHANNEL;
@@ -1461,16 +1525,25 @@ describe('Device configuration service', function() {
                         expect(state.indicator_green).toEqual(false);
                     }
                     expect(config.name).toEqual('');
-                    expect(config.vxPIDParameters).toEqual([
+                    expect(config.forwardMasterPIDParameters).toEqual([
                         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
                     ]);
-                    expect(config.vyPIDParameters).toEqual([
+                    expect(config.rightMasterPIDParameters).toEqual([
                         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
                     ]);
-                    expect(config.vzPIDParameters).toEqual([
+                    expect(config.upMasterPIDParameters).toEqual([
                         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
                     ]);
-                    expect(config.velocityPidBypass).toEqual(false);
+                    expect(config.forwardSlavePIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.rightSlavePIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.upSlavePIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.velocityPidBypass).toEqual(0);
                     done();
                 });
                 var mask = deviceConfig.field.PID_PARAMETERS;
@@ -1570,16 +1643,25 @@ describe('Device configuration service', function() {
                         expect(state.indicator_green).toEqual(false);
                     }
                     expect(config.name).toEqual('');
-                    expect(config.vxPIDParameters).toEqual([
+                    expect(config.forwardMasterPIDParameters).toEqual([
                         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
                     ]);
-                    expect(config.vyPIDParameters).toEqual([
+                    expect(config.rightMasterPIDParameters).toEqual([
                         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
                     ]);
-                    expect(config.vzPIDParameters).toEqual([
+                    expect(config.upMasterPIDParameters).toEqual([
                         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
                     ]);
-                    expect(config.velocityPidBypass).toEqual(false);
+                    expect(config.forwardSlavePIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.rightSlavePIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.upSlavePIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.velocityPidBypass).toEqual(0);
                     done();
                 });
                 var mask = deviceConfig.field.STATE_PARAMETERS;
@@ -1665,16 +1747,25 @@ describe('Device configuration service', function() {
                         expect(state.indicator_green).toEqual(i % 2 === 1);
                     }
                     expect(config.name).toEqual('');
-                    expect(config.vxPIDParameters).toEqual([
+                    expect(config.forwardMasterPIDParameters).toEqual([
                         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
                     ]);
-                    expect(config.vyPIDParameters).toEqual([
+                    expect(config.rightMasterPIDParameters).toEqual([
                         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
                     ]);
-                    expect(config.vzPIDParameters).toEqual([
+                    expect(config.upMasterPIDParameters).toEqual([
                         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
                     ]);
-                    expect(config.velocityPidBypass).toEqual(false);
+                    expect(config.forwardSlavePIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.rightSlavePIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.upSlavePIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.velocityPidBypass).toEqual(0);
                     done();
                 });
                 var mask = deviceConfig.field.LED_STATES;
@@ -1770,16 +1861,25 @@ describe('Device configuration service', function() {
                         expect(state.indicator_green).toEqual(false);
                     }
                     expect(config.name).toEqual('AbcD');
-                    expect(config.vxPIDParameters).toEqual([
+                    expect(config.forwardMasterPIDParameters).toEqual([
                         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
                     ]);
-                    expect(config.vyPIDParameters).toEqual([
+                    expect(config.rightMasterPIDParameters).toEqual([
                         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
                     ]);
-                    expect(config.vzPIDParameters).toEqual([
+                    expect(config.upMasterPIDParameters).toEqual([
                         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
                     ]);
-                    expect(config.velocityPidBypass).toEqual(false);
+                    expect(config.forwardSlavePIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.rightSlavePIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.upSlavePIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.velocityPidBypass).toEqual(0);
                     done();
                 });
                 var mask = deviceConfig.field.DEVICE_NAME;
@@ -1863,26 +1963,35 @@ describe('Device configuration service', function() {
                         expect(state.indicator_green).toEqual(false);
                     }
                     expect(config.name).toEqual('');
-                    expect(config.vxPIDParameters).toEqual([
+                    expect(config.forwardMasterPIDParameters).toEqual([
                         0.125, 0.125, 0.125, 0.125, 0.125, 0.125, 0.125
                     ]);
-                    expect(config.vyPIDParameters).toEqual([
+                    expect(config.rightMasterPIDParameters).toEqual([
                         0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5
                     ]);
-                    expect(config.vzPIDParameters).toEqual([
+                    expect(config.upMasterPIDParameters).toEqual([
                         2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0
                     ]);
-                    expect(config.velocityPidBypass).toEqual(true);
+                    expect(config.forwardSlavePIDParameters).toEqual([
+                        8.0, 8.0, 8.0, 8.0, 8.0, 8.0, 8.0
+                    ]);
+                    expect(config.rightSlavePIDParameters).toEqual([
+                        32.0, 32.0, 32.0, 32.0, 32.0, 32.0, 32.0
+                    ]);
+                    expect(config.upSlavePIDParameters).toEqual([
+                        128.0, 128.0, 128.0, 128.0, 128.0, 128.0, 128.0
+                    ]);
+                    expect(config.velocityPidBypass).toEqual(4);
                     done();
                 });
                 var mask = deviceConfig.field.VELOCITY_PID_PARAMETERS;
                 full_config_data[6] = (mask & 0xFF);
                 full_config_data[7] = ((mask >> 8) & 0xFF);
-                Array.apply(null, Array(3 * 7 * 4 + 1))
+                Array.apply(null, Array(3 * 7 * 8 + 1))
                     .map(function(val, idx) {
-                        if (idx === 3 * 7 * 4) {
+                        if (idx === 3 * 7 * 8) {
                             // PID bypass flags
-                            return 1;
+                            return 4;
                         }
                         // other items, type Float32
                         if (idx % 4 !== 3) {
@@ -1894,7 +2003,7 @@ describe('Device configuration service', function() {
                         full_config_data[8 + idx] = val;
                     });
                 full_config_data =
-                    full_config_data.slice(0, 8 + 3 * 7 * 4 + 1 + 1);
+                    full_config_data.slice(0, 8 + 3 * 7 * 8 + 1 + 1);
                 recalcChecksum(full_config_data);
                 backend.onRead(new Uint8Array(cobs.encode(full_config_data)));
             });
@@ -2023,16 +2132,25 @@ describe('Device configuration service', function() {
                             }
                         }
                         expect(config.name).toEqual('');
-                        expect(config.vxPIDParameters).toEqual([
+                        expect(config.forwardMasterPIDParameters).toEqual([
                             0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
                         ]);
-                        expect(config.vyPIDParameters).toEqual([
+                        expect(config.rightMasterPIDParameters).toEqual([
                             0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
                         ]);
-                        expect(config.vzPIDParameters).toEqual([
+                        expect(config.upMasterPIDParameters).toEqual([
                             0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
                         ]);
-                        expect(config.velocityPidBypass).toEqual(false);
+                        expect(config.forwardSlavePIDParameters).toEqual([
+                            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                        ]);
+                        expect(config.rightSlavePIDParameters).toEqual([
+                            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                        ]);
+                        expect(config.upSlavePIDParameters).toEqual([
+                            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                        ]);
+                        expect(config.velocityPidBypass).toEqual(0);
                         done();
                     });
                     var mask = deviceConfig.field.LED_STATES;
@@ -2181,16 +2299,25 @@ describe('Device configuration service', function() {
                             }
                         }
                         expect(config.name).toEqual('');
-                        expect(config.vxPIDParameters).toEqual([
+                        expect(config.forwardMasterPIDParameters).toEqual([
                             0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
                         ]);
-                        expect(config.vyPIDParameters).toEqual([
+                        expect(config.rightMasterPIDParameters).toEqual([
                             0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
                         ]);
-                        expect(config.vzPIDParameters).toEqual([
+                        expect(config.upMasterPIDParameters).toEqual([
                             0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
                         ]);
-                        expect(config.velocityPidBypass).toEqual(false);
+                        expect(config.forwardSlavePIDParameters).toEqual([
+                            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                        ]);
+                        expect(config.rightSlavePIDParameters).toEqual([
+                            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                        ]);
+                        expect(config.upSlavePIDParameters).toEqual([
+                            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                        ]);
+                        expect(config.velocityPidBypass).toEqual(0);
                         done();
                     });
                     var mask = deviceConfig.field.LED_STATES;
@@ -2342,16 +2469,25 @@ describe('Device configuration service', function() {
                             }
                         }
                         expect(config.name).toEqual('');
-                        expect(config.vxPIDParameters).toEqual([
+                        expect(config.forwardMasterPIDParameters).toEqual([
                             0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
                         ]);
-                        expect(config.vyPIDParameters).toEqual([
+                        expect(config.rightMasterPIDParameters).toEqual([
                             0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
                         ]);
-                        expect(config.vzPIDParameters).toEqual([
+                        expect(config.upMasterPIDParameters).toEqual([
                             0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
                         ]);
-                        expect(config.velocityPidBypass).toEqual(false);
+                        expect(config.forwardSlavePIDParameters).toEqual([
+                            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                        ]);
+                        expect(config.rightSlavePIDParameters).toEqual([
+                            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                        ]);
+                        expect(config.upSlavePIDParameters).toEqual([
+                            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                        ]);
+                        expect(config.velocityPidBypass).toEqual(0);
                         done();
                     });
                     var mask = deviceConfig.field.LED_STATES;

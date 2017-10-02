@@ -87,10 +87,13 @@
         handlers['1.5.0'] = e.map(handlerArray.slice(), 16);
 
         var velocityPidHandlers = [
-            {part: 10, key: 'vxPIDParameters', element: pid},
-            {part: 10, key: 'vyPIDParameters', element: pid},
-            {part: 10, key: 'vzPIDParameters', element: pid},
-            {part: 10, key: 'velocityPidBypass', element: e.bool},
+            {part: 10, key: 'forwardMasterPIDParameters', element: pid},
+            {part: 10, key: 'rightMasterPIDParameters', element: pid},
+            {part: 10, key: 'upMasterPIDParameters', element: pid},
+            {part: 10, key: 'forwardSlavePIDParameters', element: pid},
+            {part: 10, key: 'rightSlavePIDParameters', element: pid},
+            {part: 10, key: 'upSlavePIDParameters', element: pid},
+            {part: 10, key: 'velocityPidBypass', element: e.Uint8},
         ];
 
         handlerArray = handlerArray.concat(velocityPidHandlers);

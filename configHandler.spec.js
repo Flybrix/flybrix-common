@@ -166,7 +166,7 @@ describe('Config handler service', function() {
 
         it('defaults to zeros', function() {
             var config = configHandler['1.6.0'].empty();
-            expect(Object.keys(config).length).toBe(34);
+            expect(Object.keys(config).length).toBe(37);
             expect(config.version).toEqual([0.0, 0.0, 0.0]);
             expect(config.id).toEqual(0);
             expect(config.pcbOrientation).toEqual([0.0, 0.0, 0.0]);
@@ -232,16 +232,25 @@ describe('Config handler service', function() {
                 state.indicator_green = false;
             }
             expect(config.name).toEqual('');
-            expect(config.vxPIDParameters).toEqual([
+            expect(config.forwardMasterPIDParameters).toEqual([
                 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
             ]);
-            expect(config.vyPIDParameters).toEqual([
+            expect(config.rightMasterPIDParameters).toEqual([
                 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
             ]);
-            expect(config.vzPIDParameters).toEqual([
+            expect(config.upMasterPIDParameters).toEqual([
                 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
             ]);
-            expect(config.velocityPidBypass).toEqual(false);
+            expect(config.forwardSlavePIDParameters).toEqual([
+                0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+            ]);
+            expect(config.rightSlavePIDParameters).toEqual([
+                0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+            ]);
+            expect(config.upSlavePIDParameters).toEqual([
+                0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+            ]);
+            expect(config.velocityPidBypass).toEqual(0);
         });
     });
 });
