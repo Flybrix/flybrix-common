@@ -166,7 +166,7 @@ describe('Config handler service', function() {
 
         it('defaults to zeros', function() {
             var config = configHandler['1.6.0'].empty();
-            expect(Object.keys(config).length).toBe(37);
+            expect(Object.keys(config).length).toBe(39);
             expect(config.version).toEqual([0.0, 0.0, 0.0]);
             expect(config.id).toEqual(0);
             expect(config.pcbOrientation).toEqual([0.0, 0.0, 0.0]);
@@ -251,6 +251,8 @@ describe('Config handler service', function() {
                 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
             ]);
             expect(config.velocityPidBypass).toEqual(0);
+            expect(config.inertialBiasAccel).toEqual([0.0, 0.0, 0.0]);
+            expect(config.inertialBiasGyro).toEqual([0.0, 0.0, 0.0]);
         });
     });
 });

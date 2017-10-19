@@ -94,6 +94,8 @@
             {part: 10, key: 'rightSlavePIDParameters', element: pid},
             {part: 10, key: 'upSlavePIDParameters', element: pid},
             {part: 10, key: 'velocityPidBypass', element: e.Uint8},
+            {part: 11, key: 'inertialBiasAccel', element: coord3d},
+            {part: 11, key: 'inertialBiasGyro', element: coord3d},
         ];
 
         handlerArray = handlerArray.concat(velocityPidHandlers);

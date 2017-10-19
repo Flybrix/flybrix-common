@@ -140,6 +140,8 @@
             rightSlavePIDParameters: [10, 4, 0, 30, 0.001, 0.001, 30],
             upSlavePIDParameters: [10, 4, 0, 30, 0.001, 0.001, 30],
             velocityPidBypass: 119,
+            inertialBiasAccel: [0, 0, 0],
+            inertialBiasGyro: [0, 0, 0],
         };
 
         return {

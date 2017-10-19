@@ -31,6 +31,7 @@
             LED_STATES: 1 << 8,
             DEVICE_NAME: 1 << 9,
             VELOCITY_PID_PARAMETERS: 1 << 10,
+            INERTIAL_BIAS: 1 << 11,
         };
 
         serial.setCommandCallback(function(mask, message_buffer) {
