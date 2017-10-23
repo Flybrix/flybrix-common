@@ -61,7 +61,7 @@
 
         function request() {
             commandLog('Requesting current configuration data...');
-            serial.send(serial.field.COM_REQ_EEPROM_DATA, [], false);
+            serial.send(serial.field.COM_REQ_PARTIAL_EEPROM_DATA, [255, 255, 255, 255], false);
         }
 
         function reinit() {
@@ -78,14 +78,7 @@
         }
 
         function send(newConfig) {
-            if (newConfig === undefined)
-                newConfig = config;
-            commandLog('Sending new configuration data...');
-            var data = setConfig(newConfig);
-            return serial.send(serial.field.COM_SET_EEPROM_DATA, data, false)
-                .then(function() {
-                    request();
-                })
+            return sendPartial(0xffff, 0xffff, newConfig, false, true);
         }
 
         function sendPartial(

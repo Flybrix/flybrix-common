@@ -142,15 +142,15 @@ describe('Device configuration service', function() {
             expect(deviceConfig.request).toBeDefined();
         });
 
-        it('requests EEPROM data', function(done) {
+        it('requests all fields EEPROM data', function(done) {
             backend.send = function(val) {
                 var decoder = new cobs.Reader();
                 decoder.AppendToBuffer(val, function(command, mask, data) {
                     expect(command).toBe(parser.MessageType.Command);
                     expect(mask).toBe(
-                        parser.CommandFields.COM_REQ_EEPROM_DATA |
+                        parser.CommandFields.COM_REQ_PARTIAL_EEPROM_DATA |
                         parser.CommandFields.COM_REQ_RESPONSE);
-                    expect(new Uint8Array(data)).toEqual(new Uint8Array([]));
+                    expect(new Uint8Array(data)).toEqual(new Uint8Array([255, 255, 255, 255]));
                     done();
                 });
             };
@@ -184,8 +184,12 @@ describe('Device configuration service', function() {
             var masks = [
                 (parser.CommandFields.COM_REINIT_EEPROM_DATA |
                  parser.CommandFields.COM_REQ_RESPONSE),
-                (parser.CommandFields.COM_REQ_EEPROM_DATA |
+                (parser.CommandFields.COM_REQ_PARTIAL_EEPROM_DATA |
                  parser.CommandFields.COM_REQ_RESPONSE)
+            ];
+            var datas = [
+                [],
+                [255, 255, 255, 255]
             ];
             var call_case = 0;
 
@@ -194,7 +198,7 @@ describe('Device configuration service', function() {
                 decoder.AppendToBuffer(val, function(command, mask, data) {
                     expect(command).toBe(parser.MessageType.Command);
                     expect(mask).toBe(masks[call_case]);
-                    expect(new Uint8Array(data)).toEqual(new Uint8Array([]));
+                    expect(new Uint8Array(data)).toEqual(new Uint8Array(datas[call_case]));
                     ++call_case;
                     if (call_case === 1) {
                         backend.onRead(new Uint8Array(
@@ -235,6 +239,12 @@ describe('Device configuration service', function() {
     });
 
     describe('.send()', function() {
+        var empty_config = Array.apply(null, Array(841)).map(function() {
+            return 0;
+        });
+        empty_config[0] = empty_config[1] = 255;
+        empty_config[365] = empty_config[366] = 255;
+
         it('exists', function() {
             expect(deviceConfig.send).toBeDefined();
         });
@@ -245,13 +255,10 @@ describe('Device configuration service', function() {
                 decoder.AppendToBuffer(val, function(command, mask, data) {
                     expect(command).toBe(parser.MessageType.Command);
                     expect(mask).toBe(
-                        parser.CommandFields.COM_SET_EEPROM_DATA |
+                        parser.CommandFields.COM_SET_PARTIAL_EEPROM_DATA |
                         parser.CommandFields.COM_REQ_RESPONSE);
                     expect(new Uint8Array(data))
-                        .toEqual(new Uint8Array(
-                            Array.apply(null, Array(837)).map(function() {
-                                return 0;
-                            })));
+                        .toEqual(new Uint8Array(empty_config));
                     done();
                 });
             };
@@ -265,14 +272,11 @@ describe('Device configuration service', function() {
                 decoder.AppendToBuffer(val, function(command, mask, data) {
                     expect(command).toBe(parser.MessageType.Command);
                     expect(mask).toBe(
-                        parser.CommandFields.COM_SET_EEPROM_DATA |
+                        parser.CommandFields.COM_SET_PARTIAL_EEPROM_DATA |
                         parser.CommandFields.COM_REQ_RESPONSE);
-                    var expected_data = new Uint8Array(
-                        Array.apply(null, Array(837)).map(function() {
-                            return 0;
-                        }));
-                    expected_data[0] = 1;
-                    expected_data[1] = 5;
+                    var expected_data = new Uint8Array(empty_config.slice());
+                    expected_data[2] = 1;
+                    expected_data[3] = 5;
                     expect(new Uint8Array(data)).toEqual(expected_data);
                     done();
                 });
@@ -293,21 +297,19 @@ describe('Device configuration service', function() {
                     if (counter === 0) {
                         expect(command).toBe(parser.MessageType.Command);
                         expect(mask).toBe(
-                            parser.CommandFields.COM_SET_EEPROM_DATA |
+                            parser.CommandFields.COM_SET_PARTIAL_EEPROM_DATA |
                             parser.CommandFields.COM_REQ_RESPONSE);
                         expect(new Uint8Array(data))
-                            .toEqual(new Uint8Array(
-                                Array.apply(null, Array(837)).map(function() {
-                                    return 0;
-                                })));
+                            .toEqual(new Uint8Array(empty_config));
                         backend.onRead(new Uint8Array(
-                            [4, 254, 255, 3, 1, 1, 2, 2, 1, 1, 1, 0]));
+                            [4, 254, 255, 1, 2, 16, 1, 1, 2, 16, 1, 0]));
                     } else if (counter === 1) {
                         expect(command).toBe(parser.MessageType.Command);
                         expect(mask).toBe(
-                            parser.CommandFields.COM_REQ_EEPROM_DATA |
+                            parser.CommandFields.COM_REQ_PARTIAL_EEPROM_DATA |
                             parser.CommandFields.COM_REQ_RESPONSE);
                         expect(new Uint8Array(data)).toEqual(new Uint8Array([
+                            255, 255, 255, 255
                         ]));
                         done();
                     }
@@ -774,9 +776,10 @@ describe('Device configuration service', function() {
                     } else if (counter === 1) {
                         expect(command).toBe(parser.MessageType.Command);
                         expect(mask).toBe(
-                            parser.CommandFields.COM_REQ_EEPROM_DATA |
+                            parser.CommandFields.COM_REQ_PARTIAL_EEPROM_DATA |
                             parser.CommandFields.COM_REQ_RESPONSE);
                         expect(new Uint8Array(data)).toEqual(new Uint8Array([
+                            255, 255, 255, 255
                         ]));
                         done();
                     }
