@@ -61,15 +61,15 @@
 
         function request() {
             commandLog('Requesting current configuration data...');
-            serial.send(serial.field.COM_REQ_PARTIAL_EEPROM_DATA, [255, 255, 255, 255], false);
+            return serial.send(serial.field.COM_REQ_PARTIAL_EEPROM_DATA, [255, 255, 255, 255], false);
         }
 
         function reinit() {
             commandLog('Setting factory default configuration data...');
-            serial.send(serial.field.COM_REINIT_EEPROM_DATA, [], false)
+            return serial.send(serial.field.COM_REINIT_EEPROM_DATA, [], false)
                 .then(
                     function() {
-                        request();
+                        return request();
                     },
                     function(reason) {
                         commandLog(
