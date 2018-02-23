@@ -37,7 +37,7 @@ describe('Device configuration service', function() {
         });
 
         it('equals newest firmware version', function() {
-            expect(deviceConfig.getDesiredVersion()).toEqual([1, 5, 0]);
+            expect(deviceConfig.getDesiredVersion()).toEqual([1, 6, 0]);
         });
     });
 
@@ -113,6 +113,27 @@ describe('Device configuration service', function() {
                 state.indicator_green = false;
             }
             expect(config.name).toEqual('');
+            expect(config.forwardMasterPIDParameters).toEqual([
+                0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+            ]);
+            expect(config.rightMasterPIDParameters).toEqual([
+                0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+            ]);
+            expect(config.upMasterPIDParameters).toEqual([
+                0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+            ]);
+            expect(config.forwardSlavePIDParameters).toEqual([
+                0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+            ]);
+            expect(config.rightSlavePIDParameters).toEqual([
+                0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+            ]);
+            expect(config.upSlavePIDParameters).toEqual([
+                0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+            ]);
+            expect(config.velocityPidBypass).toEqual(0);
+            expect(config.inertialBiasAccel).toEqual([0.0, 0.0, 0.0]);
+            expect(config.inertialBiasGyro).toEqual([0.0, 0.0, 0.0]);
         });
     });
 
@@ -121,15 +142,15 @@ describe('Device configuration service', function() {
             expect(deviceConfig.request).toBeDefined();
         });
 
-        it('requests EEPROM data', function(done) {
+        it('requests all fields EEPROM data', function(done) {
             backend.send = function(val) {
                 var decoder = new cobs.Reader();
                 decoder.AppendToBuffer(val, function(command, mask, data) {
                     expect(command).toBe(parser.MessageType.Command);
                     expect(mask).toBe(
-                        parser.CommandFields.COM_REQ_EEPROM_DATA |
+                        parser.CommandFields.COM_REQ_PARTIAL_EEPROM_DATA |
                         parser.CommandFields.COM_REQ_RESPONSE);
-                    expect(new Uint8Array(data)).toEqual(new Uint8Array([]));
+                    expect(new Uint8Array(data)).toEqual(new Uint8Array([255, 255, 255, 255]));
                     done();
                 });
             };
@@ -163,8 +184,12 @@ describe('Device configuration service', function() {
             var masks = [
                 (parser.CommandFields.COM_REINIT_EEPROM_DATA |
                  parser.CommandFields.COM_REQ_RESPONSE),
-                (parser.CommandFields.COM_REQ_EEPROM_DATA |
+                (parser.CommandFields.COM_REQ_PARTIAL_EEPROM_DATA |
                  parser.CommandFields.COM_REQ_RESPONSE)
+            ];
+            var datas = [
+                [],
+                [255, 255, 255, 255]
             ];
             var call_case = 0;
 
@@ -173,7 +198,7 @@ describe('Device configuration service', function() {
                 decoder.AppendToBuffer(val, function(command, mask, data) {
                     expect(command).toBe(parser.MessageType.Command);
                     expect(mask).toBe(masks[call_case]);
-                    expect(new Uint8Array(data)).toEqual(new Uint8Array([]));
+                    expect(new Uint8Array(data)).toEqual(new Uint8Array(datas[call_case]));
                     ++call_case;
                     if (call_case === 1) {
                         backend.onRead(new Uint8Array(
@@ -214,6 +239,12 @@ describe('Device configuration service', function() {
     });
 
     describe('.send()', function() {
+        var empty_config = Array.apply(null, Array(841)).map(function() {
+            return 0;
+        });
+        empty_config[0] = empty_config[1] = 255;
+        empty_config[365] = empty_config[366] = 255;
+
         it('exists', function() {
             expect(deviceConfig.send).toBeDefined();
         });
@@ -224,13 +255,10 @@ describe('Device configuration service', function() {
                 decoder.AppendToBuffer(val, function(command, mask, data) {
                     expect(command).toBe(parser.MessageType.Command);
                     expect(mask).toBe(
-                        parser.CommandFields.COM_SET_EEPROM_DATA |
+                        parser.CommandFields.COM_SET_PARTIAL_EEPROM_DATA |
                         parser.CommandFields.COM_REQ_RESPONSE);
                     expect(new Uint8Array(data))
-                        .toEqual(new Uint8Array(
-                            Array.apply(null, Array(644)).map(function() {
-                                return 0;
-                            })));
+                        .toEqual(new Uint8Array(empty_config));
                     done();
                 });
             };
@@ -244,14 +272,11 @@ describe('Device configuration service', function() {
                 decoder.AppendToBuffer(val, function(command, mask, data) {
                     expect(command).toBe(parser.MessageType.Command);
                     expect(mask).toBe(
-                        parser.CommandFields.COM_SET_EEPROM_DATA |
+                        parser.CommandFields.COM_SET_PARTIAL_EEPROM_DATA |
                         parser.CommandFields.COM_REQ_RESPONSE);
-                    var expected_data = new Uint8Array(
-                        Array.apply(null, Array(644)).map(function() {
-                            return 0;
-                        }));
-                    expected_data[0] = 1;
-                    expected_data[1] = 5;
+                    var expected_data = new Uint8Array(empty_config.slice());
+                    expected_data[2] = 1;
+                    expected_data[3] = 5;
                     expect(new Uint8Array(data)).toEqual(expected_data);
                     done();
                 });
@@ -272,21 +297,19 @@ describe('Device configuration service', function() {
                     if (counter === 0) {
                         expect(command).toBe(parser.MessageType.Command);
                         expect(mask).toBe(
-                            parser.CommandFields.COM_SET_EEPROM_DATA |
+                            parser.CommandFields.COM_SET_PARTIAL_EEPROM_DATA |
                             parser.CommandFields.COM_REQ_RESPONSE);
                         expect(new Uint8Array(data))
-                            .toEqual(new Uint8Array(
-                                Array.apply(null, Array(644)).map(function() {
-                                    return 0;
-                                })));
+                            .toEqual(new Uint8Array(empty_config));
                         backend.onRead(new Uint8Array(
-                            [4, 254, 255, 3, 1, 1, 2, 2, 1, 1, 1, 0]));
+                            [4, 254, 255, 1, 2, 16, 1, 1, 2, 16, 1, 0]));
                     } else if (counter === 1) {
                         expect(command).toBe(parser.MessageType.Command);
                         expect(mask).toBe(
-                            parser.CommandFields.COM_REQ_EEPROM_DATA |
+                            parser.CommandFields.COM_REQ_PARTIAL_EEPROM_DATA |
                             parser.CommandFields.COM_REQ_RESPONSE);
                         expect(new Uint8Array(data)).toEqual(new Uint8Array([
+                            255, 255, 255, 255
                         ]));
                         done();
                     }
@@ -340,6 +363,16 @@ describe('Device configuration service', function() {
                 enableParameters: [7.125, 323232.5],
                 ledStates: [],
                 name: 'AbcD',
+                forwardMasterPIDParameters:
+                    [0.125, 0.125, 0.125, 0.125, 0.125, 0.125, 0.125],
+                rightMasterPIDParameters: [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5],
+                upMasterPIDParameters: [2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0],
+                forwardSlavePIDParameters: [8.0, 8.0, 8.0, 8.0, 8.0, 8.0, 8.0],
+                rightSlavePIDParameters:
+                    [32.0, 32.0, 32.0, 32.0, 32.0, 32.0, 32.0],
+                upSlavePIDParameters:
+                    [128.0, 128.0, 128.0, 128.0, 128.0, 128.0, 128.0],
+                velocityPidBypass: 4,
             };
             for (var i = 0; i < 16; ++i) {
                 var v = {
@@ -743,9 +776,10 @@ describe('Device configuration service', function() {
                     } else if (counter === 1) {
                         expect(command).toBe(parser.MessageType.Command);
                         expect(mask).toBe(
-                            parser.CommandFields.COM_REQ_EEPROM_DATA |
+                            parser.CommandFields.COM_REQ_PARTIAL_EEPROM_DATA |
                             parser.CommandFields.COM_REQ_RESPONSE);
                         expect(new Uint8Array(data)).toEqual(new Uint8Array([
+                            255, 255, 255, 255
                         ]));
                         done();
                     }
@@ -768,7 +802,7 @@ describe('Device configuration service', function() {
         }
         beforeEach(function() {
             full_config_data =
-                new Uint8Array(Array.apply(null, Array(665)).map(function() {
+                new Uint8Array(Array.apply(null, Array(858)).map(function() {
                     return 0;
                 }));
             full_config_data[1] = parser.MessageType.Command;
@@ -961,6 +995,27 @@ describe('Device configuration service', function() {
                         expect(state.indicator_green).toEqual(false);
                     }
                     expect(config.name).toEqual('');
+                    expect(config.forwardMasterPIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.rightMasterPIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.upMasterPIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.forwardSlavePIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.rightSlavePIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.upSlavePIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.velocityPidBypass).toEqual(0);
+                    expect(config.inertialBiasAccel).toEqual([0.0, 0.0, 0.0]);
+                    expect(config.inertialBiasGyro).toEqual([0.0, 0.0, 0.0]);
                     done();
                 });
                 var mask = deviceConfig.field.ID;
@@ -1048,6 +1103,27 @@ describe('Device configuration service', function() {
                         expect(state.indicator_green).toEqual(false);
                     }
                     expect(config.name).toEqual('');
+                    expect(config.forwardMasterPIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.rightMasterPIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.upMasterPIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.forwardSlavePIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.rightSlavePIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.upSlavePIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.velocityPidBypass).toEqual(0);
+                    expect(config.inertialBiasAccel).toEqual([0.0, 0.0, 0.0]);
+                    expect(config.inertialBiasGyro).toEqual([0.0, 0.0, 0.0]);
                     done();
                 });
                 var mask = deviceConfig.field.PCB;
@@ -1139,6 +1215,27 @@ describe('Device configuration service', function() {
                         expect(state.indicator_green).toEqual(false);
                     }
                     expect(config.name).toEqual('');
+                    expect(config.forwardMasterPIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.rightMasterPIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.upMasterPIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.forwardSlavePIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.rightSlavePIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.upSlavePIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.velocityPidBypass).toEqual(0);
+                    expect(config.inertialBiasAccel).toEqual([0.0, 0.0, 0.0]);
+                    expect(config.inertialBiasGyro).toEqual([0.0, 0.0, 0.0]);
                     done();
                 });
                 var mask = deviceConfig.field.MIX_TABLE;
@@ -1226,6 +1323,27 @@ describe('Device configuration service', function() {
                         expect(state.indicator_green).toEqual(false);
                     }
                     expect(config.name).toEqual('');
+                    expect(config.forwardMasterPIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.rightMasterPIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.upMasterPIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.forwardSlavePIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.rightSlavePIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.upSlavePIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.velocityPidBypass).toEqual(0);
+                    expect(config.inertialBiasAccel).toEqual([0.0, 0.0, 0.0]);
+                    expect(config.inertialBiasGyro).toEqual([0.0, 0.0, 0.0]);
                     done();
                 });
                 var mask = deviceConfig.field.MAG_BIAS;
@@ -1314,6 +1432,27 @@ describe('Device configuration service', function() {
                         expect(state.indicator_green).toEqual(false);
                     }
                     expect(config.name).toEqual('');
+                    expect(config.forwardMasterPIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.rightMasterPIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.upMasterPIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.forwardSlavePIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.rightSlavePIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.upSlavePIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.velocityPidBypass).toEqual(0);
+                    expect(config.inertialBiasAccel).toEqual([0.0, 0.0, 0.0]);
+                    expect(config.inertialBiasGyro).toEqual([0.0, 0.0, 0.0]);
                     done();
                 });
                 var mask = deviceConfig.field.CHANNEL;
@@ -1401,6 +1540,27 @@ describe('Device configuration service', function() {
                         expect(state.indicator_green).toEqual(false);
                     }
                     expect(config.name).toEqual('');
+                    expect(config.forwardMasterPIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.rightMasterPIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.upMasterPIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.forwardSlavePIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.rightSlavePIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.upSlavePIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.velocityPidBypass).toEqual(0);
+                    expect(config.inertialBiasAccel).toEqual([0.0, 0.0, 0.0]);
+                    expect(config.inertialBiasGyro).toEqual([0.0, 0.0, 0.0]);
                     done();
                 });
                 var mask = deviceConfig.field.PID_PARAMETERS;
@@ -1500,6 +1660,27 @@ describe('Device configuration service', function() {
                         expect(state.indicator_green).toEqual(false);
                     }
                     expect(config.name).toEqual('');
+                    expect(config.forwardMasterPIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.rightMasterPIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.upMasterPIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.forwardSlavePIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.rightSlavePIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.upSlavePIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.velocityPidBypass).toEqual(0);
+                    expect(config.inertialBiasAccel).toEqual([0.0, 0.0, 0.0]);
+                    expect(config.inertialBiasGyro).toEqual([0.0, 0.0, 0.0]);
                     done();
                 });
                 var mask = deviceConfig.field.STATE_PARAMETERS;
@@ -1585,6 +1766,27 @@ describe('Device configuration service', function() {
                         expect(state.indicator_green).toEqual(i % 2 === 1);
                     }
                     expect(config.name).toEqual('');
+                    expect(config.forwardMasterPIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.rightMasterPIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.upMasterPIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.forwardSlavePIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.rightSlavePIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.upSlavePIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.velocityPidBypass).toEqual(0);
+                    expect(config.inertialBiasAccel).toEqual([0.0, 0.0, 0.0]);
+                    expect(config.inertialBiasGyro).toEqual([0.0, 0.0, 0.0]);
                     done();
                 });
                 var mask = deviceConfig.field.LED_STATES;
@@ -1680,6 +1882,27 @@ describe('Device configuration service', function() {
                         expect(state.indicator_green).toEqual(false);
                     }
                     expect(config.name).toEqual('AbcD');
+                    expect(config.forwardMasterPIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.rightMasterPIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.upMasterPIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.forwardSlavePIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.rightSlavePIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.upSlavePIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.velocityPidBypass).toEqual(0);
+                    expect(config.inertialBiasAccel).toEqual([0.0, 0.0, 0.0]);
+                    expect(config.inertialBiasGyro).toEqual([0.0, 0.0, 0.0]);
                     done();
                 });
                 var mask = deviceConfig.field.DEVICE_NAME;
@@ -1689,6 +1912,233 @@ describe('Device configuration service', function() {
                     full_config_data[8 + idx] = val;
                 });
                 full_config_data = full_config_data.slice(0, 30);
+                recalcChecksum(full_config_data);
+                backend.onRead(new Uint8Array(cobs.encode(full_config_data)));
+            });
+
+            it('parses velocity PID parameters data', function(done) {
+                deviceConfig.setConfigCallback(function() {
+                    var config = deviceConfig.getConfig();
+                    expect(config.version)
+                        .toEqual(deviceConfig.getDesiredVersion());
+                    expect(config.id).toEqual(0);
+                    expect(config.pcbOrientation).toEqual([0.0, 0.0, 0.0]);
+                    expect(config.pcbTranslation).toEqual([0.0, 0.0, 0.0]);
+                    expect(config.mixTableFz).toEqual([0, 0, 0, 0, 0, 0, 0, 0]);
+                    expect(config.mixTableTx).toEqual([0, 0, 0, 0, 0, 0, 0, 0]);
+                    expect(config.mixTableTy).toEqual([0, 0, 0, 0, 0, 0, 0, 0]);
+                    expect(config.mixTableTz).toEqual([0, 0, 0, 0, 0, 0, 0, 0]);
+                    expect(config.magBias).toEqual([0.0, 0.0, 0.0]);
+                    expect(config.assignedChannel).toEqual([0, 0, 0, 0, 0, 0]);
+                    expect(config.commandInversion).toEqual(0);
+                    expect(config.channelMidpoint).toEqual([0, 0, 0, 0, 0, 0]);
+                    expect(config.channelDeadzone).toEqual([0, 0, 0, 0, 0, 0]);
+                    expect(config.thrustMasterPIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.pitchMasterPIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.rollMasterPIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.yawMasterPIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.thrustSlavePIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.pitchSlavePIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.rollSlavePIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.yawSlavePIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.thrustGain).toBe(0);
+                    expect(config.pitchGain).toBe(0);
+                    expect(config.rollGain).toBe(0);
+                    expect(config.yawGain).toBe(0);
+                    expect(config.pidBypass).toEqual(0);
+                    expect(config.stateEstimationParameters).toEqual([
+                        0.0, 0.0
+                    ]);
+                    expect(config.enableParameters).toEqual([0.0, 0.0]);
+                    for (var i = 0; i < 16; ++i) {
+                        var state = config.ledStates[i];
+                        expect(state.status).toEqual(0);
+                        expect(state.pattern).toEqual(0);
+                        expect(state.colors.right_front.red).toEqual(0);
+                        expect(state.colors.right_front.green).toEqual(0);
+                        expect(state.colors.right_front.blue).toEqual(0);
+                        expect(state.colors.right_back.red).toEqual(0);
+                        expect(state.colors.right_back.green).toEqual(0);
+                        expect(state.colors.right_back.blue).toEqual(0);
+                        expect(state.colors.left_front.red).toEqual(0);
+                        expect(state.colors.left_front.green).toEqual(0);
+                        expect(state.colors.left_front.blue).toEqual(0);
+                        expect(state.colors.left_back.red).toEqual(0);
+                        expect(state.colors.left_back.green).toEqual(0);
+                        expect(state.colors.left_back.blue).toEqual(0);
+                        expect(state.indicator_red).toEqual(false);
+                        expect(state.indicator_green).toEqual(false);
+                    }
+                    expect(config.name).toEqual('');
+                    expect(config.forwardMasterPIDParameters).toEqual([
+                        0.125, 0.125, 0.125, 0.125, 0.125, 0.125, 0.125
+                    ]);
+                    expect(config.rightMasterPIDParameters).toEqual([
+                        0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5
+                    ]);
+                    expect(config.upMasterPIDParameters).toEqual([
+                        2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0
+                    ]);
+                    expect(config.forwardSlavePIDParameters).toEqual([
+                        8.0, 8.0, 8.0, 8.0, 8.0, 8.0, 8.0
+                    ]);
+                    expect(config.rightSlavePIDParameters).toEqual([
+                        32.0, 32.0, 32.0, 32.0, 32.0, 32.0, 32.0
+                    ]);
+                    expect(config.upSlavePIDParameters).toEqual([
+                        128.0, 128.0, 128.0, 128.0, 128.0, 128.0, 128.0
+                    ]);
+                    expect(config.velocityPidBypass).toEqual(4);
+                    expect(config.inertialBiasAccel).toEqual([0.0, 0.0, 0.0]);
+                    expect(config.inertialBiasGyro).toEqual([0.0, 0.0, 0.0]);
+                    done();
+                });
+                var mask = deviceConfig.field.VELOCITY_PID_PARAMETERS;
+                full_config_data[6] = (mask & 0xFF);
+                full_config_data[7] = ((mask >> 8) & 0xFF);
+                Array.apply(null, Array(3 * 7 * 8 + 1))
+                    .map(function(val, idx) {
+                        if (idx === 3 * 7 * 8) {
+                            // PID bypass flags
+                            return 4;
+                        }
+                        // other items, type Float32
+                        if (idx % 4 !== 3) {
+                            return 0;
+                        }
+                        return (0x3e + Math.floor(idx / 28));
+                    })
+                    .forEach(function(val, idx) {
+                        full_config_data[8 + idx] = val;
+                    });
+                full_config_data =
+                    full_config_data.slice(0, 8 + 3 * 7 * 8 + 1 + 1);
+                recalcChecksum(full_config_data);
+                backend.onRead(new Uint8Array(cobs.encode(full_config_data)));
+            });
+
+            it('parses inertial bias data', function(done) {
+                deviceConfig.setConfigCallback(function() {
+                    var config = deviceConfig.getConfig();
+                    expect(config.version)
+                        .toEqual(deviceConfig.getDesiredVersion());
+                    expect(config.id).toEqual(0);
+                    expect(config.pcbOrientation).toEqual([0.0, 0.0, 0.0]);
+                    expect(config.pcbTranslation).toEqual([0.0, 0.0, 0.0]);
+                    expect(config.mixTableFz).toEqual([0, 0, 0, 0, 0, 0, 0, 0]);
+                    expect(config.mixTableTx).toEqual([0, 0, 0, 0, 0, 0, 0, 0]);
+                    expect(config.mixTableTy).toEqual([0, 0, 0, 0, 0, 0, 0, 0]);
+                    expect(config.mixTableTz).toEqual([0, 0, 0, 0, 0, 0, 0, 0]);
+                    expect(config.magBias).toEqual([0.0, 0.0, 0.0]);
+                    expect(config.assignedChannel).toEqual([0, 0, 0, 0, 0, 0]);
+                    expect(config.commandInversion).toEqual(0);
+                    expect(config.channelMidpoint).toEqual([0, 0, 0, 0, 0, 0]);
+                    expect(config.channelDeadzone).toEqual([0, 0, 0, 0, 0, 0]);
+                    expect(config.thrustMasterPIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.pitchMasterPIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.rollMasterPIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.yawMasterPIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.thrustSlavePIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.pitchSlavePIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.rollSlavePIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.yawSlavePIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.thrustGain).toBe(0);
+                    expect(config.pitchGain).toBe(0);
+                    expect(config.rollGain).toBe(0);
+                    expect(config.yawGain).toBe(0);
+                    expect(config.pidBypass).toEqual(0);
+                    expect(config.stateEstimationParameters).toEqual([
+                        0.0, 0.0
+                    ]);
+                    expect(config.enableParameters).toEqual([0.0, 0.0]);
+                    for (var i = 0; i < 16; ++i) {
+                        var state = config.ledStates[i];
+                        expect(state.status).toEqual(0);
+                        expect(state.pattern).toEqual(0);
+                        expect(state.colors.right_front.red).toEqual(0);
+                        expect(state.colors.right_front.green).toEqual(0);
+                        expect(state.colors.right_front.blue).toEqual(0);
+                        expect(state.colors.right_back.red).toEqual(0);
+                        expect(state.colors.right_back.green).toEqual(0);
+                        expect(state.colors.right_back.blue).toEqual(0);
+                        expect(state.colors.left_front.red).toEqual(0);
+                        expect(state.colors.left_front.green).toEqual(0);
+                        expect(state.colors.left_front.blue).toEqual(0);
+                        expect(state.colors.left_back.red).toEqual(0);
+                        expect(state.colors.left_back.green).toEqual(0);
+                        expect(state.colors.left_back.blue).toEqual(0);
+                        expect(state.indicator_red).toEqual(false);
+                        expect(state.indicator_green).toEqual(false);
+                    }
+                    expect(config.name).toEqual('');
+                    expect(config.forwardMasterPIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.rightMasterPIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.upMasterPIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.forwardSlavePIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.rightSlavePIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.upSlavePIDParameters).toEqual([
+                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                    ]);
+                    expect(config.velocityPidBypass).toEqual(0);
+                    expect(config.inertialBiasAccel).toEqual([
+                        3.25, 1232.75, 7.125
+                    ]);
+                    expect(config.inertialBiasGyro).toEqual([
+                        323232.5, 77.5, 1.0
+                    ]);
+                    done();
+                });
+                var mask = deviceConfig.field.INERTIAL_BIAS;
+                full_config_data[6] = (mask & 0xFF);
+                full_config_data[7] = ((mask >> 8) & 0xFF);
+                [0, 0, 0x50, 0x40, 0, 0x18, 0x9a, 0x44, 0, 0, 0xe4, 0x40, 0x10,
+                 0xd4, 0x9d, 0x48, 0, 0, 0x9b, 0x42, 0, 0, 0x80, 0x3f]
+                    .forEach(function(val, idx) {
+                        full_config_data[8 + idx] = val;
+                    });
+                full_config_data = full_config_data.slice(0, 33);
                 recalcChecksum(full_config_data);
                 backend.onRead(new Uint8Array(cobs.encode(full_config_data)));
             });
@@ -1817,6 +2267,27 @@ describe('Device configuration service', function() {
                             }
                         }
                         expect(config.name).toEqual('');
+                        expect(config.forwardMasterPIDParameters).toEqual([
+                            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                        ]);
+                        expect(config.rightMasterPIDParameters).toEqual([
+                            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                        ]);
+                        expect(config.upMasterPIDParameters).toEqual([
+                            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                        ]);
+                        expect(config.forwardSlavePIDParameters).toEqual([
+                            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                        ]);
+                        expect(config.rightSlavePIDParameters).toEqual([
+                            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                        ]);
+                        expect(config.upSlavePIDParameters).toEqual([
+                            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                        ]);
+                        expect(config.velocityPidBypass).toEqual(0);
+                        expect(config.inertialBiasAccel).toEqual([0.0, 0.0, 0.0]);
+                        expect(config.inertialBiasGyro).toEqual([0.0, 0.0, 0.0]);
                         done();
                     });
                     var mask = deviceConfig.field.LED_STATES;
@@ -1965,6 +2436,27 @@ describe('Device configuration service', function() {
                             }
                         }
                         expect(config.name).toEqual('');
+                        expect(config.forwardMasterPIDParameters).toEqual([
+                            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                        ]);
+                        expect(config.rightMasterPIDParameters).toEqual([
+                            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                        ]);
+                        expect(config.upMasterPIDParameters).toEqual([
+                            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                        ]);
+                        expect(config.forwardSlavePIDParameters).toEqual([
+                            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                        ]);
+                        expect(config.rightSlavePIDParameters).toEqual([
+                            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                        ]);
+                        expect(config.upSlavePIDParameters).toEqual([
+                            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                        ]);
+                        expect(config.velocityPidBypass).toEqual(0);
+                        expect(config.inertialBiasAccel).toEqual([0.0, 0.0, 0.0]);
+                        expect(config.inertialBiasGyro).toEqual([0.0, 0.0, 0.0]);
                         done();
                     });
                     var mask = deviceConfig.field.LED_STATES;
@@ -2116,6 +2608,27 @@ describe('Device configuration service', function() {
                             }
                         }
                         expect(config.name).toEqual('');
+                        expect(config.forwardMasterPIDParameters).toEqual([
+                            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                        ]);
+                        expect(config.rightMasterPIDParameters).toEqual([
+                            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                        ]);
+                        expect(config.upMasterPIDParameters).toEqual([
+                            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                        ]);
+                        expect(config.forwardSlavePIDParameters).toEqual([
+                            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                        ]);
+                        expect(config.rightSlavePIDParameters).toEqual([
+                            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                        ]);
+                        expect(config.upSlavePIDParameters).toEqual([
+                            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                        ]);
+                        expect(config.velocityPidBypass).toEqual(0);
+                        expect(config.inertialBiasAccel).toEqual([0.0, 0.0, 0.0]);
+                        expect(config.inertialBiasGyro).toEqual([0.0, 0.0, 0.0]);
                         done();
                     });
                     var mask = deviceConfig.field.LED_STATES;

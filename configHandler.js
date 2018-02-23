@@ -86,6 +86,22 @@
 
         handlers['1.5.0'] = e.map(handlerArray.slice(), 16);
 
+        var velocityPidHandlers = [
+            {part: 10, key: 'forwardMasterPIDParameters', element: pid},
+            {part: 10, key: 'rightMasterPIDParameters', element: pid},
+            {part: 10, key: 'upMasterPIDParameters', element: pid},
+            {part: 10, key: 'forwardSlavePIDParameters', element: pid},
+            {part: 10, key: 'rightSlavePIDParameters', element: pid},
+            {part: 10, key: 'upSlavePIDParameters', element: pid},
+            {part: 10, key: 'velocityPidBypass', element: e.Uint8},
+            {part: 11, key: 'inertialBiasAccel', element: coord3d},
+            {part: 11, key: 'inertialBiasGyro', element: coord3d},
+        ];
+
+        handlerArray = handlerArray.concat(velocityPidHandlers);
+
+        handlers['1.6.0'] = e.map(handlerArray.slice(), 16);
+
         return handlers;
     }
 

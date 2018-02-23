@@ -133,6 +133,15 @@
             enableParameters: [0.001, 30],
             ledStates: ledStates,
             name: 'FLYBRIX',
+            forwardMasterPIDParameters: [10, 1, 0, 10, 0.005, 0.005, 10],
+            rightMasterPIDParameters: [10, 1, 0, 10, 0.005, 0.005, 10],
+            upMasterPIDParameters: [10, 1, 0, 10, 0.005, 0.005, 10],
+            forwardSlavePIDParameters: [10, 4, 0, 30, 0.001, 0.001, 30],
+            rightSlavePIDParameters: [10, 4, 0, 30, 0.001, 0.001, 30],
+            upSlavePIDParameters: [10, 4, 0, 30, 0.001, 0.001, 30],
+            velocityPidBypass: 119,
+            inertialBiasAccel: [0, 0, 0],
+            inertialBiasGyro: [0, 0, 0],
         };
 
         return {

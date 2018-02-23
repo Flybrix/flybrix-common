@@ -30,6 +30,8 @@
             STATE_PARAMETERS: 1 << 7,
             LED_STATES: 1 << 8,
             DEVICE_NAME: 1 << 9,
+            VELOCITY_PID_PARAMETERS: 1 << 10,
+            INERTIAL_BIAS: 1 << 11,
         };
 
         serial.setCommandCallback(function(mask, message_buffer) {
@@ -59,15 +61,15 @@
 
         function request() {
             commandLog('Requesting current configuration data...');
-            serial.send(serial.field.COM_REQ_EEPROM_DATA, [], false);
+            return serial.send(serial.field.COM_REQ_PARTIAL_EEPROM_DATA, [255, 255, 255, 255], false);
         }
 
         function reinit() {
             commandLog('Setting factory default configuration data...');
-            serial.send(serial.field.COM_REINIT_EEPROM_DATA, [], false)
+            return serial.send(serial.field.COM_REINIT_EEPROM_DATA, [], false)
                 .then(
                     function() {
-                        request();
+                        return request();
                     },
                     function(reason) {
                         commandLog(
@@ -76,14 +78,7 @@
         }
 
         function send(newConfig) {
-            if (newConfig === undefined)
-                newConfig = config;
-            commandLog('Sending new configuration data...');
-            var data = setConfig(newConfig);
-            return serial.send(serial.field.COM_SET_EEPROM_DATA, data, false)
-                .then(function() {
-                    request();
-                })
+            return sendPartial(0xffff, 0xffff, newConfig, false, true);
         }
 
         function sendPartial(
