@@ -2,8 +2,7 @@ var gulp = require('gulp');
 var uglify = require('gulp-uglify');
 var concat = require('gulp-concat');
 
-gulp.task('min', function() {
-    var files = [
+var files = [
         'module.js',
         'encodable.js',
         'configHandler.js',
@@ -18,8 +17,13 @@ gulp.task('min', function() {
         'led.js',
         'rcData.js',
     ];
+
+gulp.task('min', function() {
     gulp.src(files)
         .pipe(concat('flybrix-common.min.js'))
         .pipe(uglify())
+        .pipe(gulp.dest('./dist/'));
+    gulp.src(files)
+        .pipe(concat('flybrix-common.js'))
         .pipe(gulp.dest('./dist/'));
 });
