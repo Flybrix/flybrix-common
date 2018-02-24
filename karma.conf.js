@@ -96,6 +96,15 @@ module.exports = function(config) {
         // available browser launchers:
         // https://npmjs.org/browse/keyword/karma-launcher
         browsers: ['Chrome'],
+        
+        specReporter: {
+            maxLogLines: 5,         // limit number of lines logged per test
+            suppressErrorSummary: true,  // do not print error summary
+            suppressFailed: false,  // do not print information about failed tests
+            suppressPassed: false,  // do not print information about passed tests
+            suppressSkipped: true,  // do not print information about skipped tests
+            showSpecTiming: false // print the time elapsed for each spec
+          },
 
 
         // Continuous Integration mode
@@ -104,6 +113,15 @@ module.exports = function(config) {
 
         // Concurrency level
         // how many browser should be started simultaneous
-        concurrency: Infinity
+        concurrency: Infinity,
+        
+        
+        plugins: [
+          'karma-jasmine',
+          'karma-coverage',
+          'karma-chrome-launcher',
+          'karma-html-reporter',
+          'karma-spec-reporter',
+        ],
     })
 }

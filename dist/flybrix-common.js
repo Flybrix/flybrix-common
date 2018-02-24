@@ -999,14 +999,14 @@
         }());
 
         function processBinaryDatastream(
-            command, mask, message_buffer, cb_state, cb_command, cb_ack) {
-            dispatch(command, mask, message_buffer, function() {
-                callbackStateHelper(mask, message_buffer, cb_state)
-            }, cb_command, cb_ack);
+            command, mask, message_buffer, cb_state, cb_command, cb_debug, cb_history, cb_ack) {
+            dispatch(command, mask, message_buffer, 
+                function() {callbackStateHelper(mask, message_buffer, cb_state)},
+                cb_command, cb_debug, cb_history, cb_ack);
         }
 
         function dispatch(
-            command, mask, message_buffer, cb_state, cb_command, cb_ack) {
+            command, mask, message_buffer, cb_state, cb_command, cb_debug, cb_history, cb_ack) {
             switch (command) {
                 case MessageType.State:
                     cb_state(mask, message_buffer);
@@ -1016,17 +1016,11 @@
                     break;
                 case MessageType.DebugString:
                     var debug_string = arraybuffer2string(message_buffer);
-                    commandLog(
-                        'Received <span style="color: orange">' +
-                        'DEBUG' +
-                        '</span>: ' + debug_string);
+                    cb_debug(debug_string);
                     break;
                 case MessageType.HistoryData:
                     var debug_string = arraybuffer2string(message_buffer);
-                    commandLog(
-                        'Received <span style="color: orange">' +
-                        'HISTORY DATA' +
-                        '</span>');
+                    cb_history(debug_string);
                     break;
                 case MessageType.Response:
                     var data = new DataView(message_buffer, 0);
@@ -1291,6 +1285,13 @@
         var onCommandListener = function() {
             commandLog('No command listener defined for serial');
         };
+        var onDebugListener = function() {
+            commandLog('No debug listener defined for serial');
+        };
+        var onHistoryListener = function() {
+            commandLog('No history listener defined for serial');
+        };
+        
         var cobsReader = new cobs.Reader(2000);
         var dataHandler = undefined;
 
@@ -1316,6 +1317,8 @@
             setBackend: setBackend,
             setStateCallback: setStateCallback,
             setCommandCallback: setCommandCallback,
+            setDebugCallback: setDebugCallback,
+            setHistoryCallback: setHistoryCallback,
             setDataHandler: setDataHandler,
             handlePostConnect: handlePostConnect,
             Backend: Backend,
@@ -1337,7 +1340,7 @@
 
         function send(mask, data, log_send) {
             if (log_send === undefined)
-                log_send = true;
+                log_send = false;
 
             var response = $q.defer();
 
@@ -1377,8 +1380,7 @@
 
             if (log_send) {
                 commandLog(
-                    'Sending command <span style="color:blue">' +
-                    parser.MessageType.Command + '</blue>');
+                    'Sending command ' + parser.MessageType.Command );
             }
 
             return response.promise;
@@ -1410,6 +1412,14 @@
         function setCommandCallback(callback) {
             onCommandListener = callback;
         }
+        
+        function setHistoryCallback(callback) {
+            onHistoryListener = callback;
+        }
+
+        function setDebugCallback(callback) {
+            onDebugListener = callback;
+        }
 
         function acknowledge(mask, value) {
             while (acknowledges.length > 0) {
@@ -1432,7 +1442,7 @@
         function processData(command, mask, message_buffer) {
             parser.processBinaryDatastream(
                 command, mask, message_buffer, onStateListener,
-                onCommandListener, acknowledge);
+                onCommandListener, onDebugListener, onHistoryListener, acknowledge);
         };
 
         function byteNinNum(data, n) {
@@ -1571,14 +1581,14 @@
         }
 
         function comSetEepromData(message_buffer) {
-            commandLog('Received config!');
+            //commandLog('Received config!');
             config = firmwareVersion.configHandler().decode(
                 new DataView(message_buffer, 0), new encodable.Serializer());
             respondToSetEeprom();
         }
 
         function comSetPartialEepromData(message_buffer) {
-            commandLog('Received partial config!');
+            //commandLog('Received partial config!');
             config = firmwareVersion.configHandler().decodePartial(
                 new DataView(message_buffer, 0), new encodable.Serializer(),
                 angular.copy(config)),
@@ -1588,18 +1598,17 @@
         function respondToSetEeprom() {
             firmwareVersion.set(config.version);
             if (!firmwareVersion.supported()) {
+                commandLog('Received an unsupported configuration!');
                 commandLog(
-                    '<span style="color: red">WARNING: Configuration version unsupported!</span>');
-                commandLog(
-                    'eeprom version: <strong>' + config.version[0] + '.' +
-                    config.version[1] + '.' + config.version[2] + '</strong>' +
-                    ' - newest firmware version: <strong>' +
-                    firmwareVersion.desiredKey() + '</strong>');
+                    'Found version: ' + config.version[0] + '.' +
+                    config.version[1] + '.' + config.version[2]  +
+                    ' --- Newest version: ' +
+                    firmwareVersion.desiredKey() );
             } else {
                 commandLog(
-                    'Recieved configuration version: <span style="color: green">' +
+                    'Received configuration data (v' +
                     config.version[0] + '.' + config.version[1] + '.' +
-                    config.version[2] + '</span>');
+                    config.version[2] +')');
                 configCallback();
             }
         }

@@ -128,14 +128,14 @@
         }
 
         function comSetEepromData(message_buffer) {
-            commandLog('Received config!');
+            //commandLog('Received config!');
             config = firmwareVersion.configHandler().decode(
                 new DataView(message_buffer, 0), new encodable.Serializer());
             respondToSetEeprom();
         }
 
         function comSetPartialEepromData(message_buffer) {
-            commandLog('Received partial config!');
+            //commandLog('Received partial config!');
             config = firmwareVersion.configHandler().decodePartial(
                 new DataView(message_buffer, 0), new encodable.Serializer(),
                 angular.copy(config)),
@@ -145,18 +145,17 @@
         function respondToSetEeprom() {
             firmwareVersion.set(config.version);
             if (!firmwareVersion.supported()) {
+                commandLog('Received an unsupported configuration!');
                 commandLog(
-                    '<span style="color: red">WARNING: Configuration version unsupported!</span>');
-                commandLog(
-                    'eeprom version: <strong>' + config.version[0] + '.' +
-                    config.version[1] + '.' + config.version[2] + '</strong>' +
-                    ' - newest firmware version: <strong>' +
-                    firmwareVersion.desiredKey() + '</strong>');
+                    'Found version: ' + config.version[0] + '.' +
+                    config.version[1] + '.' + config.version[2]  +
+                    ' --- Newest version: ' +
+                    firmwareVersion.desiredKey() );
             } else {
                 commandLog(
-                    'Recieved configuration version: <span style="color: green">' +
+                    'Received configuration data (v' +
                     config.version[0] + '.' + config.version[1] + '.' +
-                    config.version[2] + '</span>');
+                    config.version[2] +')');
                 configCallback();
             }
         }
