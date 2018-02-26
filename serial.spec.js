@@ -305,16 +305,14 @@ describe('Serial service', function() {
             expect(serial.send).toBeDefined();
         });
 
-        it('logs by default', function(done) {
-            commandLog.onMessage(function(messages) {
-                expect(messages.length).toBe(1);
-                expect(messages[0])
-                    .toEqual(
-                        'Sending command <span style="color:blue">1</blue>');
+        it('does not log by default', function(done) {
+            commandLog.onMessage(onFail);
+            backend.send = function() {
                 done();
-            });
+            };
             serial.send(0, []);
             $rootScope.$digest();
+            $timeout.flush();
         });
 
         it('logs when instructed', function(done) {
@@ -322,7 +320,7 @@ describe('Serial service', function() {
                 expect(messages.length).toBe(1);
                 expect(messages[0])
                     .toEqual(
-                        'Sending command <span style="color:blue">1</blue>');
+                        'Sending command 1');
                 done();
             });
             serial.send(0, [], true);

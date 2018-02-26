@@ -843,8 +843,8 @@ describe('Device configuration service', function() {
             recalcChecksum(full_config_data);
             commandLog.onMessage(function(messages) {
                 messages.forEach(function(val) {
-                    if (val.indexOf('Configuration version unsupported!') !==
-                        -1) {
+                    if (val.indexOf(
+                        'Received an unsupported configuration!') !== -1) {
                         done();
                     }
                 });
