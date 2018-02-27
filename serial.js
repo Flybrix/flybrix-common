@@ -14,6 +14,13 @@
         var onCommandListener = function() {
             commandLog('No command listener defined for serial');
         };
+        var onDebugListener = function() {
+            commandLog('No debug listener defined for serial');
+        };
+        var onHistoryListener = function() {
+            commandLog('No history listener defined for serial');
+        };
+        
         var cobsReader = new cobs.Reader(2000);
         var dataHandler = undefined;
 
@@ -39,6 +46,8 @@
             setBackend: setBackend,
             setStateCallback: setStateCallback,
             setCommandCallback: setCommandCallback,
+            setDebugCallback: setDebugCallback,
+            setHistoryCallback: setHistoryCallback,
             setDataHandler: setDataHandler,
             handlePostConnect: handlePostConnect,
             Backend: Backend,
@@ -60,7 +69,7 @@
 
         function send(mask, data, log_send) {
             if (log_send === undefined)
-                log_send = true;
+                log_send = false;
 
             var response = $q.defer();
 
@@ -100,8 +109,7 @@
 
             if (log_send) {
                 commandLog(
-                    'Sending command <span style="color:blue">' +
-                    parser.MessageType.Command + '</blue>');
+                    'Sending command ' + parser.MessageType.Command );
             }
 
             return response.promise;
@@ -133,6 +141,14 @@
         function setCommandCallback(callback) {
             onCommandListener = callback;
         }
+        
+        function setHistoryCallback(callback) {
+            onHistoryListener = callback;
+        }
+
+        function setDebugCallback(callback) {
+            onDebugListener = callback;
+        }
 
         function acknowledge(mask, value) {
             while (acknowledges.length > 0) {
@@ -155,7 +171,7 @@
         function processData(command, mask, message_buffer) {
             parser.processBinaryDatastream(
                 command, mask, message_buffer, onStateListener,
-                onCommandListener, acknowledge);
+                onCommandListener, onDebugListener, onHistoryListener, acknowledge);
         };
 
         function byteNinNum(data, n) {

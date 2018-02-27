@@ -144,14 +144,14 @@
         }());
 
         function processBinaryDatastream(
-            command, mask, message_buffer, cb_state, cb_command, cb_ack) {
-            dispatch(command, mask, message_buffer, function() {
-                callbackStateHelper(mask, message_buffer, cb_state)
-            }, cb_command, cb_ack);
+            command, mask, message_buffer, cb_state, cb_command, cb_debug, cb_history, cb_ack) {
+            dispatch(command, mask, message_buffer, 
+                function() {callbackStateHelper(mask, message_buffer, cb_state)},
+                cb_command, cb_debug, cb_history, cb_ack);
         }
 
         function dispatch(
-            command, mask, message_buffer, cb_state, cb_command, cb_ack) {
+            command, mask, message_buffer, cb_state, cb_command, cb_debug, cb_history, cb_ack) {
             switch (command) {
                 case MessageType.State:
                     cb_state(mask, message_buffer);
@@ -161,17 +161,11 @@
                     break;
                 case MessageType.DebugString:
                     var debug_string = arraybuffer2string(message_buffer);
-                    commandLog(
-                        'Received <span style="color: orange">' +
-                        'DEBUG' +
-                        '</span>: ' + debug_string);
+                    cb_debug(debug_string);
                     break;
                 case MessageType.HistoryData:
                     var debug_string = arraybuffer2string(message_buffer);
-                    commandLog(
-                        'Received <span style="color: orange">' +
-                        'HISTORY DATA' +
-                        '</span>');
+                    cb_history(debug_string);
                     break;
                 case MessageType.Response:
                     var data = new DataView(message_buffer, 0);

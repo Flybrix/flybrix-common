@@ -24,7 +24,7 @@ describe('Parser service', function() {
         expect(parser.MessageType.Response).toEqual(255);
         commandLog.onMessage(cbFail);
         parser.processBinaryDatastream(254, 0, new Uint8Array([]).buffer,
-                                       cbFail, cbFail, cbFail);
+                                       cbFail, cbFail, cbFail, cbFail, cbFail);
     });
 
     it('parses ACK messages', function(done) {
@@ -32,7 +32,7 @@ describe('Parser service', function() {
         commandLog.onMessage(cbFail);
         parser.processBinaryDatastream(
             255, 47, new Uint8Array([3, 2, 7, 4]).buffer, cbFail, cbFail,
-            function(mask, response) {
+            cbFail, cbFail, function(mask, response) {
                 expect(mask).toEqual(47);
                 expect(response).toEqual(0x04070203);
                 done();
@@ -41,31 +41,17 @@ describe('Parser service', function() {
 
     it('parses debug messages', function(done) {
         expect(parser.MessageType.DebugString).toEqual(3);
-        commandLog.onMessage(function(messages) {
-            expect(messages.length).toEqual(1);
-            expect(messages[0])
-                .toEqual('Received <span style="color: orange">' +
-                         'DEBUG</span>: abcdabc');
-            done();
-        });
         parser.processBinaryDatastream(
             3, 0, new Uint8Array([97, 98, 99, 100, 97, 98, 99]).buffer, cbFail,
-            cbFail, cbFail);
+            cbFail, function() { done(); }, cbFail, cbFail);
         $rootScope.$digest();
     });
 
     it('parses historic messages', function(done) {
         expect(parser.MessageType.HistoryData).toEqual(4);
-        commandLog.onMessage(function(messages) {
-            expect(messages.length).toEqual(1);
-            expect(messages[0])
-                .toEqual(
-                    'Received <span style="color: orange">HISTORY DATA</span>');
-            done();
-        });
         parser.processBinaryDatastream(
             4, 0, new Uint8Array([97, 98, 99, 100, 97, 98, 99]).buffer, cbFail,
-            cbFail, cbFail);
+            cbFail, cbFail, function() { done(); }, cbFail);
         $rootScope.$digest();
     });
 
@@ -79,7 +65,7 @@ describe('Parser service', function() {
                 expect(new Uint8Array(response))
                     .toEqual(new Uint8Array([3, 2, 7, 4, 11, 127]));
                 done();
-            }, cbFail);
+            }, cbFail, cbFail, cbFail);
     });
 
     describe('state parsing', function() {
@@ -94,7 +80,7 @@ describe('Parser service', function() {
                     });
                     expect(state.timestamp_us).toEqual(0x04070203);
                     done();
-                }, cbFail, cbFail);
+                }, cbFail, cbFail, cbFail, cbFail);
         });
 
         it('parses status', function(done) {
@@ -108,7 +94,7 @@ describe('Parser service', function() {
                     });
                     expect(state.status).toEqual(0x0203);
                     done();
-                }, cbFail, cbFail);
+                }, cbFail, cbFail, cbFail, cbFail);
         });
 
         it('parses v0', function(done) {
@@ -122,7 +108,7 @@ describe('Parser service', function() {
                     });
                     expect(state.V0_raw).toEqual(0x0203);
                     done();
-                }, cbFail, cbFail);
+                }, cbFail, cbFail, cbFail, cbFail);
         });
 
         it('parses i0', function(done) {
@@ -136,7 +122,7 @@ describe('Parser service', function() {
                     });
                     expect(state.I0_raw).toEqual(0x0203);
                     done();
-                }, cbFail, cbFail);
+                }, cbFail, cbFail, cbFail, cbFail);
         });
 
         it('parses i1', function(done) {
@@ -150,7 +136,7 @@ describe('Parser service', function() {
                     });
                     expect(state.I1_raw).toEqual(0x0203);
                     done();
-                }, cbFail, cbFail);
+                }, cbFail, cbFail, cbFail, cbFail);
         });
 
         it('parses accel', function(done) {
@@ -168,7 +154,7 @@ describe('Parser service', function() {
                     expect(state.accel).toEqual([4.75, 12, 330.125]);
                     done();
                 },
-                cbFail, cbFail);
+                cbFail, cbFail, cbFail, cbFail);
         });
 
         it('parses gyro', function(done) {
@@ -186,7 +172,7 @@ describe('Parser service', function() {
                     expect(state.gyro).toEqual([4.75, 12, 330.125]);
                     done();
                 },
-                cbFail, cbFail);
+                cbFail, cbFail, cbFail, cbFail);
         });
 
         it('parses mag', function(done) {
@@ -204,7 +190,7 @@ describe('Parser service', function() {
                     expect(state.mag).toEqual([4.75, 12, 330.125]);
                     done();
                 },
-                cbFail, cbFail);
+                cbFail, cbFail, cbFail, cbFail);
         });
 
         it('parses temperature', function(done) {
@@ -218,7 +204,7 @@ describe('Parser service', function() {
                     });
                     expect(state.temperature).toEqual(5.15);
                     done();
-                }, cbFail, cbFail);
+                }, cbFail, cbFail, cbFail, cbFail);
         });
 
         it('parses pressure', function(done) {
@@ -232,7 +218,7 @@ describe('Parser service', function() {
                     });
                     expect(state.pressure).toEqual(263938.01171875);
                     done();
-                }, cbFail, cbFail);
+                }, cbFail, cbFail, cbFail, cbFail);
         });
 
         it('parses RX PPM', function(done) {
@@ -249,7 +235,7 @@ describe('Parser service', function() {
                         .toEqual([0x203, 0x407, 0x201, 0x403, 0x605, 0x807]);
                     done();
                 },
-                cbFail, cbFail);
+                cbFail, cbFail, cbFail, cbFail);
         });
 
         it('parses AUX chan mask', function(done) {
@@ -262,7 +248,7 @@ describe('Parser service', function() {
                     });
                     expect(state.AUX_chan_mask).toEqual(7);
                     done();
-                }, cbFail, cbFail);
+                }, cbFail, cbFail, cbFail, cbFail);
         });
 
         it('parses commands', function(done) {
@@ -278,7 +264,7 @@ describe('Parser service', function() {
                     expect(state.command).toEqual([0x203, 0x407, -1, 0xC07]);
                     done();
                 },
-                cbFail, cbFail);
+                cbFail, cbFail, cbFail, cbFail);
         });
 
         it('parses control', function(done) {
@@ -310,7 +296,7 @@ describe('Parser service', function() {
                     expect(state.control).toEqual([4.75, 12, 330.125, 0]);
                     done();
                 },
-                cbFail, cbFail);
+                cbFail, cbFail, cbFail, cbFail);
         });
 
         var pid_data = [0x40981215, 12, 330.125, -4.75, -12, -330.125];
@@ -351,7 +337,7 @@ describe('Parser service', function() {
                     });
                     expect(state.pid_master_Fz).toEqual(pid_data);
                     done();
-                }, cbFail, cbFail);
+                }, cbFail, cbFail, cbFail, cbFail);
         });
 
         it('parses pid_master_Tx', function(done) {
@@ -364,7 +350,7 @@ describe('Parser service', function() {
                     });
                     expect(state.pid_master_Tx).toEqual(pid_data);
                     done();
-                }, cbFail, cbFail);
+                }, cbFail, cbFail, cbFail, cbFail);
         });
 
         it('parses pid_master_Ty', function(done) {
@@ -377,7 +363,7 @@ describe('Parser service', function() {
                     });
                     expect(state.pid_master_Ty).toEqual(pid_data);
                     done();
-                }, cbFail, cbFail);
+                }, cbFail, cbFail, cbFail, cbFail);
         });
 
         it('parses pid_master_Tz', function(done) {
@@ -390,7 +376,7 @@ describe('Parser service', function() {
                     });
                     expect(state.pid_master_Tz).toEqual(pid_data);
                     done();
-                }, cbFail, cbFail);
+                }, cbFail, cbFail, cbFail, cbFail);
         });
 
         it('parses pid_slave_Fz', function(done) {
@@ -403,7 +389,7 @@ describe('Parser service', function() {
                     });
                     expect(state.pid_slave_Fz).toEqual(pid_data);
                     done();
-                }, cbFail, cbFail);
+                }, cbFail, cbFail, cbFail, cbFail);
         });
 
         it('parses pid_slave_Tx', function(done) {
@@ -416,7 +402,7 @@ describe('Parser service', function() {
                     });
                     expect(state.pid_slave_Tx).toEqual(pid_data);
                     done();
-                }, cbFail, cbFail);
+                }, cbFail, cbFail, cbFail, cbFail);
         });
 
         it('parses pid_slave_Ty', function(done) {
@@ -429,7 +415,7 @@ describe('Parser service', function() {
                     });
                     expect(state.pid_slave_Ty).toEqual(pid_data);
                     done();
-                }, cbFail, cbFail);
+                }, cbFail, cbFail, cbFail, cbFail);
         });
 
         it('parses pid_slave_Tz', function(done) {
@@ -442,7 +428,7 @@ describe('Parser service', function() {
                     });
                     expect(state.pid_slave_Tz).toEqual(pid_data);
                     done();
-                }, cbFail, cbFail);
+                }, cbFail, cbFail, cbFail, cbFail);
         });
 
         it('parses motor out', function(done) {
@@ -470,7 +456,7 @@ describe('Parser service', function() {
                         ]);
                     done();
                 },
-                cbFail, cbFail);
+                cbFail, cbFail, cbFail, cbFail);
         });
 
         it('parses kine angle', function(done) {
@@ -488,7 +474,7 @@ describe('Parser service', function() {
                     expect(state.kinematicsAngle).toEqual([4.75, 12, 330.125]);
                     done();
                 },
-                cbFail, cbFail);
+                cbFail, cbFail, cbFail, cbFail);
         });
 
         it('parses kine rate', function(done) {
@@ -506,7 +492,7 @@ describe('Parser service', function() {
                     expect(state.kinematicsRate).toEqual([4.75, 12, 330.125]);
                     done();
                 },
-                cbFail, cbFail);
+                cbFail, cbFail, cbFail, cbFail);
         });
 
         it('parses kine altitude', function(done) {
@@ -521,7 +507,7 @@ describe('Parser service', function() {
                     expect(state.kinematicsAltitude).toEqual(330.125);
                     done();
                 },
-                cbFail, cbFail);
+                cbFail, cbFail, cbFail, cbFail);
         });
 
         it('parses loop count', function(done) {
@@ -535,7 +521,7 @@ describe('Parser service', function() {
                     });
                     expect(state.loopCount).toEqual(0x04070203);
                     done();
-                }, cbFail, cbFail);
+                }, cbFail, cbFail, cbFail, cbFail);
         });
 
         it('parses partial message', function(done) {
@@ -557,7 +543,7 @@ describe('Parser service', function() {
                     expect(state.loopCount).toEqual(0x04070203);
                     done();
                 },
-                cbFail, cbFail);
+                cbFail, cbFail, cbFail, cbFail);
         });
 
 
@@ -941,7 +927,7 @@ describe('Parser service', function() {
                     expect(state.kinematicsAltitude).toEqual(330.125);
                     expect(state.loopCount).toEqual(0x04070203);
                     done();
-                }, cbFail, cbFail);
+                }, cbFail, cbFail, cbFail, cbFail);
         });
     });
 

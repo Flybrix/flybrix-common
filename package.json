@@ -1,15 +1,17 @@
 {
   "name": "flybrix-common",
   "devDependencies": {
-    "angular-mocks": "^1.5.8",
+    "angular-mocks": "^1.6.9",
     "gulp": "^3.9.1",
-    "gulp-concat": "^2.6.0",
-    "gulp-uglify": "^2.0.0",
-    "jasmine-core": "^2.4.1",
-    "karma": "^1.1.2",
+    "gulp-concat": "^2.6.1",
+    "gulp-uglify": "^2.1.2",
+    "jasmine-core": "^2.99.1",
+    "karma": "^1.7.1",
     "karma-chrome-launcher": "^1.0.1",
     "karma-coverage": "^1.1.1",
-    "karma-jasmine": "^1.0.2",
+    "karma-html-reporter": "^0.2.7",
+    "karma-jasmine": "^1.1.1",
+    "karma-phantomjs-launcher": "^1.0.4",
     "karma-spec-reporter": "0.0.26"
   }
 }
