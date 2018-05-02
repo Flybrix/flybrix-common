@@ -1,10 +1,10 @@
 // Karma configuration
+// Generated on Fri Apr 20 2018 20:50:18 GMT+0200 (Central European Summer Time)
 
 module.exports = function(config) {
     config.set({
 
-        // base path that will be used to resolve all patterns (eg. files,
-        // exclude)
+        // base path that will be used to resolve all patterns (eg. files, exclude)
         basePath: '',
 
 
@@ -17,60 +17,27 @@ module.exports = function(config) {
         files: [
             './bower_components/angular/angular.js',
             './node_modules/angular-mocks/angular-mocks.js',
-            './module.js',
-            './calibration.js',
-            './calibration.spec.js',
-            './cobs.js',
-            './cobs.spec.js',
-            './commandLog.js',
-            './commandLog.spec.js',
-            './configHandler.js',
-            './configHandler.spec.js',
-            './firmwareVersion.js',
-            './deviceConfig.js',
-            './deviceConfig.spec.js',
-            './encodable.js',
-            './encodable.spec.js',
-            './led.js',
-            './led.spec.js',
-            './parser.js',
-            './parser.spec.js',
-            './presets.js',
-            './presets.spec.js',
-            './serial.js',
-            './serial.spec.js',
-            './rcData.js',
-            './rcData.spec.js',
+            'src/module.js',
+            'src/*.js',
+            'test/*.js'
         ],
 
 
-        // list of files to exclude
-        exclude: [],
+        // list of files / patterns to exclude
+        exclude: [
+        ],
 
 
         // preprocess matching files before serving them to the browser
-        // available preprocessors:
-        // https://npmjs.org/browse/keyword/karma-preprocessor
+        // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
         preprocessors: {
-            './calibration.js': ['coverage'],
-            './cobs.js': ['coverage'],
-            './commandLog.js': ['coverage'],
-            './configHandler.js': ['coverage'],
-            './firmwareVersion.js': ['coverage'],
-            './deviceConfig.js': ['coverage'],
-            './encodable.js': ['coverage'],
-            './led.js': ['coverage'],
-            './parser.js': ['coverage'],
-            './presets.js': ['coverage'],
-            './serial.js': ['coverage'],
-            './rcData.js': ['coverage'],
         },
 
 
         // test results reporter to use
         // possible values: 'dots', 'progress'
         // available reporters: https://npmjs.org/browse/keyword/karma-reporter
-        reporters: ['spec', 'coverage'],
+        reporters: ['progress'],
 
 
         // web server port
@@ -82,29 +49,17 @@ module.exports = function(config) {
 
 
         // level of logging
-        // possible values: config.LOG_DISABLE || config.LOG_ERROR ||
-        // config.LOG_WARN || config.LOG_INFO || config.LOG_DEBUG
+        // possible values: config.LOG_DISABLE || config.LOG_ERROR || config.LOG_WARN || config.LOG_INFO || config.LOG_DEBUG
         logLevel: config.LOG_INFO,
 
 
-        // enable / disable watching file and executing tests whenever any file
-        // changes
+        // enable / disable watching file and executing tests whenever any file changes
         autoWatch: true,
 
 
         // start these browsers
-        // available browser launchers:
-        // https://npmjs.org/browse/keyword/karma-launcher
+        // available browser launchers: https://npmjs.org/browse/keyword/karma-launcher
         browsers: ['Chrome'],
-        
-        specReporter: {
-            maxLogLines: 5,         // limit number of lines logged per test
-            suppressErrorSummary: true,  // do not print error summary
-            suppressFailed: false,  // do not print information about failed tests
-            suppressPassed: false,  // do not print information about passed tests
-            suppressSkipped: true,  // do not print information about skipped tests
-            showSpecTiming: false // print the time elapsed for each spec
-          },
 
 
         // Continuous Integration mode
@@ -113,15 +68,6 @@ module.exports = function(config) {
 
         // Concurrency level
         // how many browser should be started simultaneous
-        concurrency: Infinity,
-        
-        
-        plugins: [
-          'karma-jasmine',
-          'karma-coverage',
-          'karma-chrome-launcher',
-          'karma-html-reporter',
-          'karma-spec-reporter',
-        ],
+        concurrency: Infinity
     })
 }

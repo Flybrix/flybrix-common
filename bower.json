@@ -12,6 +12,7 @@
         "tests"
     ],
     "dependencies": {
+        "flybrix-serialization": "flybrix/flybrix-serialization",
         "angular": "^1.6.9"
     }
 }
