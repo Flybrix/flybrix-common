@@ -17,6 +17,7 @@ module.exports = function(config) {
         files: [
             './bower_components/angular/angular.js',
             './node_modules/angular-mocks/angular-mocks.js',
+            './bower_components/flybrix-serialization/dist/flybrix-serialization.js',
             'src/module.js',
             'src/*.js',
             'test/*.js'
