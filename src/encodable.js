@@ -1,6 +1,4 @@
 (function() {
-    'use strict';
-
     angular.module('flybrixCommon').factory('encodable', function() {
         return encodable;
     });
