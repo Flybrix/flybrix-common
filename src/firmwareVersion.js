@@ -3,9 +3,9 @@
 
     angular.module('flybrixCommon').factory('firmwareVersion', firmwareVersion);
 
-    firmwareVersion.$inject = ['configHandler'];
+    firmwareVersion.$inject = ['configHandler', 'serializationHandler'];
 
-    function firmwareVersion(configHandler) {
+    function firmwareVersion(configHandler, serializationHandler) {
         var version = [0, 0, 0];
         var key = '0.0.0';
         var supported = {
@@ -19,6 +19,8 @@
 
         var defaultConfigHandler = configHandler[desiredKey];
         var currentConfigHandler = defaultConfigHandler;
+        var defaultSerializationHandler = serializationHandler.getHandler(desiredKey);
+        var currentSerializationHandler = defaultSerializationHandler;
 
         var fieldVersionMasks = {
             '1.4.0': 0x7FFFFFF,
@@ -33,6 +35,8 @@
                 key = value.join('.');
                 currentConfigHandler =
                     configHandler[key] || defaultConfigHandler;
+                currentSerializationHandler =
+                    serializationHandler.getHandler(desiredKey) || defaultSerializationHandler;
                 stateMask = fieldVersionMasks[key] || 0xFFFFFFFF;
             },
             get: function() {
@@ -52,6 +56,9 @@
             },
             configHandler: function() {
                 return currentConfigHandler;
+            },
+            serializationHandler: function() {
+                return currentSerializationHandler;
             },
             stateMask: function() {
                 return stateMask;

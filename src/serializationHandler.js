@@ -212,7 +212,15 @@
             'kinematics_altitude: f32,' +
             'loop_count: u32 };';
 
-        var commands = 'Commands = {/32/' +
+        var auxMask = 'AuxMask = {//' +
+            'aux1_low: void,' +
+            'aux1_mid: void,' +
+            'aux1_high: void,' +
+            'aux2_low: void,' +
+            'aux2_mid: void,' +
+            'aux2_high: void };';
+
+        var commands = auxMask + 'Command = {/32/' +
             'request_response: void,' +
             'set_eeprom_data: ConfigurationFixed,' +
             'reinit_eeprom_data: void,' +
@@ -236,7 +244,7 @@
             '  color_left: Color,' +
             '  indicator_red: bool,' +
             '  indicator_green: bool },' +
-            'set_serial_rc: { enabled: bool, command: RcCommand, aux_mask: u8 },' +
+            'set_serial_rc: { enabled: bool, command: RcCommand, aux_mask: AuxMask },' +
             'set_card_recording_state: {/8/ record_to_card: void, lock_recording_state: void },' +
             'set_partial_eeprom_data: Configuration,' +
             'reinit_partial_eeprom_data: ConfigurationFlag,' +
@@ -261,6 +269,7 @@
         handlerCache['1.6.0'] = FlybrixSerialization.parse(handler16);
 
         return {
+            Serializer: FlybrixSerialization.Serializer,
             getHandler: function (firmware) {
                 return handlerCache[firmware];
             }

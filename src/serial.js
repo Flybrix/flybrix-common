@@ -3,9 +3,9 @@
 
     angular.module('flybrixCommon').factory('serial', serial);
 
-    serial.$inject = ['$timeout', '$q', 'cobs', 'commandLog', 'parser'];
+    serial.$inject = ['$timeout', '$q', 'cobs', 'commandLog', 'parser', 'firmwareVersion', 'serializationHandler'];
 
-    function serial($timeout, $q, cobs, commandLog, parser) {
+    function serial($timeout, $q, cobs, commandLog, parser, firmwareVersion, serializationHandler) {
         var acknowledges = [];
         var backend = new Backend();
         var onStateListener = function() {
@@ -20,7 +20,7 @@
         var onHistoryListener = function() {
             commandLog('No history listener defined for serial');
         };
-        
+
         var cobsReader = new cobs.Reader(2000);
         var dataHandler = undefined;
 
@@ -43,6 +43,7 @@
             busy: busy,
             field: parser.CommandFields,
             send: send,
+            sendStructure: sendStructure,
             setBackend: setBackend,
             setStateCallback: setStateCallback,
             setCommandCallback: setCommandCallback,
@@ -65,6 +66,62 @@
         function requestFirmwareVersion() {
             return send(
                 parser.CommandFields.COM_REQ_PARTIAL_EEPROM_DATA, [1, 0, 0, 0]);
+        }
+
+        function sendStructure(messageType, data, log_send) {
+            var handlers = firmwareVersion.serializationHandler();
+
+            var response = $q.defer();
+            if (!(messageType in parser.MessageType)) {
+                var message = 'Message type "' + messageType +
+                    '" not supported by app, supported message types are:' +
+                    Object.keys(parser.MessageType).join(', ');
+                response.reject(message);
+                return response.promise;
+            }
+            if (!(messageType in handlers)) {
+                var message = 'Message type "' + messageType +
+                    '" not supported by firmware, supported message types are:' +
+                    Object.keys(handlers).join(', ');
+                console.error(message);
+                response.reject(message);
+                return response.promise;
+            }
+            var typeCode = parser.MessageType[messageType];
+            var handler = handlers[messageType];
+
+            var buffer = new Uint8Array(handler.byteCount);
+
+            var serializer = new serializationHandler.Serializer(new DataView(buffer.buffer));
+            handler.encode(serializer, data);
+            var mask = handler.maskArray(data);
+            if (mask.length < 5) {
+                mask = (mask[0] << 0) | (mask[1] << 8) | (mask[2] << 16) | (mask[3] << 24);
+            }
+
+            var dataLength = serializer.index;
+
+            var output = new Uint8Array(dataLength + 3);
+            output[0] = output[1] = typeCode;
+            for (var idx = 1; idx < dataLength; ++idx) {
+                output[0] ^= output[idx + 2] = buffer[idx];
+            }
+            output[dataLength + 2] = 0;
+
+            acknowledges.push({
+                mask: mask,
+                response: response,
+            });
+
+            $timeout(function() {
+                backend.send(new Uint8Array(cobs.encode(output)));
+            }, 0);
+
+            if (log_send) {
+                commandLog('Sending command ' + typeCode);
+            }
+
+            return response.promise;
         }
 
         function send(mask, data, log_send) {
@@ -141,7 +198,7 @@
         function setCommandCallback(callback) {
             onCommandListener = callback;
         }
-        
+
         function setHistoryCallback(callback) {
             onHistoryListener = callback;
         }
