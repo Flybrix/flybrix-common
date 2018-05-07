@@ -75,8 +75,8 @@
                     enabled: true,
                     command: command,
                     aux_mask: aux_mask,
-                }
-            });
+                },
+            }, false);
         }
 
         function setThrottle(v) {

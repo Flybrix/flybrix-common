@@ -60,13 +60,20 @@
 
 
         function request() {
+            var handlers = firmwareVersion.serializationHandler();
             commandLog('Requesting current configuration data...');
-            return serial.send(serial.field.COM_REQ_PARTIAL_EEPROM_DATA, [255, 255, 255, 255], false);
+            return serial.sendStructure('Command', {
+                request_response: true,
+                req_partial_eeprom_data: handlers.ConfigurationFlag.empty(),
+            }, false);
         }
 
         function reinit() {
             commandLog('Setting factory default configuration data...');
-            return serial.send(serial.field.COM_REINIT_EEPROM_DATA, [], false)
+            return serial.sendStructure('Command', {
+                request_response: true,
+                reinit_eeprom_data: true,
+            }, false)
                 .then(
                     function() {
                         return request();

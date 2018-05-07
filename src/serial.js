@@ -73,18 +73,15 @@
 
             var response = $q.defer();
             if (!(messageType in parser.MessageType)) {
-                var message = 'Message type "' + messageType +
+                response.reject('Message type "' + messageType +
                     '" not supported by app, supported message types are:' +
-                    Object.keys(parser.MessageType).join(', ');
-                response.reject(message);
+                    Object.keys(parser.MessageType).join(', '));
                 return response.promise;
             }
             if (!(messageType in handlers)) {
-                var message = 'Message type "' + messageType +
+                response.reject('Message type "' + messageType +
                     '" not supported by firmware, supported message types are:' +
-                    Object.keys(handlers).join(', ');
-                console.error(message);
-                response.reject(message);
+                    Object.keys(handlers).join(', '));
                 return response.promise;
             }
             var typeCode = parser.MessageType[messageType];
@@ -103,7 +100,7 @@
 
             var output = new Uint8Array(dataLength + 3);
             output[0] = output[1] = typeCode;
-            for (var idx = 1; idx < dataLength; ++idx) {
+            for (var idx = 0; idx < dataLength; ++idx) {
                 output[0] ^= output[idx + 2] = buffer[idx];
             }
             output[dataLength + 2] = 0;
