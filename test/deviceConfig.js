@@ -150,7 +150,7 @@ describe('Device configuration service', function() {
                     expect(mask).toBe(
                         parser.CommandFields.COM_REQ_PARTIAL_EEPROM_DATA |
                         parser.CommandFields.COM_REQ_RESPONSE);
-                    expect(new Uint8Array(data)).toEqual(new Uint8Array([255, 255, 255, 255]));
+                    expect(new Uint8Array(data)).toEqual(new Uint8Array([255, 15, 255, 255]));
                     done();
                 });
             };
@@ -189,7 +189,7 @@ describe('Device configuration service', function() {
             ];
             var datas = [
                 [],
-                [255, 255, 255, 255]
+                [255, 15, 255, 255]
             ];
             var call_case = 0;
 
@@ -309,7 +309,7 @@ describe('Device configuration service', function() {
                             parser.CommandFields.COM_REQ_PARTIAL_EEPROM_DATA |
                             parser.CommandFields.COM_REQ_RESPONSE);
                         expect(new Uint8Array(data)).toEqual(new Uint8Array([
-                            255, 255, 255, 255
+                            255, 15, 255, 255
                         ]));
                         done();
                     }
@@ -779,7 +779,7 @@ describe('Device configuration service', function() {
                             parser.CommandFields.COM_REQ_PARTIAL_EEPROM_DATA |
                             parser.CommandFields.COM_REQ_RESPONSE);
                         expect(new Uint8Array(data)).toEqual(new Uint8Array([
-                            255, 255, 255, 255
+                            255, 15, 255, 255
                         ]));
                         done();
                     }
