@@ -21,8 +21,10 @@
             commandLog('No history listener defined for serial');
         };
 
+        var onReceiveListeners = [];
+
         var cobsReader = new cobs.Reader(2000);
-        var dataHandler = undefined;
+        var bytesHandler = undefined;
 
         function Backend() {
         }
@@ -39,17 +41,30 @@
             commandLog('No "onRead" defined for serial backend');
         };
 
+        var MessageTypeInversion = [];
+
+        MessageTypeInversion[0] = 'State';
+        MessageTypeInversion[1] = 'Command';
+        MessageTypeInversion[3] = 'DebugString';
+        MessageTypeInversion[4] = 'HistoryData';
+        MessageTypeInversion[255] = 'Response';
+
+        addOnReceiveCallback(function(messageType, message) {
+            if (messageType === 'Response') {
+                acknowledge(message.mask, message.ack);
+            }
+        });
+
         return {
             busy: busy,
             field: parser.CommandFields,
             send: send,
             sendStructure: sendStructure,
             setBackend: setBackend,
-            setStateCallback: setStateCallback,
+            addOnReceiveCallback: addOnReceiveCallback,
+            removeOnReceiveCallback: removeOnReceiveCallback,
             setCommandCallback: setCommandCallback,
-            setDebugCallback: setDebugCallback,
-            setHistoryCallback: setHistoryCallback,
-            setDataHandler: setDataHandler,
+            setBytesHandler: setBytesHandler,
             handlePostConnect: handlePostConnect,
             Backend: Backend,
         };
@@ -173,15 +188,39 @@
             return backend.busy();
         }
 
+        function setBytesHandler(handler) {
+            bytesHandler = handler;
+        }
+
         function setDataHandler(handler) {
-            dataHandler = handler;
+            console.warn('Deprecated setDataHandler, use setBytesHandler')
+            if (!handler) {
+                bytesHandler = undefined;
+                return;
+            }
+            setBytesHandler(function(data, callback) {
+                handler(data, function(command, mask, message_buffer) {
+                    var input = new Uint8Array(message_buffer);
+                    var output = new Uint8Array(input.length + 5);
+                    output[0] = command;
+                    var byte;
+                    for (byte = 1; byte < 5; ++byte) {
+                        output[byte] = mask & 0xff;
+                        mask >>= 8;
+                    }
+                    for (byte = 0; byte < input.length; ++byte) {
+                        output[byte + 5] = input[byte];
+                    }
+                    callback(output);
+                });
+            });
         }
 
         function read(data) {
-            if (dataHandler)
-                dataHandler(data, processData);
+            if (bytesHandler)
+                bytesHandler(data, processData);
             else
-                cobsReader.AppendToBuffer(data, processData, reportIssues);
+                cobsReader.readBytes(data, processData, reportIssues);
         }
 
         function reportIssues(issue, text) {
@@ -204,16 +243,26 @@
             onDebugListener = callback;
         }
 
+        function addOnReceiveCallback(callback) {
+            onReceiveListeners = onReceiveListeners.concat([callback]);
+        }
+
+        function removeOnReceiveCallback(callback) {
+            onReceiveListeners = onReceiveListeners.filter(function(cb) {
+                return cb === callback;
+            });
+        }
+
         function acknowledge(mask, value) {
             while (acknowledges.length > 0) {
                 var v = acknowledges.shift();
-                if (v.mask !== mask) {
+                if (v.mask ^ mask) {
                     v.response.reject('Missing ACK');
                     continue;
                 }
                 var relaxedMask = mask;
                 relaxedMask &= ~parser.CommandFields.COM_REQ_RESPONSE;
-                if (relaxedMask !== value) {
+                if (relaxedMask ^ value) {
                     v.response.reject('Request was not fully processed');
                     break;
                 }
@@ -222,11 +271,19 @@
             }
         }
 
-        function processData(command, mask, message_buffer) {
-            parser.processBinaryDatastream(
-                command, mask, message_buffer, onStateListener,
-                onCommandListener, onDebugListener, onHistoryListener, acknowledge);
-        };
+        function processData(bytes) {
+            var messageType = MessageTypeInversion[bytes[0]];
+            var handler = firmwareVersion.serializationHandler()[messageType];
+            if (!messageType || !handler) {
+                commandLog('Illegal message type passed from firmware');
+                return;
+            }
+            var serializer = new serializationHandler.Serializer(new DataView(bytes.buffer, 1));
+            var message = handler.decode(serializer);
+            onReceiveListeners.forEach(function(listener) {
+                listener(messageType, message);
+            });
+        }
 
         function byteNinNum(data, n) {
             return (data >> (8 * n)) & 0xFF;

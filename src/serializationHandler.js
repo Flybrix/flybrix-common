@@ -256,7 +256,7 @@
             'set_autopilot_enabled: bool,' +
             'set_usb_mode: u8};';
 
-        var debugString = "DebugString = { depricated_mask: u32, message: s };";
+        var debugString = "DebugString = { deprecated_mask: u32, message: s };";
         var historyData = "HistoryData = DebugString;";
         var response = "Response = { mask: u32, ack: u32 };";
 

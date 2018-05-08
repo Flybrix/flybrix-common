@@ -41,7 +41,7 @@
         return leftover_length ? 0 : dst_ptr;
     }
 
-    Reader.prototype.AppendToBuffer = function(data, callback, onError) {
+    Reader.prototype.readBytes = function(data, onSuccess, onError) {
         for (var i = 0; i < data.length; i++) {
             var c = data[i];
             if (this.ready_for_new_message) {
@@ -52,55 +52,64 @@
 
             this.buffer[this.buffer_length++] = c;
 
-            if (c && this.buffer_length == this.N) {
-                // buffer overflow, probably due to errors in data
-                onError('overflow', 'buffer overflow in COBS decoding');
-                this.ready_for_new_message = true;
+            if (c) {
+                if (this.buffer_length === this.N) {
+                    // buffer overflow, probably due to errors in data
+                    onError('overflow', 'buffer overflow in COBS decoding');
+                    this.ready_for_new_message = true;
+                }
                 continue;
             }
 
-            if (!c) {
-                this.buffer_length = cobsDecode(this);
-                var failed_decode = (this.buffer_length === 0);
+            this.buffer_length = cobsDecode(this);
+            var failed_decode = (this.buffer_length === 0);
+            if (failed_decode) {
+                this.buffer[0] = 1;
+            }
+            var j;
+            for (j = 1; j < this.buffer_length; ++j) {
+                this.buffer[0] ^= this.buffer[j];
+            }
+            if (this.buffer[0] === 0) {  // check sum is correct
+                this.ready_for_new_message = true;
+                if (this.buffer_length > 0) {
+                    onSuccess(this.buffer.slice(1, this.buffer_length));
+                } else {
+                    onError('short', 'Too short packet');
+                }
+            } else {  // bad checksum
+                this.ready_for_new_message = true;
+                var bytes = "";
+                var message = "";
+                for (j = 0; j < this.buffer_length; j++) {
+                    bytes += this.buffer[j] + ",";
+                    message += String.fromCharCode(this.buffer[j]);
+                }
                 if (failed_decode) {
-                    this.buffer[0] = 1;
-                }
-                for (var j = 1; j < this.buffer_length; ++j) {
-                    this.buffer[0] ^= this.buffer[j];
-                }
-                if (this.buffer[0] === 0) {  // check sum is correct
-                    this.ready_for_new_message = true;
-                    if (this.buffer_length > 5) {
-                        var command = this.buffer[1];
-                        var mask = 0;
-                        for (var k = 0; k < 4; ++k) {
-                            mask |= this.buffer[k + 2] << (k * 8);
-                        }
-                        callback(command, mask,
-                                 this.buffer.subarray(6, this.buffer_length)
-                                     .slice()
-                                     .buffer);
-                    } else {
-                        onError('short', 'Too short packet');
-                    }
-                } else {  // bad checksum
-                    this.ready_for_new_message = true;
-                    var bytes = "";
-                    var message = "";
-                    for (var j = 0; j < this.buffer_length; j++) {
-                        bytes += this.buffer[j] + ",";
-                        message += String.fromCharCode(this.buffer[j]);
-                    }
-                    if (failed_decode) {
-                        onError('frame', 'Unexpected ending of packet');
-                    } else {
-                        var msg = 'BAD CHECKSUM (' + this.buffer_length +
-                                  ' bytes)' + bytes + message;
-                        onError('checksum', msg);
-                    }
+                    onError('frame', 'Unexpected ending of packet');
+                } else {
+                    var msg = 'BAD CHECKSUM (' + this.buffer_length +
+                        ' bytes)' + bytes + message;
+                    onError('checksum', msg);
                 }
             }
         }
+    };
+
+    Reader.prototype.AppendToBuffer = function(data, callback, onError) {
+        console.warn('Depricated AppendToBuffer, please use readBytes');
+        this.readBytes(data, function(buffer) {
+            if (buffer.length < 5) {
+                onError('short', 'Too short packet');
+                return;
+            }
+            var command = buffer[0];
+            var mask = 0;
+            for (var k = 0; k < 4; ++k) {
+                mask |= buffer[k + 1] << (k * 8);
+            }
+            callback(command, mask, buffer.slice(5).buffer);
+        }, onError);
     };
 
     function encode(buf) {
