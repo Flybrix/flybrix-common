@@ -3,23 +3,19 @@
 
     angular.module('flybrixCommon').factory('serial', serial);
 
-    serial.$inject = ['$timeout', '$q', 'cobs', 'commandLog', 'parser', 'firmwareVersion', 'serializationHandler'];
+    serial.$inject = ['$timeout', '$q', 'cobs', 'commandLog', 'firmwareVersion', 'serializationHandler'];
 
-    function serial($timeout, $q, cobs, commandLog, parser, firmwareVersion, serializationHandler) {
+    function serial($timeout, $q, cobs, commandLog, firmwareVersion, serializationHandler) {
+        var MessageType = {
+            State: 0,
+            Command: 1,
+            DebugString: 3,
+            HistoryData: 4,
+            Response: 255,
+        };
+
         var acknowledges = [];
         var backend = new Backend();
-        var onStateListener = function() {
-            commandLog('No state listener defined for serial');
-        };
-        var onCommandListener = function() {
-            commandLog('No command listener defined for serial');
-        };
-        var onDebugListener = function() {
-            commandLog('No debug listener defined for serial');
-        };
-        var onHistoryListener = function() {
-            commandLog('No history listener defined for serial');
-        };
 
         var onReceiveListeners = [];
 
@@ -42,12 +38,9 @@
         };
 
         var MessageTypeInversion = [];
-
-        MessageTypeInversion[0] = 'State';
-        MessageTypeInversion[1] = 'Command';
-        MessageTypeInversion[3] = 'DebugString';
-        MessageTypeInversion[4] = 'HistoryData';
-        MessageTypeInversion[255] = 'Response';
+        Object.keys(MessageType).forEach(function(key) {
+            MessageTypeInversion[MessageType[key]] = key;
+        });
 
         addOnReceiveCallback(function(messageType, message) {
             if (messageType === 'Response') {
@@ -57,13 +50,10 @@
 
         return {
             busy: busy,
-            field: parser.CommandFields,
-            send: send,
             sendStructure: sendStructure,
             setBackend: setBackend,
             addOnReceiveCallback: addOnReceiveCallback,
             removeOnReceiveCallback: removeOnReceiveCallback,
-            setCommandCallback: setCommandCallback,
             setBytesHandler: setBytesHandler,
             handlePostConnect: handlePostConnect,
             Backend: Backend,
@@ -79,18 +69,25 @@
         }
 
         function requestFirmwareVersion() {
-            return send(
-                parser.CommandFields.COM_REQ_PARTIAL_EEPROM_DATA, [1, 0, 0, 0]);
+            return sendStructure('Command', {
+                request_response: true,
+                req_partial_eeprom_data: {
+                    version: true,
+                },
+            });
         }
 
-        function sendStructure(messageType, data, log_send) {
+        function sendStructure(messageType, data, log_send, extraMask) {
+            if (messageType === 'State') {
+                data = processStateOutput(data);
+            }
             var handlers = firmwareVersion.serializationHandler();
 
             var response = $q.defer();
-            if (!(messageType in parser.MessageType)) {
+            if (!(messageType in MessageType)) {
                 response.reject('Message type "' + messageType +
                     '" not supported by app, supported message types are:' +
-                    Object.keys(parser.MessageType).join(', '));
+                    Object.keys(MessageType).join(', '));
                 return response.promise;
             }
             if (!(messageType in handlers)) {
@@ -99,14 +96,14 @@
                     Object.keys(handlers).join(', '));
                 return response.promise;
             }
-            var typeCode = parser.MessageType[messageType];
+            var typeCode = MessageType[messageType];
             var handler = handlers[messageType];
 
             var buffer = new Uint8Array(handler.byteCount);
 
             var serializer = new serializationHandler.Serializer(new DataView(buffer.buffer));
-            handler.encode(serializer, data);
-            var mask = handler.maskArray(data);
+            handler.encode(serializer, data, extraMask);
+            var mask = handler.maskArray(data, extraMask);
             if (mask.length < 5) {
                 mask = (mask[0] << 0) | (mask[1] << 8) | (mask[2] << 16) | (mask[3] << 24);
             }
@@ -136,84 +133,12 @@
             return response.promise;
         }
 
-        function send(mask, data, log_send) {
-            if (log_send === undefined)
-                log_send = false;
-
-            var response = $q.defer();
-
-            mask |= parser.CommandFields.COM_REQ_RESPONSE;  // force responses
-
-            var checksum = 0;
-            var bufferOut, bufView;
-
-            // always reserve 1 byte for protocol overhead !
-            if (typeof data === 'object') {
-                var size = 7 + data.length;
-                bufView = new Uint8Array(size);
-                checksum ^= bufView[1] = parser.MessageType.Command;
-                for (var i = 0; i < 4; ++i)
-                    checksum ^= bufView[i + 2] = byteNinNum(mask, i);
-                for (var i = 0; i < data.length; i++)
-                    checksum ^= bufView[i + 6] = data[i];
-            } else {
-                bufferOut = new ArrayBuffer(8);
-                bufView = new Uint8Array(bufferOut);
-                checksum ^= bufView[1] = parser.MessageType.Command;
-                for (var i = 0; i < 4; ++i)
-                    checksum ^= bufView[i + 2] = byteNinNum(mask, i);
-                checksum ^= bufView[6] = data;  // payload
-            }
-            bufView[0] = checksum;  // crc
-            bufView[bufView.length - 1] = 0;
-
-            acknowledges.push({
-                mask: mask,
-                response: response,
-            });
-
-            $timeout(function() {
-                backend.send(new Uint8Array(cobs.encode(bufView)));
-            }, 0);
-
-            if (log_send) {
-                commandLog(
-                    'Sending command ' + parser.MessageType.Command );
-            }
-
-            return response.promise;
-        }
-
         function busy() {
             return backend.busy();
         }
 
         function setBytesHandler(handler) {
             bytesHandler = handler;
-        }
-
-        function setDataHandler(handler) {
-            console.warn('Deprecated setDataHandler, use setBytesHandler')
-            if (!handler) {
-                bytesHandler = undefined;
-                return;
-            }
-            setBytesHandler(function(data, callback) {
-                handler(data, function(command, mask, message_buffer) {
-                    var input = new Uint8Array(message_buffer);
-                    var output = new Uint8Array(input.length + 5);
-                    output[0] = command;
-                    var byte;
-                    for (byte = 1; byte < 5; ++byte) {
-                        output[byte] = mask & 0xff;
-                        mask >>= 8;
-                    }
-                    for (byte = 0; byte < input.length; ++byte) {
-                        output[byte + 5] = input[byte];
-                    }
-                    callback(output);
-                });
-            });
         }
 
         function read(data) {
@@ -225,22 +150,6 @@
 
         function reportIssues(issue, text) {
             commandLog('COBS decoding failed (' + issue + '): ' + text);
-        }
-
-        function setStateCallback(callback) {
-            onStateListener = callback;
-        }
-
-        function setCommandCallback(callback) {
-            onCommandListener = callback;
-        }
-
-        function setHistoryCallback(callback) {
-            onHistoryListener = callback;
-        }
-
-        function setDebugCallback(callback) {
-            onDebugListener = callback;
         }
 
         function addOnReceiveCallback(callback) {
@@ -261,7 +170,7 @@
                     continue;
                 }
                 var relaxedMask = mask;
-                relaxedMask &= ~parser.CommandFields.COM_REQ_RESPONSE;
+                relaxedMask &= ~1;
                 if (relaxedMask ^ value) {
                     v.response.reject('Request was not fully processed');
                     break;
@@ -280,13 +189,43 @@
             }
             var serializer = new serializationHandler.Serializer(new DataView(bytes.buffer, 1));
             var message = handler.decode(serializer);
+            if (messageType === 'State') {
+                message = processStateInput(message);
+            }
             onReceiveListeners.forEach(function(listener) {
                 listener(messageType, message);
             });
         }
 
-        function byteNinNum(data, n) {
-            return (data >> (8 * n)) & 0xFF;
+        var last_timestamp_us = 0;
+
+        function processStateInput(state) {
+            state = Object.assign({}, state);
+            var serial_update_rate_Hz = 0;
+
+            if ('timestamp_us' in state) {
+                state.serial_update_rate_estimate = 1000000 / (state.timestamp_us - last_timestamp_us);
+                last_timestamp_us = state.timestamp_us;
+            }
+            if ('temperature' in state) {
+                state.temperature /= 100.0;  // temperature given in Celsius * 100
+            }
+            if ('pressure' in state) {
+                state.pressure /= 256.0;  // pressure given in (Q24.8) format
+            }
+
+            return state;
+        }
+
+        function processStateOutput(state) {
+            state = Object.assign({}, state);
+            if ('temperature' in state) {
+                state.temperature *= 100.0;
+            }
+            if ('pressure' in state) {
+                state.pressure *= 256.0;
+            }
+            return state;
         }
     }
 }());

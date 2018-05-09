@@ -8,7 +8,7 @@
     function serializationHandler() {
         var handlerCache = {};
         var version = 'Version = { major: u8, minor: u8, patch: u8 };';
-        var configId = 'ConfigID = { id: u32 };';
+        var configId = 'ConfigID = u32;';
 
         var vector3f = 'Vector3f = { x: f32, y: f32, z: f32 };';
 
@@ -56,9 +56,45 @@
 
         var stateParameters = 'StateParameters = { state_estimation: [f32:2], enable: [f32:2] };';
 
+        var statusFlag1415 = 'StatusFlag = {/16/' +
+            'boot: void,' +
+            'mpu_fail: void,' +
+            'bmp_fail: void,' +
+            'rx_fail: void,' +
+            'idle: void,' +
+            'enabling: void,' +
+            'clear_mpu_bias: void,' +
+            'set_mpu_bias: void,' +
+            'fail_stability: void,' +
+            'fail_angle: void,' +
+            'enabled: void,' +
+            'battery_low: void,' +
+            'temp_warning: void,' +
+            'log_full: void,' +
+            'fail_other: void,' +
+            'override: void };';
+
+        var statusFlag = 'StatusFlag = {/16/' +
+            '_0: void,' +
+            '_1: void,' +
+            '_2: void,' +
+            'no_signal: void,' +
+            'idle: void,' +
+            'arming: void,' +
+            'recording_sd: void,' +
+            '_7: void,' +
+            'loop_slow: void,' +
+            '_9: void,' +
+            'armed: void,' +
+            'battery_low: void,' +
+            'battery_critical: void,' +
+            'log_full: void,' +
+            'crash_detected: void,' +
+            'override: void };';
+
         var color = 'Color = { red: u8, green: u8, blue: u8 };';
         var ledStateCase = 'LEDStateCase = {' +
-            'status: u16,' +
+            'status: StatusFlag,' +
             'pattern: u8,' +
             'color_right_front: Color,' +
             'color_right_back: Color,' +
@@ -66,10 +102,10 @@
             'color_left_back: Color,' +
             'indicator_red: bool,' +
             'indicator_green: bool };';
-        var ledStates = 'LEDStates = { states: [/16/LEDStateCase:16] };';
-        var ledStatesFixed = 'LEDStatesFixed = { states: [LEDStateCase:16] };';
+        var ledStates = 'LEDStates = [/16/LEDStateCase:16];';
+        var ledStatesFixed = 'LEDStatesFixed = [LEDStateCase:16];';
 
-        var deviceName = 'DeviceName = { value: s9 };';
+        var deviceName = 'DeviceName = s9;';
 
         var velocityPidParameters = 'VelocityPIDParameters = {' +
             'forward_master: PIDSettings,' +
@@ -162,15 +198,15 @@
 
         var configFull14 = vector3f + pidSettings + version + configId + pcbTransform +
             mixTable + magBias + channelProperties + pidParameters14 + stateParameters +
-            color + ledStateCase + ledStates + ledStatesFixed + deviceName +
+            statusFlag1415 + color + ledStateCase + ledStates + ledStatesFixed + deviceName +
             config1415 + configFixed1415 + configFlag14;
         var configFull15 = vector3f + pidSettings + version + configId + pcbTransform + mixTable +
             magBias + channelProperties + pidParameters + stateParameters +
-            color + ledStateCase + ledStates + ledStatesFixed + deviceName +
+            statusFlag1415 + color + ledStateCase + ledStates + ledStatesFixed + deviceName +
             config1415 + configFixed1415 + configFlag;
         var configFull16 = vector3f + pidSettings + version + configId + pcbTransform + mixTable +
             magBias + channelProperties + pidParameters + stateParameters +
-            color + ledStateCase + ledStates + ledStatesFixed + deviceName +
+            statusFlag + color + ledStateCase + ledStates + ledStatesFixed + deviceName +
             inertialBias + velocityPidParameters +
             config + configFixed + configFlag;
 
@@ -185,7 +221,7 @@
             'RcCommand = { throttle: i16, pitch: i16, roll: i16, yaw: i16 };' +
             'State = {/32/' +
             'timestamp_us: u32,' +
-            'status: u16,' +
+            'status: StatusFlag,' +
             'v0_raw: u16,' +
             'i0_raw: u16,' +
             'i1_raw: u16,' +
@@ -268,11 +304,45 @@
         handlerCache['1.5.0'] = handlerCache['1.5.1'] = FlybrixSerialization.parse(handler15);
         handlerCache['1.6.0'] = FlybrixSerialization.parse(handler16);
 
+        function updateFields(target, source) {
+            if (source instanceof Array) {
+                return updateFieldsArray(target, source);
+            } else if (source instanceof Object) {
+                return updateFieldsObject(target, source);
+            } else {
+                return (source === null || source === undefined) ? target : source;
+            }
+        }
+
+        function updateFieldsObject(target, source) {
+            var result = {};
+            Object.keys(target).forEach(function (key) {
+                result[key] = updateFields(target[key], source[key]);
+            });
+            Object.keys(source).forEach(function (key) {
+                if (key in result) {
+                    return;
+                }
+                result[key] = updateFields(target[key], source[key]);
+            });
+            return result;
+        }
+
+        function updateFieldsArray(target, source) {
+            var length = Math.max(target.length, source.length);
+            var result = [];
+            for (var idx = 0; idx < length; ++idx) {
+                result.push(updateFields(target[idx], source[idx]));
+            }
+            return result;
+        }
+
         return {
             Serializer: FlybrixSerialization.Serializer,
             getHandler: function (firmware) {
                 return handlerCache[firmware];
-            }
+            },
+            updateFields: updateFields,
         };
     }
 

@@ -96,22 +96,6 @@
         }
     };
 
-    Reader.prototype.AppendToBuffer = function(data, callback, onError) {
-        console.warn('Depricated AppendToBuffer, please use readBytes');
-        this.readBytes(data, function(buffer) {
-            if (buffer.length < 5) {
-                onError('short', 'Too short packet');
-                return;
-            }
-            var command = buffer[0];
-            var mask = 0;
-            for (var k = 0; k < 4; ++k) {
-                mask |= buffer[k + 1] << (k * 8);
-            }
-            callback(command, mask, buffer.slice(5).buffer);
-        }, onError);
-    };
-
     function encode(buf) {
         var retval =
             new Uint8Array(Math.floor((buf.byteLength * 255 + 761) / 254));
