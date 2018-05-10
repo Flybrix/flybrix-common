@@ -187,8 +187,12 @@
                 commandLog('Illegal message type passed from firmware');
                 return;
             }
-            var serializer = new serializationHandler.Serializer(new DataView(bytes.buffer, 1));
-            var message = handler.decode(serializer);
+            try {
+                var serializer = new serializationHandler.Serializer(new DataView(bytes.buffer, 1));
+                var message = handler.decode(serializer);
+            } catch (err) {
+                commandLog('Unrecognized message format received');
+            }
             if (messageType === 'State') {
                 message = processStateInput(message);
             }
