@@ -246,7 +246,35 @@
             'kinematics_angle: Rotation,' +
             'kinematics_rate: Rotation,' +
             'kinematics_altitude: f32,' +
-            'loop_count: u32 };';
+            'loop_count: u32 };' +
+            'StateFields = {/32/' +
+            'timestamp_us: void,' +
+            'status: void,' +
+            'v0_raw: void,' +
+            'i0_raw: void,' +
+            'i1_raw: void,' +
+            'accel: void,' +
+            'gyro: void,' +
+            'mag: void,' +
+            'temperature: void,' +
+            'pressure: void,' +
+            'ppm: void,' +
+            'aux_chan_mask: void,' +
+            'command: void,' +
+            'control: void,' +
+            'pid_master_fz: void,' +
+            'pid_master_tx: void,' +
+            'pid_master_ty: void,' +
+            'pid_master_tz: void,' +
+            'pid_slave_fz: void,' +
+            'pid_slave_tx: void,' +
+            'pid_slave_ty: void,' +
+            'pid_slave_tz: void,' +
+            'motor_out: void,' +
+            'kinematics_angle: void,' +
+            'kinematics_rate: void,' +
+            'kinematics_altitude: void,' +
+            'loop_count: void };';
 
         var auxMask = 'AuxMask = {//' +
             'aux1_low: void,' +
@@ -271,7 +299,7 @@
             'motor_override_speed_6: u16,' +
             'motor_override_speed_7: u16,' +
             'set_command_override: bool,' +
-            'set_state_mask: u32,' +
+            'set_state_mask: StateFields,' +
             'set_state_delay: u16,' +
             'set_sd_write_delay: u16,' +
             'set_led: {' +
