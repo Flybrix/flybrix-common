@@ -94,19 +94,18 @@
         function updateConfigFromRemoteData(configChanges) {
             //commandLog('Received config!');
             config = serializationHandler.updateFields(config, configChanges);
-            firmwareVersion.set(config.version);
+            var version = [config.version.major, config.version.minor, config.version.patch];
+            firmwareVersion.set(version);
             if (!firmwareVersion.supported()) {
                 commandLog('Received an unsupported configuration!');
                 commandLog(
-                    'Found version: ' + config.version[0] + '.' +
-                    config.version[1] + '.' + config.version[2]  +
+                    'Found version: ' + version[0] + '.' + version[1] + '.' + version[2]  +
                     ' --- Newest version: ' +
                     firmwareVersion.desiredKey() );
             } else {
                 commandLog(
                     'Received configuration data (v' +
-                    config.version[0] + '.' + config.version[1] + '.' +
-                    config.version[2] +')');
+                    version[0] + '.' + version[1] + '.' + version[2] +')');
                 configCallback();
             }
         }
