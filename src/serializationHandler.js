@@ -295,10 +295,12 @@
         var debugString = "DebugString = { deprecated_mask: u32, message: s };";
         var historyData = "HistoryData = DebugString;";
         var response = "Response = { mask: u32, ack: u32 };";
+        var protocol = "ProtocolInfo = { version: Version, structure: s };" +
+            "Protocol = {/32/ request: void, response: ProtocolInfo };";
 
-        var handler14 = configFull14 + state + commands + debugString + historyData + response;
-        var handler15 = configFull15 + state + commands + debugString + historyData + response;
-        var handler16 = configFull16 + state + commands + debugString + historyData + response;
+        var handler14 = configFull14 + state + commands + debugString + historyData + response + protocol;
+        var handler15 = configFull15 + state + commands + debugString + historyData + response + protocol;
+        var handler16 = configFull16 + state + commands + debugString + historyData + response + protocol;
 
         handlerCache['1.4.0'] = FlybrixSerialization.parse(handler14);
         handlerCache['1.5.0'] = handlerCache['1.5.1'] = FlybrixSerialization.parse(handler15);
@@ -341,6 +343,10 @@
             Serializer: FlybrixSerialization.Serializer,
             getHandler: function (firmware) {
                 return handlerCache[firmware];
+            },
+            addHandler: function (version, structure) {
+                var versionString = version.major.toString() + '.' + version.minor.toString() + version.patch.toString();
+                handlerCache[versionString] = FlybrixSerialization.parse(structure);
             },
             updateFields: updateFields,
         };

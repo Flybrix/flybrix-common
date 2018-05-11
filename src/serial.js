@@ -11,6 +11,7 @@
             Command: 1,
             DebugString: 3,
             HistoryData: 4,
+            Protocol: 128,
             Response: 255,
         };
 
@@ -19,7 +20,7 @@
 
         var onReceiveListeners = [];
 
-        var cobsReader = new cobs.Reader(2000);
+        var cobsReader = new cobs.Reader(10000);
         var bytesHandler = undefined;
 
         function Backend() {
@@ -45,6 +46,11 @@
         addOnReceiveCallback(function(messageType, message) {
             if (messageType === 'Response') {
                 acknowledge(message.mask, message.ack);
+            } else if (messageType === 'Protocol') {
+                var data = message.response;
+                if (data) {
+                    serializationHandler.addHandler(data.version, data.structure);
+                }
             }
         });
 
@@ -158,7 +164,7 @@
 
         function removeOnReceiveCallback(callback) {
             onReceiveListeners = onReceiveListeners.filter(function(cb) {
-                return cb === callback;
+                return cb !== callback;
             });
         }
 
