@@ -210,7 +210,7 @@
             inertialBias + velocityPidParameters +
             config + configFixed + configFlag;
 
-        var state = 'Rotation = { roll: f32, pitch: f32, yaw: f32 };' +
+        var state = 'Rotation = { pitch: f32, roll: f32, yaw: f32 };' +
             'PIDState = {' +
             'timestamp_us: u32,' +
             'input: f32,' +
