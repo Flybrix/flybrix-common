@@ -102,13 +102,15 @@
             'override: void };';
 
         var color = 'Color = { red: u8, green: u8, blue: u8 };';
-        var ledStateCase = 'LEDStateCase = {' +
+        var ledStateColors = 'LEDStateColors = {' +
+            'right_front: Color,' +
+            'right_back: Color,' +
+            'left_front: Color,' +
+            'left_back: Color };';
+        var ledStateCase = ledStateColors + 'LEDStateCase = {' +
             'status: StatusFlag,' +
             'pattern: u8,' +
-            'color_right_front: Color,' +
-            'color_right_back: Color,' +
-            'color_left_front: Color,' +
-            'color_left_back: Color,' +
+            'colors: LEDStateColors,' +
             'indicator_red: bool,' +
             'indicator_green: bool };';
         var ledStates = 'LEDStates = [/16/LEDStateCase:16];';

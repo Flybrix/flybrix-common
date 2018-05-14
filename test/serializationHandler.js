@@ -66,10 +66,12 @@ describe('Serialization handler service', function () {
             expect(handlers.LEDStateCase.empty()).toEqual({
                 status: handlers.StatusFlag.empty(),
                 pattern: 0,
-                color_right_front: handlers.Color.empty(),
-                color_right_back: handlers.Color.empty(),
-                color_left_front: handlers.Color.empty(),
-                color_left_back: handlers.Color.empty(),
+                colors: {
+                    right_front: handlers.Color.empty(),
+                    right_back: handlers.Color.empty(),
+                    left_front: handlers.Color.empty(),
+                    left_back: handlers.Color.empty(),
+                },
                 indicator_red: false,
                 indicator_green: false,
             });
@@ -113,8 +115,8 @@ describe('Serialization handler service', function () {
                     offset: zeroVector,
                 },
                 channel: {
-                    assignment: { thrust: 0, pitch: 0, roll: 0, yaw: 0, aux1: 0, aux2: 0 },
-                    inversion: { thrust: true, pitch: true, roll: true, yaw: true, aux1: true, aux2: true },
+                    assignment: {thrust: 0, pitch: 0, roll: 0, yaw: 0, aux1: 0, aux2: 0},
+                    inversion: {thrust: true, pitch: true, roll: true, yaw: true, aux1: true, aux2: true},
                     midpoint: [0, 0, 0, 0, 0, 0],
                     deadzone: [0, 0, 0, 0, 0, 0],
                 },
@@ -221,10 +223,12 @@ describe('Serialization handler service', function () {
             expect(handlers.LEDStateCase.empty()).toEqual({
                 status: handlers.StatusFlag.empty(),
                 pattern: 0,
-                color_right_front: handlers.Color.empty(),
-                color_right_back: handlers.Color.empty(),
-                color_left_front: handlers.Color.empty(),
-                color_left_back: handlers.Color.empty(),
+                colors: {
+                    right_front: handlers.Color.empty(),
+                    right_back: handlers.Color.empty(),
+                    left_front: handlers.Color.empty(),
+                    left_back: handlers.Color.empty(),
+                },
                 indicator_red: false,
                 indicator_green: false,
             });
@@ -268,8 +272,8 @@ describe('Serialization handler service', function () {
                     offset: zeroVector,
                 },
                 channel: {
-                    assignment: { thrust: 0, pitch: 0, roll: 0, yaw: 0, aux1: 0, aux2: 0 },
-                    inversion: { thrust: true, pitch: true, roll: true, yaw: true, aux1: true, aux2: true },
+                    assignment: {thrust: 0, pitch: 0, roll: 0, yaw: 0, aux1: 0, aux2: 0},
+                    inversion: {thrust: true, pitch: true, roll: true, yaw: true, aux1: true, aux2: true},
                     midpoint: [0, 0, 0, 0, 0, 0],
                     deadzone: [0, 0, 0, 0, 0, 0],
                 },
@@ -380,10 +384,12 @@ describe('Serialization handler service', function () {
             expect(handlers.LEDStateCase.empty()).toEqual({
                 status: handlers.StatusFlag.empty(),
                 pattern: 0,
-                color_right_front: handlers.Color.empty(),
-                color_right_back: handlers.Color.empty(),
-                color_left_front: handlers.Color.empty(),
-                color_left_back: handlers.Color.empty(),
+                colors: {
+                    right_front: handlers.Color.empty(),
+                    right_back: handlers.Color.empty(),
+                    left_front: handlers.Color.empty(),
+                    left_back: handlers.Color.empty(),
+                },
                 indicator_red: false,
                 indicator_green: false,
             });
@@ -427,8 +433,8 @@ describe('Serialization handler service', function () {
                     offset: zeroVector,
                 },
                 channel: {
-                    assignment: { thrust: 0, pitch: 0, roll: 0, yaw: 0, aux1: 0, aux2: 0 },
-                    inversion: { thrust: true, pitch: true, roll: true, yaw: true, aux1: true, aux2: true },
+                    assignment: {thrust: 0, pitch: 0, roll: 0, yaw: 0, aux1: 0, aux2: 0},
+                    inversion: {thrust: true, pitch: true, roll: true, yaw: true, aux1: true, aux2: true},
                     midpoint: [0, 0, 0, 0, 0, 0],
                     deadzone: [0, 0, 0, 0, 0, 0],
                 },
