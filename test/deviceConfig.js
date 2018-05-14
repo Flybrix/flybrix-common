@@ -136,7 +136,10 @@ describe('Device configuration service', function() {
         });
         empty_config[0] = 255;
         empty_config[1] = 15;
+        empty_config[83] = 63;
+        empty_config[348] = 255;
         empty_config[365] = empty_config[366] = 255;
+        empty_config[816] = 255;
         for (var idx = 0; idx < 16; ++idx) {
             empty_config[367 + idx * 17] = empty_config[368 + idx * 17] = 255;
         }

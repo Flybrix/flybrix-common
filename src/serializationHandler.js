@@ -16,8 +16,8 @@
         var mixTable = 'MixTable = { fz: [i8:8], tx: [i8:8], ty: [i8:8], tz: [i8:8] };';
         var magBias = 'MagBias = { offset: Vector3f };';
         var channelProperties = 'ChannelProperties = {' +
-            'assignment: [u8:6],' +
-            'inversion: u8,' +
+            'assignment: { thrust: u8, pitch: u8, roll: u8, yaw: u8, aux1: u8, aux2: u8 },' +
+            'inversion: {/8/ thrust: void, pitch: void, roll: void, yaw: void, aux1: void, aux2: void },' +
             'midpoint: [u16:6],' +
             'deadzone: [u16:6] };';
 
@@ -29,7 +29,16 @@
             'd_filter_time: f32,' +
             'setpoint_filter_time: f32,' +
             'command_to_value: f32 };';
-        var pidParameters14 = 'PIDParameters = {' +
+        var pidBypass = 'PIDBypass = {/8/' +
+            'thrust_master: void,' +
+            'pitch_master: void,' +
+            'roll_master: void,' +
+            'yaw_master: void,' +
+            'thrust_slave: void,' +
+            'pitch_slave: void,' +
+            'roll_slave: void,' +
+            'yaw_slave: void};';
+        var pidParameters14 = pidBypass + 'PIDParameters = {' +
             'thrust_master: PIDSettings,' +
             'pitch_master: PIDSettings,' +
             'roll_master: PIDSettings,' +
@@ -38,8 +47,8 @@
             'pitch_slave: PIDSettings,' +
             'roll_slave: PIDSettings,' +
             'yaw_slave: PIDSettings,' +
-            'pid_bypass: u8 };';
-        var pidParameters = 'PIDParameters = {' +
+            'pid_bypass: PIDBypass };';
+        var pidParameters = pidBypass + 'PIDParameters = {' +
             'thrust_master: PIDSettings,' +
             'pitch_master: PIDSettings,' +
             'roll_master: PIDSettings,' +
@@ -52,7 +61,7 @@
             'pitch_gain: f32,' +
             'roll_gain: f32,' +
             'yaw_gain: f32,' +
-            'pid_bypass: u8 };';
+            'pid_bypass: PIDBypass };';
 
         var stateParameters = 'StateParameters = { state_estimation: [f32:2], enable: [f32:2] };';
 
@@ -107,20 +116,30 @@
 
         var deviceName = 'DeviceName = s9;';
 
-        var velocityPidParameters = 'VelocityPIDParameters = {' +
+        var velocityPidBypass = 'VelocityPIDBypass = {/8/' +
+            'forward_master: void,' +
+            'right_master: void,' +
+            'up_master: void,' +
+            '_unused_master: void,' +
+            'forward_slave: void,' +
+            'right_slave: void,' +
+            'up_slave: void,' +
+            '_unused_slave: void};';
+
+        var velocityPidParameters = velocityPidBypass + 'VelocityPIDParameters = {' +
             'forward_master: PIDSettings,' +
             'right_master: PIDSettings,' +
             'up_master: PIDSettings,' +
             'forward_slave: PIDSettings,' +
             'right_slave: PIDSettings,' +
             'up_slave: PIDSettings,' +
-            'pid_bypass: u8 };';
+            'pid_bypass: VelocityPIDBypass };';
 
         var inertialBias = 'InertialBias = { accel: Vector3f, gyro: Vector3f };';
 
         var config1415 = 'Configuration = {/16/' +
             'version: Version,' +
-            'config_id: ConfigID,' +
+            'id: ConfigID,' +
             'pcb_transform: PcbTransform,' +
             'mix_table: MixTable,' +
             'mag_bias: MagBias,' +
@@ -128,11 +147,11 @@
             'pid_parameters: PIDParameters,' +
             'state_parameters: StateParameters,' +
             'led_states: LEDStates,' +
-            'device_name: DeviceName };';
+            'name: DeviceName };';
 
         var configFixed1415 = 'ConfigurationFixed = {' +
             'version: Version,' +
-            'config_id: ConfigID,' +
+            'id: ConfigID,' +
             'pcb_transform: PcbTransform,' +
             'mix_table: MixTable,' +
             'mag_bias: MagBias,' +
@@ -140,11 +159,11 @@
             'pid_parameters: PIDParameters,' +
             'state_parameters: StateParameters,' +
             'led_states: LEDStatesFixed,' +
-            'device_name: DeviceName };';
+            'name: DeviceName };';
 
         var config = 'Configuration = {/16/' +
             'version: Version,' +
-            'config_id: ConfigID,' +
+            'id: ConfigID,' +
             'pcb_transform: PcbTransform,' +
             'mix_table: MixTable,' +
             'mag_bias: MagBias,' +
@@ -152,13 +171,13 @@
             'pid_parameters: PIDParameters,' +
             'state_parameters: StateParameters,' +
             'led_states: LEDStates,' +
-            'device_name: DeviceName,' +
+            'name: DeviceName,' +
             'velocity_pid_parameters: VelocityPIDParameters,' +
             'inertial_bias: InertialBias };';
 
         var configFixed = 'ConfigurationFixed = {' +
             'version: Version,' +
-            'config_id: ConfigID,' +
+            'id: ConfigID,' +
             'pcb_transform: PcbTransform,' +
             'mix_table: MixTable,' +
             'mag_bias: MagBias,' +
@@ -166,13 +185,13 @@
             'pid_parameters: PIDParameters,' +
             'state_parameters: StateParameters,' +
             'led_states: LEDStatesFixed,' +
-            'device_name: DeviceName,' +
+            'name: DeviceName,' +
             'velocity_pid_parameters: VelocityPIDParameters,' +
             'inertial_bias: InertialBias };';
 
         var configFlag14 = 'ConfigurationFlag = {/16/' +
             'version: void,' +
-            'config_id: void,' +
+            'id: void,' +
             'pcb_transform: void,' +
             'mix_table: void,' +
             'mag_bias: void,' +
@@ -180,11 +199,11 @@
             'pid_parameters: void,' +
             'state_parameters: void,' +
             'led_states: [// void:16],' +
-            'device_name: void};';
+            'name: void};';
 
         var configFlag = 'ConfigurationFlag = {/16/' +
             'version: void,' +
-            'config_id: void,' +
+            'id: void,' +
             'pcb_transform: void,' +
             'mix_table: void,' +
             'mag_bias: void,' +
@@ -192,7 +211,7 @@
             'pid_parameters: void,' +
             'state_parameters: void,' +
             'led_states: [// void:16],' +
-            'device_name: void,' +
+            'name: void,' +
             'velocity_pid_parameters: void,' +
             'inertial_bias: void };';
 

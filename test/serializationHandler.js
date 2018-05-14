@@ -98,7 +98,7 @@ describe('Serialization handler service', function () {
                     minor: 0,
                     patch: 0,
                 },
-                config_id: 0,
+                id: 0,
                 pcb_transform: {
                     orientation: zeroVector,
                     translation: zeroVector,
@@ -113,8 +113,8 @@ describe('Serialization handler service', function () {
                     offset: zeroVector,
                 },
                 channel: {
-                    assignment: [0, 0, 0, 0, 0, 0],
-                    inversion: 0,
+                    assignment: { thrust: 0, pitch: 0, roll: 0, yaw: 0, aux1: 0, aux2: 0 },
+                    inversion: { thrust: true, pitch: true, roll: true, yaw: true, aux1: true, aux2: true },
                     midpoint: [0, 0, 0, 0, 0, 0],
                     deadzone: [0, 0, 0, 0, 0, 0],
                 },
@@ -127,7 +127,16 @@ describe('Serialization handler service', function () {
                     pitch_slave: zeroPidSettings,
                     roll_slave: zeroPidSettings,
                     yaw_slave: zeroPidSettings,
-                    pid_bypass: 0,
+                    pid_bypass: {
+                        thrust_master: true,
+                        pitch_master: true,
+                        roll_master: true,
+                        yaw_master: true,
+                        thrust_slave: true,
+                        pitch_slave: true,
+                        roll_slave: true,
+                        yaw_slave: true,
+                    },
                 },
                 state_parameters: {
                     state_estimation: [0, 0],
@@ -151,7 +160,7 @@ describe('Serialization handler service', function () {
                     zeroLedStateCase,
                     zeroLedStateCase,
                 ],
-                device_name: '',
+                name: '',
             });
             expect(config).toEqual(handlers.ConfigurationFixed.empty());
         });
@@ -244,7 +253,7 @@ describe('Serialization handler service', function () {
                     minor: 0,
                     patch: 0,
                 },
-                config_id: 0,
+                id: 0,
                 pcb_transform: {
                     orientation: zeroVector,
                     translation: zeroVector,
@@ -259,8 +268,8 @@ describe('Serialization handler service', function () {
                     offset: zeroVector,
                 },
                 channel: {
-                    assignment: [0, 0, 0, 0, 0, 0],
-                    inversion: 0,
+                    assignment: { thrust: 0, pitch: 0, roll: 0, yaw: 0, aux1: 0, aux2: 0 },
+                    inversion: { thrust: true, pitch: true, roll: true, yaw: true, aux1: true, aux2: true },
                     midpoint: [0, 0, 0, 0, 0, 0],
                     deadzone: [0, 0, 0, 0, 0, 0],
                 },
@@ -277,7 +286,16 @@ describe('Serialization handler service', function () {
                     pitch_gain: 0,
                     roll_gain: 0,
                     yaw_gain: 0,
-                    pid_bypass: 0,
+                    pid_bypass: {
+                        thrust_master: true,
+                        pitch_master: true,
+                        roll_master: true,
+                        yaw_master: true,
+                        thrust_slave: true,
+                        pitch_slave: true,
+                        roll_slave: true,
+                        yaw_slave: true,
+                    },
                 },
                 state_parameters: {
                     state_estimation: [0, 0],
@@ -301,7 +319,7 @@ describe('Serialization handler service', function () {
                     zeroLedStateCase,
                     zeroLedStateCase,
                 ],
-                device_name: '',
+                name: '',
             });
             expect(config).toEqual(handlers.ConfigurationFixed.empty());
         });
@@ -394,7 +412,7 @@ describe('Serialization handler service', function () {
                     minor: 0,
                     patch: 0,
                 },
-                config_id: 0,
+                id: 0,
                 pcb_transform: {
                     orientation: zeroVector,
                     translation: zeroVector,
@@ -409,8 +427,8 @@ describe('Serialization handler service', function () {
                     offset: zeroVector,
                 },
                 channel: {
-                    assignment: [0, 0, 0, 0, 0, 0],
-                    inversion: 0,
+                    assignment: { thrust: 0, pitch: 0, roll: 0, yaw: 0, aux1: 0, aux2: 0 },
+                    inversion: { thrust: true, pitch: true, roll: true, yaw: true, aux1: true, aux2: true },
                     midpoint: [0, 0, 0, 0, 0, 0],
                     deadzone: [0, 0, 0, 0, 0, 0],
                 },
@@ -427,7 +445,16 @@ describe('Serialization handler service', function () {
                     pitch_gain: 0,
                     roll_gain: 0,
                     yaw_gain: 0,
-                    pid_bypass: 0,
+                    pid_bypass: {
+                        thrust_master: true,
+                        pitch_master: true,
+                        roll_master: true,
+                        yaw_master: true,
+                        thrust_slave: true,
+                        pitch_slave: true,
+                        roll_slave: true,
+                        yaw_slave: true,
+                    },
                 },
                 state_parameters: {
                     state_estimation: [0, 0],
@@ -451,7 +478,7 @@ describe('Serialization handler service', function () {
                     zeroLedStateCase,
                     zeroLedStateCase,
                 ],
-                device_name: '',
+                name: '',
                 velocity_pid_parameters: {
                     forward_master: zeroPidSettings,
                     right_master: zeroPidSettings,
@@ -459,7 +486,16 @@ describe('Serialization handler service', function () {
                     forward_slave: zeroPidSettings,
                     right_slave: zeroPidSettings,
                     up_slave: zeroPidSettings,
-                    pid_bypass: 0,
+                    pid_bypass: {
+                        forward_master: true,
+                        right_master: true,
+                        up_master: true,
+                        _unused_master: true,
+                        forward_slave: true,
+                        right_slave: true,
+                        up_slave: true,
+                        _unused_slave: true,
+                    },
                 },
                 inertial_bias: {
                     accel: zeroVector,
