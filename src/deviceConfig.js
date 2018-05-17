@@ -79,10 +79,10 @@
             };
             if (properties.temporary) {
                 message.set_partial_temporary_config = newConfig;
-                mask = { request_response: true, set_partial_temporary_config: mask };
+                mask = { set_partial_temporary_config: { MASK: mask } };
             } else {
                 message.set_partial_eeprom_data = newConfig;
-                mask = { request_response: true, set_partial_eeprom_data: mask };
+                mask = { set_partial_eeprom_data: { MASK: mask } };
             }
             return serial.sendStructure('Command', message, true, mask).then(function() {
                 if (requestUpdate) {
