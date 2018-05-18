@@ -7,6 +7,7 @@
 
     function serializationHandler() {
         var handlerCache = {};
+        var newestVersion = { major: 0, minor: 0, patch: 0 };
         var version = 'Version = { major: u8, minor: u8, patch: u8 };';
         var configId = 'ConfigID = u32;';
 
@@ -351,7 +352,24 @@
         var handler15 = configFull15 + state + commands + debugString + historyData + response + protocol;
         var handler16 = configFull16 + state + commands + debugString + historyData + response + protocol;
 
+        function isNewerVersion(version) {
+            if (version.major !== newestVersion.major) {
+                return version.major > newestVersion.major;
+            }
+            if (version.minor !== newestVersion.minor) {
+                return version.minor > newestVersion.minor;
+            }
+            return version.patch > newestVersion.patch;
+        }
+
         function addHandler(version, structure) {
+            if (isNewerVersion(version)) {
+                newestVersion = {
+                    major: version.major,
+                    minor: version.minor,
+                    patch: version.patch,
+                };
+            }
             var versionString = version.major.toString() + '.' + version.minor.toString() + '.' + version.patch.toString();
             handlerCache[versionString] = FlybrixSerialization.parse(structure);
         }
@@ -398,6 +416,9 @@
             Serializer: FlybrixSerialization.Serializer,
             getHandler: function (firmware) {
                 return handlerCache[firmware];
+            },
+            getNewestVersion: function () {
+                return newestVersion;
             },
             addHandler: addHandler,
             updateFields: updateFields,

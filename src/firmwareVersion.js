@@ -9,8 +9,10 @@
         var version = [0, 0, 0];
         var key = '0.0.0';
 
-        var desired = [1, 6, 0];
-        var desiredKey = '1.6.0';
+        var newestVersion = serializationHandler.getNewestVersion();
+
+        var desired = [newestVersion.major, newestVersion.minor, newestVersion.patch];
+        var desiredKey = desired[0].toString() + '.' + desired[1].toString() + '.' + desired[2].toString();
 
         var defaultSerializationHandler = serializationHandler.getHandler(desiredKey);
         var currentSerializationHandler = defaultSerializationHandler;
@@ -29,7 +31,7 @@
                 return key;
             },
             supported: function() {
-                return !!serializationHandler.getHandler(desiredKey);
+                return !!serializationHandler.getHandler(key);
             },
             desired: function() {
                 return desired;

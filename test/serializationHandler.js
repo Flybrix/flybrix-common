@@ -11,6 +11,14 @@ describe('Serialization handler service', function () {
         expect(serializationHandler).toBeDefined();
     });
 
+    it('treats 1.6.0 as newest firmware', function () {
+        expect(serializationHandler.getNewestVersion()).toEqual({
+            major: 1,
+            minor: 6,
+            patch: 0,
+        });
+    });
+
     describe('1.4.0', function () {
         var handlers = null;
         beforeEach(function () {
