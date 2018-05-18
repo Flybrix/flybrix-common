@@ -8,12 +8,6 @@
     function firmwareVersion(serializationHandler) {
         var version = [0, 0, 0];
         var key = '0.0.0';
-        var supported = {
-            '1.4.0': true,
-            '1.5.0': true,
-            '1.5.1': true,
-            '1.6.0': true,
-        };
 
         var desired = [1, 6, 0];
         var desiredKey = '1.6.0';
@@ -35,7 +29,7 @@
                 return key;
             },
             supported: function() {
-                return supported[key] === true;
+                return !!serializationHandler.getHandler(desiredKey);
             },
             desired: function() {
                 return desired;

@@ -351,9 +351,15 @@
         var handler15 = configFull15 + state + commands + debugString + historyData + response + protocol;
         var handler16 = configFull16 + state + commands + debugString + historyData + response + protocol;
 
-        handlerCache['1.4.0'] = FlybrixSerialization.parse(handler14);
-        handlerCache['1.5.0'] = handlerCache['1.5.1'] = FlybrixSerialization.parse(handler15);
-        handlerCache['1.6.0'] = FlybrixSerialization.parse(handler16);
+        function addHandler(version, structure) {
+            var versionString = version.major.toString() + '.' + version.minor.toString() + '.' + version.patch.toString();
+            handlerCache[versionString] = FlybrixSerialization.parse(structure);
+        }
+
+        addHandler({major: 1, minor: 4, patch: 0}, handler14);
+        addHandler({major: 1, minor: 5, patch: 0}, handler15);
+        addHandler({major: 1, minor: 5, patch: 1}, handler15);
+        addHandler({major: 1, minor: 6, patch: 0}, handler16);
 
         function updateFields(target, source) {
             if (source instanceof Array) {
@@ -393,10 +399,7 @@
             getHandler: function (firmware) {
                 return handlerCache[firmware];
             },
-            addHandler: function (version, structure) {
-                var versionString = version.major.toString() + '.' + version.minor.toString() + version.patch.toString();
-                handlerCache[versionString] = FlybrixSerialization.parse(structure);
-            },
+            addHandler: addHandler,
             updateFields: updateFields,
         };
     }
