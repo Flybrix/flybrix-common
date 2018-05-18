@@ -106,7 +106,7 @@ describe('Serial service', function() {
             });
 
             it('causes serial to read', function(done) {
-                serial.setDataHandler(function(data) {
+                serial.setBytesHandler(function(data) {
                     expect(data).toEqual(new Uint8Array([1, 2, 3, 4]));
                     done();
                 });
@@ -143,15 +143,15 @@ describe('Serial service', function() {
         });
     });
 
-    describe('.setDataHandler()', function() {
+    describe('.setBytesHandler()', function() {
         it('exists', function() {
-            expect(serial.setDataHandler).toBeDefined();
+            expect(serial.setBytesHandler).toBeDefined();
         });
 
         it('sets the response to reading', function(done) {
             var backend = new serial.Backend();
             serial.setBackend(backend);
-            serial.setDataHandler(function(data) {
+            serial.setBytesHandler(function(data) {
                 expect(data).toEqual(new Uint8Array([1, 2, 3, 4]));
                 done();
             });
@@ -165,17 +165,18 @@ describe('Serial service', function() {
         beforeEach(function() {
             backend = new serial.Backend();
             serial.setBackend(backend);
-            serial.setStateCallback(onFail);
-            serial.setCommandCallback(onFail);
         });
 
         it('reads states', function(done) {
-            serial.setStateCallback(function(state, data_mask) {
-                data_mask.forEach(function(val, idx) {
-                    expect(val).toEqual(idx === 0 || idx === 26);
+            serial.addOnReceiveCallback(function(messageType, message) {
+                if (messageType !== 'State') {
+                    fail('Unexpected message type ' + messageType);
+                }
+                expect(message).toEqual({
+                    timestamp_us: 0x04030201,
+                    loop_count: 0x08070605,
+                    serial_update_rate_estimate: NaN,
                 });
-                expect(state.timestamp_us).toEqual(0x04030201);
-                expect(state.loopCount).toEqual(0x08070605);
                 done();
             });
             commandLog.onMessage(onFail);
@@ -185,90 +186,50 @@ describe('Serial service', function() {
         });
 
         it('reads commands', function(done) {
-            serial.setCommandCallback(function(mask, data) {
-                expect(mask).toEqual(0x04030201);
-                expect(new Uint8Array(data)).toEqual(new Uint8Array([
-                    1, 2, 3, 4
-                ]));
+            serial.addOnReceiveCallback(function(messageType, message) {
+                if (messageType !== 'Command') {
+                    fail('Unexpected message type ' + messageType);
+                }
+                expect(message).toEqual({
+                    request_response: true,
+                    motor_override_speed_4: 0x0201,
+                    set_sd_write_delay: 0x0403,
+                    set_led: {
+                        pattern: 1,
+                        color_right: {
+                            red: 2,
+                            green: 3,
+                            blue: 4,
+                        },
+                        color_left: {
+                            red: 1,
+                            green: 2,
+                            blue: 3,
+                        },
+                        indicator_red: true,
+                        indicator_green: true,
+                    },
+                    set_calibration: {
+                        enabled: false,
+                        mode: 5,
+                    },
+                });
                 done();
             });
             commandLog.onMessage(onFail);
             backend.onRead(
-                new Uint8Array([11, 1, 1, 1, 2, 3, 4, 1, 2, 3, 4, 0]));
+                new Uint8Array([20, 1, 1, 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 5, 2, 5, 0]));
             $rootScope.$digest();
         });
 
         it('reports bad data', function(done) {
+            serial.addOnReceiveCallback(function(messageType) {
+                fail('Unexpected message type ' + messageType);
+            });
             commandLog.onMessage(done);
             backend.onRead(
                 new Uint8Array([11, 2, 1, 1, 2, 3, 4, 1, 2, 3, 4, 0]));
             $rootScope.$digest();
-        });
-    });
-
-    describe('.setCommandCallback()', function() {
-        var backend;
-
-        beforeEach(function() {
-            backend = new serial.Backend();
-            serial.setBackend(backend);
-        });
-
-        it('exists', function() {
-            expect(serial.setCommandCallback).toBeDefined();
-        });
-
-        it('reads states', function(done) {
-            commandLog.onMessage(function(messages) {
-                expect(messages.length).toBe(1);
-                expect(messages[0])
-                    .toEqual('No command listener defined for serial');
-                done();
-            });
-            backend.onRead(
-                new Uint8Array([11, 1, 1, 1, 2, 3, 4, 1, 2, 3, 4, 0]));
-            $rootScope.$digest();
-        });
-
-        it('makes responses to command messages', function(done) {
-            serial.setCommandCallback(function(state, data_mask) {
-                done();
-            });
-            backend.onRead(
-                new Uint8Array([11, 1, 1, 1, 2, 3, 4, 1, 2, 3, 4, 0]));
-        });
-    });
-
-    describe('.setStateCallback()', function() {
-        var backend;
-
-        beforeEach(function() {
-            backend = new serial.Backend();
-            serial.setBackend(backend);
-        });
-
-        it('exists', function() {
-            expect(serial.setStateCallback).toBeDefined();
-        });
-
-        it('reads states', function(done) {
-            commandLog.onMessage(function(messages) {
-                expect(messages.length).toBe(1);
-                expect(messages[0])
-                    .toEqual('No state listener defined for serial');
-                done();
-            });
-            backend.onRead(new Uint8Array(
-                [2, 1, 2, 1, 1, 10, 8, 1, 2, 3, 4, 5, 6, 7, 8, 0]));
-            $rootScope.$digest();
-        });
-
-        it('makes responses to state messages', function(done) {
-            serial.setStateCallback(function(state, data_mask) {
-                done();
-            });
-            backend.onRead(new Uint8Array(
-                [2, 1, 2, 1, 1, 10, 8, 1, 2, 3, 4, 5, 6, 7, 8, 0]));
         });
     });
 
@@ -286,7 +247,7 @@ describe('Serial service', function() {
         it('sends firmware version request', function(done) {
             backend.send = function(data) {
                 expect(data).toEqual(
-                    new Uint8Array([4, 65, 1, 1, 2, 64, 2, 1, 1, 1, 1, 0]));
+                    new Uint8Array([4, 65, 1, 1, 2, 64, 2, 1, 1, 0]));
                 done();
             };
             serial.handlePostConnect();
@@ -294,81 +255,8 @@ describe('Serial service', function() {
         });
     });
 
-    describe('.send()', function() {
-        var backend;
-        beforeEach(function() {
-            backend = new serial.Backend();
-            serial.setBackend(backend);
-        });
-
-        it('exists', function() {
-            expect(serial.send).toBeDefined();
-        });
-
-        it('does not log by default', function(done) {
-            commandLog.onMessage(onFail);
-            backend.send = function() {
-                done();
-            };
-            serial.send(0, []);
-            $rootScope.$digest();
-            $timeout.flush();
-        });
-
-        it('logs when instructed', function(done) {
-            commandLog.onMessage(function(messages) {
-                expect(messages.length).toBe(1);
-                expect(messages[0])
-                    .toEqual(
-                        'Sending command 1');
-                done();
-            });
-            serial.send(0, [], true);
-            $rootScope.$digest();
-        });
-
-        it('does not log when instructed not to', function(done) {
-            commandLog.onMessage(onFail);
-            backend.send = function() {
-                done();
-            };
-            serial.send(0, [], false);
-            $rootScope.$digest();
-            $timeout.flush();
-        });
-
-        it('sends empty data', function(done) {
-            backend.send = function(data) {
-                expect(data).toEqual(
-                    new Uint8Array([7, 129, 1, 0x21, 0x43, 0x65, 0x87, 0]));
-                done();
-            };
-            serial.send(0x87654321, []);
-            $timeout.flush();
-        });
-
-        it('sends single byte', function(done) {
-            backend.send = function(data) {
-                expect(data).toEqual(
-                    new Uint8Array([8, 1, 1, 0x21, 0x43, 0x65, 0x87, 128, 0]));
-                done();
-            };
-            serial.send(0x87654321, 128);
-            $timeout.flush();
-        });
-
-        it('sends array', function(done) {
-            backend.send = function(data) {
-                expect(data).toEqual(new Uint8Array([
-                    12, 95, 1, 0x21, 0x43, 0x65, 0x87, 96, 14, 17, 128, 33, 0
-                ]));
-                done();
-            };
-            serial.send(0x87654321, [96, 14, 17, 128, 33]);
-            $timeout.flush();
-        });
-    });
-
+    // TODO: rewrite ACK tests
+    /*
     describe('acknowledging', function() {
         var backend;
         beforeEach(function() {
@@ -456,8 +344,12 @@ describe('Serial service', function() {
             $rootScope.$digest();
         });
     });
+    */
 
-    function onFail() {
+    function onFail(msg) {
+        if (msg) {
+            fail('Unexpected callback call with: ' + msg);
+        }
         fail('Unexpected callback call');
     }
 });

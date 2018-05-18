@@ -3,14 +3,15 @@
 
     angular.module('flybrixCommon').factory('rcData', rcData);
 
-    rcData.$inject = ['serial', 'encodable'];
+    rcData.$inject = ['serial'];
 
-    function rcData(serial, encodable) {
+    function rcData(serial) {
         var AUX = {
             LOW: 0,
             MID: 1,
             HIGH: 2,
         };
+        var auxNames = ['low', 'mid', 'high'];
 
         var throttle = -1;
         var pitch = 0;
@@ -22,19 +23,6 @@
         var aux2 = AUX.HIGH;
 
         var urgent = true;
-
-        var commandHandler = encodable.map([
-            {key: 'throttle', element: encodable.Int16},
-            {key: 'pitch', element: encodable.Int16},
-            {key: 'roll', element: encodable.Int16},
-            {key: 'yaw', element: encodable.Int16},
-        ]);
-
-        var rcHandler = encodable.map([
-            {key: 'enabled', element: encodable.bool},
-            {key: 'command', element: commandHandler},
-            {key: 'auxcode', element: encodable.Uint8},
-        ]);
 
         return {
             setThrottle: setThrottle,
@@ -60,8 +48,6 @@
             }
             urgent = false;
 
-            // Set RC to enabled
-            var response = {enabled: true};
             var command = {};
 
             // invert pitch and roll
@@ -78,19 +64,19 @@
             command.yaw =
                 constrain(-(applyDeadzone(yaw, 0.1)) * 4095 / 2, -2047, 2047);
 
-            response.command = command;
+            var aux_mask = {};
+            // aux1_low, aux1_mid, aux1_high, and same with aux2
+            aux_mask['aux1_' + auxNames[aux1]] = true;
+            aux_mask['aux2_' + auxNames[aux2]] = true;
 
-            // aux format is
-            // {AUX1_low, AUX1_mid, AUX1_high,
-            //  AUX2_low, AUX2_mid, AUX2_high,
-            //  x, x} (LSB-->MSB)
-            response.auxcode = (1 << aux1) + (1 << (aux2 + 3));
-
-            var data = new Uint8Array(10);
-            rcHandler.encode(
-                new DataView(data.buffer), new encodable.Serializer(),
-                response);
-            return serial.send(serial.field.COM_SET_SERIAL_RC, data, false);
+            return serial.sendStructure('Command', {
+                request_response: true,
+                set_serial_rc: {
+                    enabled: true,
+                    command: command,
+                    aux_mask: aux_mask,
+                },
+            }, false);
         }
 
         function setThrottle(v) {
@@ -110,11 +96,11 @@
         }
 
         function setAux1(v) {
-            aux1 = v;
+            aux1 = Math.max(0, Math.min(2, v));
         }
 
         function setAux2(v) {
-            aux2 = v;
+            aux2 = Math.max(0, Math.min(2, v));
         }
 
         function getThrottle() {

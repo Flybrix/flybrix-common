@@ -2,7 +2,6 @@ describe('Calibration service', function() {
 
     var calibration;
     var serial;
-    var parser;
     var cobs;
     var commandLog;
     var $timeout;
@@ -11,12 +10,9 @@ describe('Calibration service', function() {
 
     beforeEach(angular.mock.module('flybrixCommon'));
 
-    beforeEach(inject(function(
-        _calibration_, _serial_, _parser_, _cobs_, _commandLog_, _$timeout_,
-        _$rootScope_) {
+    beforeEach(inject(function(_calibration_, _serial_, _cobs_, _commandLog_, _$timeout_, _$rootScope_) {
         calibration = _calibration_;
         serial = _serial_;
-        parser = _parser_;
         cobs = _cobs_;
         commandLog = _commandLog_;
         $timeout = _$timeout_;
@@ -40,13 +36,8 @@ describe('Calibration service', function() {
         it('sends right data', function(done) {
             backend.send = function(val) {
                 var decoder = new cobs.Reader();
-                decoder.AppendToBuffer(val, function(command, mask, data) {
-                    expect(command).toBe(parser.MessageType.Command);
-                    expect(mask).toBe(
-                        parser.CommandFields.COM_SET_CALIBRATION |
-                        parser.CommandFields.COM_REQ_RESPONSE);
-                    expect(new Uint8Array(data)).toEqual(
-                        new Uint8Array([0, 0]));
+                decoder.readBytes(val, function(data) {
+                    expect(data).toEqual(new Uint8Array([1, 1, 0, 0, 4, 0, 0]));
                     done();
                 });
             };
@@ -63,13 +54,8 @@ describe('Calibration service', function() {
         it('sends right data', function(done) {
             backend.send = function(val) {
                 var decoder = new cobs.Reader();
-                decoder.AppendToBuffer(val, function(command, mask, data) {
-                    expect(command).toBe(parser.MessageType.Command);
-                    expect(mask).toBe(
-                        parser.CommandFields.COM_SET_CALIBRATION |
-                        parser.CommandFields.COM_REQ_RESPONSE);
-                    expect(new Uint8Array(data)).toEqual(
-                        new Uint8Array([1, 0]));
+                decoder.readBytes(val, function(data) {
+                    expect(data).toEqual(new Uint8Array([1, 1, 0, 0, 4, 1, 0]));
                     done();
                 });
             };
@@ -94,13 +80,8 @@ describe('Calibration service', function() {
         it('sends right data for flat', function(done) {
             backend.send = function(val) {
                 var decoder = new cobs.Reader();
-                decoder.AppendToBuffer(val, function(command, mask, data) {
-                    expect(command).toBe(parser.MessageType.Command);
-                    expect(mask).toBe(
-                        parser.CommandFields.COM_SET_CALIBRATION |
-                        parser.CommandFields.COM_REQ_RESPONSE);
-                    expect(new Uint8Array(data)).toEqual(
-                        new Uint8Array([1, 1]));
+                decoder.readBytes(val, function(data) {
+                    expect(data).toEqual(new Uint8Array([1, 1, 0, 0, 4, 1, 1]));
                     done();
                 });
             };
@@ -111,13 +92,8 @@ describe('Calibration service', function() {
         it('sends right data for forward', function(done) {
             backend.send = function(val) {
                 var decoder = new cobs.Reader();
-                decoder.AppendToBuffer(val, function(command, mask, data) {
-                    expect(command).toBe(parser.MessageType.Command);
-                    expect(mask).toBe(
-                        parser.CommandFields.COM_SET_CALIBRATION |
-                        parser.CommandFields.COM_REQ_RESPONSE);
-                    expect(new Uint8Array(data)).toEqual(
-                        new Uint8Array([1, 2]));
+                decoder.readBytes(val, function(data) {
+                    expect(data).toEqual(new Uint8Array([1, 1, 0, 0, 4, 1, 2]));
                     done();
                 });
             };
@@ -128,13 +104,8 @@ describe('Calibration service', function() {
         it('sends right data for back', function(done) {
             backend.send = function(val) {
                 var decoder = new cobs.Reader();
-                decoder.AppendToBuffer(val, function(command, mask, data) {
-                    expect(command).toBe(parser.MessageType.Command);
-                    expect(mask).toBe(
-                        parser.CommandFields.COM_SET_CALIBRATION |
-                        parser.CommandFields.COM_REQ_RESPONSE);
-                    expect(new Uint8Array(data)).toEqual(
-                        new Uint8Array([1, 3]));
+                decoder.readBytes(val, function(data) {
+                    expect(data).toEqual(new Uint8Array([1, 1, 0, 0, 4, 1, 3]));
                     done();
                 });
             };
@@ -145,13 +116,8 @@ describe('Calibration service', function() {
         it('sends right data for right', function(done) {
             backend.send = function(val) {
                 var decoder = new cobs.Reader();
-                decoder.AppendToBuffer(val, function(command, mask, data) {
-                    expect(command).toBe(parser.MessageType.Command);
-                    expect(mask).toBe(
-                        parser.CommandFields.COM_SET_CALIBRATION |
-                        parser.CommandFields.COM_REQ_RESPONSE);
-                    expect(new Uint8Array(data)).toEqual(
-                        new Uint8Array([1, 4]));
+                decoder.readBytes(val, function(data) {
+                    expect(data).toEqual(new Uint8Array([1, 1, 0, 0, 4, 1, 4]));
                     done();
                 });
             };
@@ -162,13 +128,8 @@ describe('Calibration service', function() {
         it('sends right data for left', function(done) {
             backend.send = function(val) {
                 var decoder = new cobs.Reader();
-                decoder.AppendToBuffer(val, function(command, mask, data) {
-                    expect(command).toBe(parser.MessageType.Command);
-                    expect(mask).toBe(
-                        parser.CommandFields.COM_SET_CALIBRATION |
-                        parser.CommandFields.COM_REQ_RESPONSE);
-                    expect(new Uint8Array(data)).toEqual(
-                        new Uint8Array([1, 5]));
+                decoder.readBytes(val, function(data) {
+                    expect(data).toEqual(new Uint8Array([1, 1, 0, 0, 4, 1, 5]));
                     done();
                 });
             };

@@ -1,17 +1,15 @@
 describe('RC Data service', function() {
     var rcData;
     var serial;
-    var parser;
     var cobs;
     var $timeout;
 
     beforeEach(angular.mock.module('flybrixCommon'));
 
     beforeEach(
-        inject(function(_rcData_, _serial_, _parser_, _cobs_, _$timeout_) {
+        inject(function(_rcData_, _serial_, _cobs_, _$timeout_) {
             rcData = _rcData_;
             serial = _serial_;
-            parser = _parser_;
             cobs = _cobs_;
             $timeout = _$timeout_;
         }));
@@ -194,15 +192,11 @@ describe('RC Data service', function() {
         it('sends same data as radio RC by default', function(done) {
             backend.send = function(val) {
                 var decoder = new cobs.Reader();
-                decoder.AppendToBuffer(val, function(command, mask, data) {
-                    expect(command).toBe(parser.MessageType.Command);
-                    expect(mask & parser.CommandFields.COM_SET_SERIAL_RC)
-                        .toBeTruthy();
-                    data = new Uint8Array(data);
+                decoder.readBytes(val, function(data) {
                     expect(data).toEqual(
-                        new Uint8Array([1, 0, 0, 0, 0, 0, 0, 0, 0, 36]));
+                        new Uint8Array([1, 1, 0, 4, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 36]));
                     done();
-                });
+                }, fail);
             };
             rcData.send();
             $timeout.flush();
@@ -211,13 +205,9 @@ describe('RC Data service', function() {
         it('responds to AUX changes', function(done) {
             backend.send = function(val) {
                 var decoder = new cobs.Reader();
-                decoder.AppendToBuffer(val, function(command, mask, data) {
-                    expect(command).toBe(parser.MessageType.Command);
-                    expect(mask & parser.CommandFields.COM_SET_SERIAL_RC)
-                        .toBeTruthy();
-                    data = new Uint8Array(data);
+                decoder.readBytes(val, function(data) {
                     expect(data).toEqual(
-                        new Uint8Array([1, 0, 0, 0, 0, 0, 0, 0, 0, 17]));
+                        new Uint8Array([1, 1, 0, 4, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 17]));
                     done();
                 });
             };
@@ -230,13 +220,9 @@ describe('RC Data service', function() {
         it('responds to movement of axes', function(done) {
             backend.send = function(val) {
                 var decoder = new cobs.Reader();
-                decoder.AppendToBuffer(val, function(command, mask, data) {
-                    expect(command).toBe(parser.MessageType.Command);
-                    expect(mask & parser.CommandFields.COM_SET_SERIAL_RC)
-                        .toBeTruthy();
-                    data = new Uint8Array(data);
+                decoder.readBytes(val, function(data) {
                     expect(data).not.toEqual(
-                        new Uint8Array([1, 0, 0, 0, 0, 0, 0, 0, 0, 36]));
+                        new Uint8Array([1, 1, 0, 4, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 36]));
                     done();
                 });
             };

@@ -3,9 +3,9 @@
 
     angular.module('flybrixCommon').factory('led', led);
 
-    led.$inject = ['deviceConfig'];
+    led.$inject = ['deviceConfig', 'firmwareVersion'];
 
-    function led(deviceConfig) {
+    function led(deviceConfig, firmwareVersion) {
         var LedPatterns = {
             NO_OVERRIDE: 0,
             FLASH: 1,
@@ -32,12 +32,13 @@
             colors: colors,
             indicator_red: false,
             indicator_green: false,
-        }
+        };
 
-        var configPart = {ledStates: [ledState]};
+        var configPart = { led_states: [ledState] };
 
         function set(
             color_rf, color_rb, color_lf, color_lb, pattern, red, green) {
+            ledState.status = firmwareVersion.serializationHandler().StatusFlag.empty();
             if (pattern > 0 && pattern < 6) {
                 ledState.pattern = pattern;
             }
@@ -67,12 +68,10 @@
         }
 
         function apply() {
-            deviceConfig.sendPartial(
-                deviceConfig.field.LED_STATES,  // Set LED state part
-                1,           // more specifically, the first state 2^0 = 1
-                configPart,  // to our partial configuration
-                true  // and set the "temporary" flag, not changing EEPROM
-                );
+            deviceConfig.sendConfig({
+                config: configPart,
+                temporary: true,
+            });
         }
 
         return {

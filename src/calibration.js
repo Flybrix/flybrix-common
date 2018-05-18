@@ -20,18 +20,35 @@
 
         function magnetometer() {
             commandLog("Calibrating magnetometer bias");
-            return serial.send(serial.field.COM_SET_CALIBRATION, [1, 0], false);
+            return serial.sendStructure('Command', {
+                request_response: true,
+                set_calibration: {
+                    enabled: true,
+                    mode: 0,
+                },
+            }, false);
         }
 
         function calibrateAccelerometer(poseDescription, poseId) {
             commandLog("Calibrating gravity for pose: " + poseDescription);
-            return serial.send(serial.field.COM_SET_CALIBRATION,
-                [1, poseId + 1], false);
+            return serial.sendStructure('Command', {
+                request_response: true,
+                set_calibration: {
+                    enabled: true,
+                    mode: poseId + 1,
+                },
+            }, false);
         }
 
         function finish() {
             commandLog("Finishing calibration");
-            return serial.send(serial.field.COM_SET_CALIBRATION, [0, 0], false);
+            return serial.sendStructure('Command', {
+                request_response: true,
+                set_calibration: {
+                    enabled: false,
+                    mode: 0,
+                },
+            }, false);
         }
     }
 }());
