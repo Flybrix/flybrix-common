@@ -60,7 +60,7 @@
         var descReverseMap = {};
         Object.keys(descVersions).forEach(function(key) {
             var vers = stringToVersion(key);
-            var filename = descFiles[key];
+            var filename = descVersions[key];
             if (filename in descReverseMap) {
                 copyHandler(vers, descReverseMap[filename])
             } else {
