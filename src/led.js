@@ -1,11 +1,11 @@
-(function() {
+(function () {
     'use strict';
 
     angular.module('flybrixCommon').factory('led', led);
 
-    led.$inject = ['deviceConfig', 'firmwareVersion'];
+    led.$inject = ['$q', 'serial'];
 
-    function led(deviceConfig, firmwareVersion) {
+    function led($q, serial) {
         var LedPatterns = {
             NO_OVERRIDE: 0,
             FLASH: 1,
@@ -15,69 +15,59 @@
             SOLID: 5,
         };
 
-        var keys = ['right_front', 'right_back', 'left_front', 'left_back'];
-        var colors = {};
+        var urgent = false;
+        var black = {red: 0, green: 0, blue: 0};
 
-        keys.forEach(function(key) {
-            colors[key] = {
-                red: 0,
-                green: 0,
-                blue: 0,
+        function set(right_front, right_back, left_front, left_back, pattern, red, green) {
+            if (!urgent && serial.busy()) {
+                return $q.reject('Serial connection is too busy');
             }
-        });
+            urgent = false;
 
-        var ledState = {
-            status: 65535,
-            pattern: LedPatterns.SOLID,
-            colors: colors,
-            indicator_red: false,
-            indicator_green: false,
-        };
-
-        var configPart = { led_states: [ledState] };
-
-        function set(
-            color_rf, color_rb, color_lf, color_lb, pattern, red, green) {
-            ledState.status = firmwareVersion.serializationHandler().StatusFlag.empty();
-            if (pattern > 0 && pattern < 6) {
-                ledState.pattern = pattern;
-            }
-            [color_rf, color_rb, color_lf, color_lb].forEach(function(
-                color, idx) {
-                if (!color) {
-                    return;
-                }
-                var v = colors[keys[idx]];
-                v.red = color.red;
-                v.green = color.green;
-                v.blue = color.blue;
-            });
-            if (red !== undefined) {
-                ledState.indicator_red = red;
-            }
-            if (green !== undefined) {
-                ledState.indicator_green = green;
+            pattern = pattern || LedPatterns.NO_OVERRIDE;
+            if (pattern < 0) {
+                pattern = LedPatterns.NO_OVERRIDE;
+            } else if (pattern > 5) {
+                pattern = LedPatterns.SOLID;
             }
 
-            apply();
+            var setter_command = {
+                pattern: pattern,
+                color_right: right_front || black,
+                color_left: left_front || black,
+                color_right_front: right_front || black,
+                color_left_front: left_front || black,
+                color_right_back: right_back || black,
+                color_left_back: left_back || black,
+                indicator_red: red,
+                indicator_green: green,
+            };
+
+            return serial.sendStructure('Command', {
+                request_response: true,
+                set_led: setter_command,
+            }, false);
         }
 
         function setSimple(red, green, blue) {
             var color = {red: red || 0, green: green || 0, blue: blue || 0};
-            set(color, color, color, color, LedPatterns.SOLID);
+            return set(color, color, color, color, LedPatterns.SOLID);
         }
 
-        function apply() {
-            deviceConfig.sendConfig({
-                config: configPart,
-                temporary: true,
-            });
+        function clear() {
+            return set();
+        }
+
+        function forceNextSend() {
+            urgent = true;
         }
 
         return {
             set: set,
             setSimple: setSimple,
+            clear: clear,
             patterns: LedPatterns,
+            forceNextSend: forceNextSend,
         };
     }
 
