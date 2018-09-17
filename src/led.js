@@ -55,6 +55,7 @@
         }
 
         function clear() {
+            forceNextSend();
             return set();
         }
 
