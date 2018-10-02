@@ -71,13 +71,23 @@
         });
 
         function updateFields(target, source) {
+            // Handle arrays
             if (source instanceof Array) {
                 return updateFieldsArray(target, source);
-            } else if (source instanceof Object) {
-                return updateFieldsObject(target, source);
-            } else {
-                return (source === null || source === undefined) ? target : source;
             }
+            // Handle objects
+            if (source instanceof Object) {
+                return updateFieldsObject(target, source);
+            }
+            // Handle bools, treating both false and missing fields as false
+            if (target === true && !source) {
+                return false;
+            }
+            // If new data is missing, use the old data
+            if (source === null || source === undefined) {
+                return target;
+            }
+            return source;
         }
 
         function updateFieldsObject(target, source) {
