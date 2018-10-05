@@ -52,7 +52,7 @@
             constants['COLOR_' + key] = JSON.stringify(uniformFadedColor(color_palette[key]));
         });
 
-        constants['LED_unused_mode'] = '{status:{},pattern:' + constants.PATTERN_none + ',colors:' + constants.COLOR_Black + 'indicator_red:false,indicator_green:false}';
+        constants['LED_unused_mode'] = '{"status":{},"pattern":' + constants.PATTERN_none + ',"colors":' + constants.COLOR_Black + ',"indicator_red":false,"indicator_green":false}';
 
         var regex = /"\${(\w+)}"/g;
 
