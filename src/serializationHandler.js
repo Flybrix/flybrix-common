@@ -1,12 +1,13 @@
 (function () {
     'use strict';
 
-    serializationHandler.$inject = ['descriptorsHandler'];
+    serializationHandler.$inject = ['descriptorsHandler', 'deviceConfigParser'];
 
     angular.module('flybrixCommon').factory('serializationHandler', serializationHandler);
 
-    function serializationHandler(descriptorsHandler) {
+    function serializationHandler(descriptorsHandler, deviceConfigParser) {
         var handlerCache = {};
+        var defaultsCache = {};
 
         var newestVersion = { major: 0, minor: 0, patch: 0 };
 
@@ -33,7 +34,7 @@
             };
         }
 
-        function addHandler(version, structure) {
+        function addHandler(version, structure, defaults) {
             if (isNewerVersion(version)) {
                 newestVersion = {
                     major: version.major,
@@ -41,7 +42,9 @@
                     patch: version.patch,
                 };
             }
-            handlerCache[versionToString(version)] = FlybrixSerialization.parse(structure);
+            var versionStr = versionToString(version);
+            handlerCache[versionStr] = FlybrixSerialization.parse(structure);
+            defaultsCache[versionStr] = deviceConfigParser.parse(defaults);
         }
 
         function copyHandler(version, srcVersion) {
@@ -52,7 +55,10 @@
                     patch: version.patch,
                 };
             }
-            handlerCache[versionToString(version)] = handlerCache[versionToString(srcVersion)];
+            var versionStr = versionToString(version);
+            var srcVersionStr = versionToString(srcVersion);
+            handlerCache[versionStr] = handlerCache[srcVersionStr];
+            defaultsCache[versionStr] = defaultsCache[srcVersionStr];
         }
 
         var descVersions = descriptorsHandler.versions;
@@ -65,7 +71,7 @@
                 copyHandler(vers, descReverseMap[filename])
             } else {
                 filename = descVersions[key];
-                addHandler(vers, descFiles[filename]);
+                addHandler(vers, descFiles[filename], descFiles[filename + '.json']);
                 descReverseMap[filename] = vers;
             }
         });
@@ -115,6 +121,9 @@
 
         return {
             Serializer: FlybrixSerialization.Serializer,
+            getDefaults: function (firmware) {
+                return defaultsCache[firmware];
+            },
             getHandler: function (firmware) {
                 return handlerCache[firmware];
             },

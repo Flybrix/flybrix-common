@@ -1,0 +1,80 @@
+{
+  "version": { "major": 1, "minor": 4, "patch": 0 },
+  "id": 0,
+  "pcb_transform": {
+    "orientation": { "x": 0, "y": 0, "z": 0 },
+    "translation": { "x": 0, "y": 0, "z": 0 }
+  },
+  "mix_table": {
+    "fz": [1, 1, 1, 1, 1, 1, 1, 1],
+    "tx": [1, 1, 1, 1, -1, -1, -1, -1],
+    "ty": [-1, 1, -1, 1, -1, 1, -1, 1],
+    "tz": [1, -1, -1, 1, 1, -1, -1, 1]
+  },
+  "mag_bias": {
+    "offset": { "x": 0, "y": 0, "z": 0 }
+  },
+  "channel": {
+    "assignment": {
+      "thrust": 2,
+      "pitch": 1,
+      "roll": 0,
+      "yaw": 3,
+      "aux1": 4,
+      "aux2": 5
+    },
+    "inversion": {
+      "thrust": null,
+      "pitch": true,
+      "roll": true,
+      "yaw": null,
+      "aux1": null,
+      "aux2": null
+    },
+    "midpoint": [1500, 1500, 1500, 1500, 1500, 1500],
+    "deadzone": [0, 0, 0, 20, 0, 0]
+  },
+  "pid_parameters": {
+    "thrust_master": { "kp": 1.0, "ki": 0.0, "kd": 0.0, "integral_windup_guard": 0.0, "d_filter_time": 0.001, "setpoint_filter_time": 0.001, "command_to_value": 1.0 },
+    "pitch_master": { "kp": 3.5, "ki": 0.5, "kd": 0.0, "integral_windup_guard": 300.0, "d_filter_time": 0.005, "setpoint_filter_time": 0.005, "command_to_value": 30.0 },
+    "roll_master": { "kp": 3.5, "ki": 0.5, "kd": 0.0, "integral_windup_guard": 300.0, "d_filter_time": 0.005, "setpoint_filter_time": 0.005, "command_to_value": 30.0 },
+    "yaw_master": { "kp": 1.0, "ki": 0.0, "kd": 0.0, "integral_windup_guard": 0.0, "d_filter_time": 0.001, "setpoint_filter_time": 0.001, "command_to_value": 180.0 },
+    "thrust_slave": { "kp": 1.0, "ki": 0.0, "kd": 0.0, "integral_windup_guard": 0.0, "d_filter_time": 0.001, "setpoint_filter_time": 0.001, "command_to_value": 1.0 },
+    "pitch_slave": { "kp": 5.0, "ki": 2.0, "kd": 0.0, "integral_windup_guard": 300.0, "d_filter_time": 0.001, "setpoint_filter_time": 0.001, "command_to_value": 150.0 },
+    "roll_slave": { "kp": 5.0, "ki": 2.0, "kd": 0.0, "integral_windup_guard": 300.0, "d_filter_time": 0.001, "setpoint_filter_time": 0.001, "command_to_value": 150.0 },
+    "yaw_slave": { "kp": 40.0, "ki": 10.0, "kd": 0.0, "integral_windup_guard": 300.0, "d_filter_time": 0.001, "setpoint_filter_time": 0.001, "command_to_value": 240.0 },
+    "pid_bypass": {
+      "thrust_master": true,
+      "pitch_master": null,
+      "roll_master": null,
+      "yaw_master": true,
+      "thrust_slave": true,
+      "pitch_slave": null,
+      "roll_slave": null,
+      "yaw_slave": null
+    }
+  },
+  "state_parameters": {
+    "state_estimation": [1, 0.01],
+    "enable": [0.001, 30]
+  },
+  "led_states": [
+    {"status": { "crash_detected": true }, "pattern":"${PATTERN_flash}",   "colors":"${COLOR_Orange}",        "indicator_red":false, "indicator_green":false},
+    {"status": { "loop_slow": true },      "pattern":"${PATTERN_solid}",   "colors":"${COLOR_Red}",           "indicator_red":false, "indicator_green":false},
+    {"status": { "override": true },       "pattern":"${PATTERN_solid}",   "colors":"${COLOR_LightSeaGreen}", "indicator_red":false, "indicator_green":false},
+    {"status": { "log_full": true },       "pattern":"${PATTERN_flash}",   "colors":"${COLOR_Orange}",        "indicator_red":false, "indicator_green":false},
+    {"status": { "no_signal": true },      "pattern":"${PATTERN_flash}",   "colors":"${COLOR_Green}",         "indicator_red":false, "indicator_green":false},
+    {"status": { "arming": true },         "pattern":"${PATTERN_flash}",   "colors":"${COLOR_Blue}",          "indicator_red":false, "indicator_green":false},
+    {"status": { "armed": true },          "pattern":"${PATTERN_beacon}",  "colors":"${COLOR_Blue}",          "indicator_red":false, "indicator_green":false},
+    {"status": { "idle": true },           "pattern":"${PATTERN_breathe}", "colors":"${COLOR_Green}",         "indicator_red":false, "indicator_green":false},
+    "${LED_unused_mode}",
+    "${LED_unused_mode}",
+    "${LED_unused_mode}",
+    "${LED_unused_mode}",
+    "${LED_unused_mode}",
+    "${LED_unused_mode}",
+    "${LED_unused_mode}",
+    "${LED_unused_mode}"
+  ],
+  "name": "FLYBRIX"
+}

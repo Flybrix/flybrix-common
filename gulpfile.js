@@ -30,6 +30,8 @@ gulp.task('descriptors', function() {
             return;
         }
         files[file] = fs.readFileSync('./descriptors/' + file, 'utf8').replace(/\s/g,'');
+        var defaults = file + '.json';
+        files[defaults] = fs.readFileSync('./descriptors/' + defaults, 'utf8').replace(/\s/g,'');
     });
     var fileContents = "(function () {\n" +
         "    'use strict';\n" +
