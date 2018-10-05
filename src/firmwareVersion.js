@@ -15,14 +15,16 @@
         var desiredKey = desired[0].toString() + '.' + desired[1].toString() + '.' + desired[2].toString();
 
         var defaultSerializationHandler = serializationHandler.getHandler(desiredKey);
+        var defaultDefaults = serializationHandler.getDefaults(desiredKey);
         var currentSerializationHandler = defaultSerializationHandler;
+        var currentDefaults = defaultDefaults;
 
         return {
             set: function(value) {
                 version = value;
                 key = value.join('.');
-                currentSerializationHandler =
-                    serializationHandler.getHandler(desiredKey) || defaultSerializationHandler;
+                currentSerializationHandler = serializationHandler.getHandler(desiredKey) || defaultSerializationHandler;
+                currentDefaults = serializationHandler.getDefaults(desiredKey) || defaultDefaults;
             },
             get: function() {
                 return version;
@@ -41,6 +43,9 @@
             },
             serializationHandler: function() {
                 return currentSerializationHandler;
+            },
+            defaults: function() {
+                return currentDefaults;
             },
         };
     }
